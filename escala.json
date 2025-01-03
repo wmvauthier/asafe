@@ -1,0 +1,64 @@
+{
+    "integrantes_tocando": [
+        {
+            "id": 1,
+            "funcao": "Guitarrista"
+        },
+        {
+            "id": 2,
+            "funcao": "Baixista"
+        },
+        {
+            "id": 3,
+            "funcao": "Baterista"
+        },
+        {
+            "id": 4,
+            "funcao": "Baterista"
+        },
+        {
+            "id": 5,
+            "funcao": "Baterista"
+        },
+        {
+            "id": 6,
+            "funcao": "Baterista"
+        },
+        {
+            "id": 7,
+            "funcao": "Baterista"
+        },
+        {
+            "id": 8,
+            "funcao": "Baterista"
+        },
+        {
+            "id": 9,
+            "funcao": "Baterista"
+        },
+        {
+            "id": 10,
+            "funcao": "Baterista"
+        },
+        {
+            "id": 11,
+            "funcao": "Baterista"
+        },
+        {
+            "id": 12,
+            "funcao": "Baterista"
+        },
+        {
+            "id": 13,
+            "funcao": "Baterista"
+        }
+    ],
+    "musicas": [
+        {
+            "id": 1
+        },
+        {
+            "id": 2
+        }
+    ]
+}

@@ -1,0 +1,20 @@
+[
+    {
+        "id": 1,
+        "titulo": "Exemplo de Música 1",
+        "thumbnail": "https://img.youtube.com/vi/sbQuIt_peno/0.jpg",
+        "link": "https://www.youtube.com/watch?v=sbQuIt_peno"
+    },
+    {
+        "id": 2,
+        "titulo": "Exemplo de Música 2",
+        "thumbnail": "https://img.youtube.com/vi/sbQuIt_peno/0.jpg",
+        "link": "https://www.youtube.com/watch?v=sbQuIt_peno"
+    },
+    {
+        "id": 3,
+        "titulo": "Exemplo de Música 3",
+        "thumbnail": "https://img.youtube.com/vi/sbQuIt_peno/0.jpg",
+        "link": "https://www.youtube.com/watch?v=sbQuIt_peno"
+    }
+]

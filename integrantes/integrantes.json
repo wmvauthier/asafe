@@ -1,0 +1,68 @@
+[
+    {
+      "id": 1,
+      "nome": "Lucas",
+      "icon": "fas fa-keyboard"
+    },
+    {
+      "id": 2,
+      "nome": "Matheus",
+      "icon": "fas fa-drum"
+    },
+    {
+      "id": 3,
+      "nome": "Douglas",
+      "icon": "fas fa-guitar"
+    },
+    {
+      "id": 4,
+      "nome": "Emerson",
+      "icon": "fas fa-bass-guitar"
+    },
+    {
+      "id": 5,
+      "nome": "Flor",
+      "icon": "fas fa-saxophone"
+    },
+    {
+      "id": 6,
+      "nome": "Guilherme",
+      "icon": "fas fa-guitar"
+    },
+    {
+      "id": 7,
+      "nome": "Rebeca",
+      "icon": "fas fa-microphone"
+    },
+    {
+      "id": 8,
+      "nome": "Tainá",
+      "icon": "fas fa-keyboard"
+    },
+    {
+      "id": 9,
+      "nome": "Thaís",
+      "icon": "fas fa-drum"
+    },
+    {
+      "id": 10,
+      "nome": "Guitarrista Substituto",
+      "icon": "fas fa-guitar"
+    },
+    {
+      "id": 11,
+      "nome": "Baixista Substituto",
+      "icon": "fas fa-bass-guitar"
+    },
+    {
+      "id": 12,
+      "nome": "Rhaldney",
+      "icon": "fas fa-microphone"
+    },
+    {
+      "id": 13,
+      "nome": "Diogo",
+      "icon": "fas fa-microphone"
+    }
+  ]
+  
