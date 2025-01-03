@@ -22,6 +22,7 @@ function carregarIntegrantes() {
               col.classList.add("col-lg-1", "col-sm-6", "col-4", "mb-4");
               col.style["padding-left"] = "5px";
               col.style["padding-right"] = "5px";
+              col.style["margin-bottom"] = "5px!important";
 
               const memberDiv = document.createElement("div");
               memberDiv.classList.add("band-member", "text-center");
