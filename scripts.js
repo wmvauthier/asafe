@@ -20,6 +20,8 @@ function carregarIntegrantes() {
             if (integrante) {
               const col = document.createElement("div");
               col.classList.add("col-lg-1", "col-sm-6", "col-4", "mb-4");
+              col.style["padding-left"] = "5px";
+              col.style["padding-right"] = "5px";
 
               const memberDiv = document.createElement("div");
               memberDiv.classList.add("band-member", "text-center");
