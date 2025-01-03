@@ -75,6 +75,7 @@ function carregarMusicas() {
             const musica = musicas.find((m) => m.id === musicaEscala.id);
             if (musica) {
               const card = document.createElement("div");
+              card.classList.add("col-lg-4", "col-sm-6", "col-12", "mb-4");
               card.classList.add("card");
 
               const img = document.createElement("img");

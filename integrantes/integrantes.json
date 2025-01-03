@@ -63,6 +63,16 @@
       "id": 13,
       "nome": "Diogo",
       "icon": "fas fa-microphone"
+    },
+    {
+      "id": 14,
+      "nome": "Mayara",
+      "icon": "fas fa-microphone"
+    },
+    {
+      "id": 15,
+      "nome": "Alan",
+      "icon": "fas fa-microphone"
     }
   ]
   
