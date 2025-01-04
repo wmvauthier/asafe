@@ -116,8 +116,8 @@
     {
         "id": 20,
         "titulo": "Eu quebro meu vaso",
-        "artista": "Luma Elpídio",
-        "referLink": "BgFL9l5OrtI"
+        "artista": "Som do Reino",
+        "referLink": "RXlDfjDg738"
     },
     {
         "id": 21,
@@ -232,5 +232,161 @@
         "titulo": "O Escudo + Sou um Milagre",
         "artista": "Lukas Agustinho",
         "referLink": "lWax47zymUE"
+    },
+    {
+        "id": 41,
+        "titulo": "O que tua Glória fez comigo",
+        "artista": "Fernanda Brum",
+        "referLink": "9fZph9kZkgM"
+    },
+    {
+        "id": 42,
+        "titulo": "Oceanos",
+        "artista": "Ana Nóbrega",
+        "referLink": "1XqHlWsMThA"
+    },
+    {
+        "id": 43,
+        "titulo": "Oh, Quão Lindo Esse Nome É",
+        "artista": "Ana Nóbrega",
+        "referLink": "8XUqcxgH8r4"
+    },
+    {
+        "id": 44,
+        "titulo": "Ousado Amor",
+        "artista": "Isaias Saad",
+        "referLink": "wSKKEAnLTDw"
+    },
+    {
+        "id": 45,
+        "titulo": "Ouvir o teu Falar",
+        "artista": "Discopraise",
+        "referLink": "2Z6nW7jU_uU"
+    },
+    {
+        "id": 46,
+        "titulo": "Pra Sempre",
+        "artista": "Fernandinho",
+        "referLink": "DZvBlrJsFag"
+    },
+    {
+        "id": 47,
+        "titulo": "Pode Morar Aqui",
+        "artista": "Theo Rubia",
+        "referLink": "n0fDvJAyrQ8"
+    },
+    {
+        "id": 48,
+        "titulo": "Preciso de Ti",
+        "artista": "Diante do Trono",
+        "referLink": "Hy6QJ6LJW2I"
+    },
+    {
+        "id": 49,
+        "titulo": "Quebrantado",
+        "artista": "Vineyard",
+        "referLink": "QbnmpJo3DiI"
+    },
+    {
+        "id": 50,
+        "titulo": "Quero ser como Criança",
+        "artista": "David Quinlan",
+        "referLink": "7deRQXyV_-A"
+    },
+    {
+        "id": 51,
+        "titulo": "Ruja o Leão",
+        "artista": "Isaias Saad",
+        "referLink": "gTRFVMkMajw"
+    },
+    {
+        "id": 52,
+        "titulo": "Santo",
+        "artista": "Fernanda Brum",
+        "referLink": "DVgv6lE0aKE"
+    },
+    {
+        "id": 53,
+        "titulo": "Se eu me humilhar",
+        "artista": "Discopraise",
+        "referLink": "XEa2jjT9SyQ"
+    },
+    {
+        "id": 54,
+        "titulo": "Teu Reino",
+        "artista": "Ministério Cristo Vivo",
+        "referLink": "lMhEFpHzRsY"
+    },
+    {
+        "id": 55,
+        "titulo": "Tu És + Águas Purificadoras",
+        "artista": "Fhop Music",
+        "referLink": "YXnQ02HYB1w"
+    },
+    {
+        "id": 56,
+        "titulo": "Tu És Bom",
+        "artista": "Adoração & Adoradores",
+        "referLink": "2CAwy1l8DwE"
+    },
+    {
+        "id": 57,
+        "titulo": "Tua Graça me basta",
+        "artista": "Davi Sacer",
+        "referLink": "4y0_rOSnb_g"
+    },
+    {
+        "id": 58,
+        "titulo": "Vem me Buscar",
+        "artista": "Jeefferson e Suellen",
+        "referLink": "t6Pd8gXIASU"
+    },
+    {
+        "id": 59,
+        "titulo": "Vim para Adorar-te",
+        "artista": "Adoração & Adoradores",
+        "referLink": "-4AAHPM98Do"
+    },
+    {
+        "id": 60,
+        "titulo": "Boa Parte",
+        "artista": "Fhop Music",
+        "referLink": "dlGOiuxSzVw"
+    },
+    {
+        "id": 61,
+        "titulo": "Os que confiam no Senhor",
+        "artista": "Alexandre Alves",
+        "referLink": "5qMJJPwoJZE"
+    },
+    {
+        "id": 62,
+        "titulo": "Até que o Senhor venha",
+        "artista": "Cultura do Céu",
+        "referLink": "E0F9NvrSoa0"
+    },
+    {
+        "id": 63,
+        "titulo": "Solta o Cabo da Nau",
+        "artista": "Thalles Roberto",
+        "referLink": "rYeSiNf1uos"
+    },
+    {
+        "id": 64,
+        "titulo": "Solta o Cabo da Nau",
+        "artista": "Thalles Roberto",
+        "referLink": "rYeSiNf1uos"
+    },
+    {
+        "id": 65,
+        "titulo": "Alvo mais que a Neve",
+        "artista": "Missão Harpa",
+        "referLink": "NI89N8QBOoM"
+    },
+    {
+        "id": 66,
+        "titulo": "Rude Cruz",
+        "artista": "Missão Harpa",
+        "referLink": "FncNPmyDjzg"
     }
 ]
