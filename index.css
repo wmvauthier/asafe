@@ -1,0 +1,107 @@
+body {
+   font-family: 'Spotify Sans', sans-serif;
+   background-color: #121212;
+   color: #FFFFFF;
+   margin: 0;
+   padding: 0;
+}
+
+header {
+   background-color: #1F1F1F;
+   color: white;
+   padding: 0.5rem;
+   text-align: center;
+}
+
+header h1 {
+   font-size: 2.5rem;
+   margin: 5px;
+}
+ 
+.band-members {
+   display: grid;
+   grid-template-columns: repeat(auto-fit, minmax(100%, 1fr));
+   gap: 2rem;
+   padding: 2rem;
+   background: #1F1F1F;
+   margin: 2rem;
+}
+
+.band-member {
+   text-align: center;
+   padding: 0.1rem;
+   background: #1E1E1E;
+   border-radius: 12px;
+   transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.band-member:hover {
+   transform: scale(1.05);
+   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.8);
+}
+
+.band-member img {
+   width: 100%;
+   border-radius: 50%;
+   object-fit: cover;
+   border: 2px solid white;
+}
+
+.card {
+   background: #1F1F1F;
+   border-radius: 12px;
+   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
+   overflow: hidden;
+   /* margin-bottom: 1.5rem; */
+}
+
+.card img {
+   width: 100%;
+   max-height: 200px;
+   object-fit: cover;
+   margin-top: -15px;
+   /* Move para cima 5px */
+}
+
+.card h3 {
+   padding: 1rem;
+   font-size: 1.5rem;
+   color: white;
+}
+
+.card a,
+.btnLink {
+   text-decoration: none;
+   color: #FFFFFF;
+   /* background-color: #1E90FF; */
+   /* padding: 0.4rem 0.5rem; */
+   display: block;
+   text-align: center;
+   margin: 0rem;
+   margin-top: 0rem;
+   border-radius: 50px;
+   font-weight: bold;
+   transition: background-color 0.3s ease;
+}
+
+.card a:hover,
+.btnLink:hover {
+   background-color: #1C86EE;
+}
+
+footer {
+   text-align: center;
+   padding: 1.5rem;
+   background-color: #1F1F1F;
+   color: white;
+}
+
+@media (max-width: 768px) {
+   .search-bar input {
+      width: 90%;
+   }
+
+   .band-members {
+      grid-template-columns: repeat(3, 1fr);
+   }
+}
