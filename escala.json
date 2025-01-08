@@ -2,123 +2,36 @@
     "integrantes_tocando": [
         {
             "id": 1,
-            "funcao": "Guitarrista"
+            "funcao": "Vocal"
         },
         {
             "id": 2,
-            "funcao": "Baixista"
+            "funcao": "Vocal"
         },
         {
             "id": 3,
-            "funcao": "Baterista"
+            "funcao": "Vocal"
         },
         {
-            "id": 4,
-            "funcao": "Baterista"
-        },
-        {
-            "id": 5,
-            "funcao": "Baterista"
-        },
-        {
-            "id": 6,
-            "funcao": "Baterista"
-        },
-        {
-            "id": 7,
-            "funcao": "Baterista"
-        },
-        {
-            "id": 8,
-            "funcao": "Baterista"
-        },
-        {
-            "id": 9,
-            "funcao": "Baterista"
-        },
-        {
-            "id": 10,
-            "funcao": "Baterista"
-        },
-        {
-            "id": 11,
-            "funcao": "Baterista"
+            "id": 2,
+            "funcao": "Guitarra"
         },
         {
             "id": 12,
-            "funcao": "Baterista"
+            "funcao": "Baixo"
         },
         {
-            "id": 13,
-            "funcao": "Baterista"
+            "id": 3,
+            "funcao": "Bateria"
+        },
+        {
+            "id": 1,
+            "funcao": "Teclado"
         }
     ],
     "musicas": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17,
-        18,
-        19,
-        20,
-        21,
-        22,
-        23,
-        24,
-        25,
-        26,
-        27,
-        28,
-        29,
-        30,
-        31,
-        32,
-        33,
-        34,
-        35,
-        36,
-        37,
         38,
-        39,
-        40,
-        41,
-        42,
-        43,
-        44,
-        45,
         46,
-        47,
-        48,
-        49,
-        50,
-        51,
-        52,
-        53,
-        54,
-        55,
-        56,
-        57,
-        58,
-        59,
-        60,
-        61,
-        62,
-        63,
-        64,
-        65,
-        66
+        3
     ]
 }
