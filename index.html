@@ -26,7 +26,11 @@
       <ul class="nav nav-tabs" id="myTab" role="tablist">
          <li class="nav-item" role="presentation">
             <button class="nav-link active" id="integrantes-tab" data-bs-toggle="tab" data-bs-target="#integrantes"
-               type="button" role="tab" aria-controls="integrantes" aria-selected="true">Escala</button>
+               type="button" role="tab" aria-controls="integrantes" aria-selected="true">Escala Atual</button>
+         </li>
+         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="escala-tab" data-bs-toggle="tab" data-bs-target="#escala" type="button"
+               role="tab" aria-controls="escala" aria-selected="true">Escalas Futuras</button>
          </li>
          <li class="nav-item" role="presentation">
             <button class="nav-link" id="musicas-tab" data-bs-toggle="tab" data-bs-target="#musicas" type="button"
@@ -47,6 +51,53 @@
             </section>
             <section class="content my-4">
                <div class="row musicas"></div>
+            </section>
+         </div>
+
+         <!-- Músicas Tab -->
+         <div class="tab-pane fade" id="escala" role="tabpanel" aria-labelledby="escala-tab">
+
+            <style>
+               .integrante-item {
+                  display: flex;
+                  align-items: center;
+                  gap: 10px;
+                  margin-bottom: 10px;
+               }
+
+               .integrante-foto {
+                  width: 50px;
+                  height: 50px;
+                  border-radius: 50%;
+                  object-fit: cover;
+               }
+
+               .integrante-info {
+                  display: flex;
+                  align-items: center;
+                  gap: 5px;
+               }
+
+               .integrantes-grid {
+                  display: grid;
+                  grid-template-columns: repeat(5, 1fr);
+                  /* 4 colunas por linha */
+                  gap: 5px;
+                  margin-bottom: 10px;
+               }
+
+               .integrante-foto {
+                  width: 60px;
+                  height: 60px;
+                  border-radius: 50%;
+                  object-fit: cover;
+                  border: 2px solid #fff;
+                  margin-bottom: 20px;
+               }
+            </style>
+
+            <section class="content my-4">
+               <div class="row escala"></div>
             </section>
          </div>
 
