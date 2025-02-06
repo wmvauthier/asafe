@@ -3,19 +3,25 @@
         "id": 1,
         "titulo": "A Cruz Vazia",
         "artista": "Kleber Lucas",
-        "referLink": "mHu3UqXJ4tU"
+        "referLink": "mHu3UqXJ4tU",
+        "categorias": "Morte de Cristo;Nova Vida",
+        "versiculos": ""
     },
     {
         "id": 2,
         "titulo": "Abraça-me",
         "artista": "David Quinlan",
-        "referLink": "com5UB-SWYY"
+        "referLink": "com5UB-SWYY",
+        "categorias": "Intimidade com Deus",
+        "versiculos": ""
     },
     {
         "id": 3,
         "titulo": "Senhor e Rei",
         "artista": "Davi Sacer",
-        "referLink": "zPD2W9WEm8s"
+        "referLink": "zPD2W9WEm8s",
+        "categorias": "Adoração;Congregacional",
+        "versiculos": ""
     },
     {
         "id": 4,

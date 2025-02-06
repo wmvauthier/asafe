@@ -1,0 +1,108 @@
+/* Estilo geral */
+body {
+    background-color: #1a1a1a; /* Fundo escuro para destaque */
+    color: white;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Container dos botões de categorias */
+.categorias-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+/* Botões de categoria */
+.categorias-container button {
+    background: transparent;
+    border: 2px solid #007bff;
+    color: #007bff;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Efeito ao passar o mouse */
+.categorias-container button:hover {
+    background: #007bff;
+    color: white;
+}
+
+/* Estilo quando ativo */
+.categorias-container button.active {
+    background: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+/* Container do repertório */
+.repertorio {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+/* Estilo dos cards de música */
+.card {
+    background: #222; /* Fundo escuro para contraste */
+    padding: 12px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+}
+
+/* Efeito ao passar o mouse nos cards */
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 123, 255, 0.5);
+}
+
+/* Imagem do card */
+.card img {
+    width: 100%;
+    border-radius: 8px;
+    transition: opacity 0.3s ease;
+}
+
+/* Efeito hover na imagem */
+.card:hover img {
+    opacity: 0.8;
+}
+
+/* Títulos das músicas */
+.card h3 {
+    font-size: 1rem;
+    margin: 10px 0 5px;
+    font-weight: bold;
+    color: white;
+}
+
+/* Nome do artista */
+.card h3:last-child {
+    font-size: 0.9rem;
+    font-weight: normal;
+    color: #ddd;
+}
+
+/* Responsividade: melhor ajuste para telas menores */
+@media (max-width: 768px) {
+    .categorias-container {
+        gap: 6px;
+    }
+
+    .categorias-container button {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+
+    .card {
+        width: 100%;
+        max-width: 300px;
+    }
+}
