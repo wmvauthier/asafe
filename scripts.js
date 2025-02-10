@@ -3,16 +3,26 @@ let TOCADA_NOS_ULTIMOS_X_DIAS = 28;
 // Variáveis globais para controle do filtro
 let activeCategories = new Set();
 let repertorioMusicas = [];
+let historicoEscalas = [];
 
 // Função para carregar e preencher os membros da banda
 function carregarIntegrantes() {
   fetch("historico.json")
     .then((response) => response.json())
     .then((escalas) => {
+
       const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0); // Remove horas para evitar problemas de comparação
+
+      const parseData = (dataStr) => {
+        const [dia, mes, ano] = dataStr.split("/").map(Number);
+        return new Date(ano, mes - 1, dia); // Ajuste do mês (base 0)
+      };
+
       const proximaEscala = escalas
-        .filter((escala) => new Date(escala.data) >= hoje) // Filtra apenas datas futuras
-        .sort((a, b) => new Date(a.data) - new Date(b.data)) // Ordena da mais próxima para a mais distante
+        .map((escala) => ({ ...escala, data: parseData(escala.data) })) // Converte datas corretamente
+        .filter((escala) => escala.data >= hoje) // Filtra apenas datas futuras
+        .sort((a, b) => a.data - b.data) // Ordena da mais próxima para a mais distante
         .shift(); // Pega a mais próxima
 
       if (!proximaEscala) {
@@ -27,7 +37,6 @@ function carregarIntegrantes() {
           container.innerHTML = ""; // Limpa antes de adicionar
 
           proximaEscala.integrantes.forEach((integranteEscala) => {
-
             const integrante = data.find((i) => i.id === integranteEscala);
             if (integrante) {
               const col = document.createElement("div");
@@ -40,7 +49,8 @@ function carregarIntegrantes() {
               memberDiv.classList.add("band-member", "text-center");
 
               const img = document.createElement("img");
-              img.src = "integrantes/" + integrante.nome.toLowerCase() + ".jpeg";
+              img.src =
+                "integrantes/" + integrante.nome.toLowerCase() + ".jpeg";
               img.alt = integrante.nome;
 
               const icon = document.createElement("i");
@@ -68,11 +78,20 @@ function carregarMusicas() {
   fetch("historico.json")
     .then((response) => response.json())
     .then((escalas) => {
+
       const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0); // Remove horas para evitar problemas de comparação
+
+      const parseData = (dataStr) => {
+        const [dia, mes, ano] = dataStr.split("/").map(Number);
+        return new Date(ano, mes - 1, dia); // Ajuste do mês (base 0)
+      };
+
       const proximaEscala = escalas
-        .filter((escala) => new Date(escala.data) >= hoje)
-        .sort((a, b) => new Date(a.data) - new Date(b.data))
-        .shift();
+        .map((escala) => ({ ...escala, data: parseData(escala.data) })) // Converte datas corretamente
+        .filter((escala) => escala.data >= hoje) // Filtra apenas datas futuras
+        .sort((a, b) => a.data - b.data) // Ordena da mais próxima para a mais distante
+        .shift(); // Pega a mais próxima
 
       if (!proximaEscala) {
         console.warn("Nenhuma escala futura encontrada.");
@@ -102,7 +121,8 @@ function carregarMusicas() {
               link.target = "_blank";
 
               const img = document.createElement("img");
-              img.src = "https://img.youtube.com/vi/" + musica.referLink + "/0.jpg";
+              img.src =
+                "https://img.youtube.com/vi/" + musica.referLink + "/0.jpg";
               img.alt = `Thumbnail de ${musica.titulo}`;
 
               const h3 = document.createElement("h3");
@@ -148,12 +168,12 @@ function carregarEscalasFuturas() {
         const [dia, mes, ano] = dataStr.split("/").map(Number);
         return new Date(ano, mes - 1, dia); // Mês no JS começa do zero (Janeiro = 0)
       };
-      
+
       // Filtrar apenas datas futuras e ordenar por proximidade
       const escalasFuturas = escalas
         .map((escala) => ({ ...escala, data: parseData(escala.data) })) // Converter string para Date
         .filter((escala) => escala.data >= hoje)
-        .sort((a, b) => a.data - b.data);   
+        .sort((a, b) => a.data - b.data);
 
       escalasFuturas.forEach((escala) => {
         const col = document.createElement("div");
@@ -165,14 +185,16 @@ function carregarEscalasFuturas() {
         // Título da escala
         const h3 = document.createElement("h3");
 
-        const data = new Date(escala.data); 
+        const data = new Date(escala.data);
 
         const diaSemana = data.toLocaleDateString("pt-BR", { weekday: "long" });
         const dia = String(data.getDate()).padStart(2, "0");
         const mes = String(data.getMonth() + 1).padStart(2, "0");
         const ano = data.getFullYear();
-        
-        h3.textContent = `${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)} - ${dia}/${mes}/${ano}`;        
+
+        h3.textContent = `${
+          diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)
+        } - ${dia}/${mes}/${ano}`;
         h3.style["font-size"] = "1.3rem";
         h3.style["font-weight"] = "bold";
         h3.style["margin-top"] = "2px";
@@ -181,7 +203,7 @@ function carregarEscalasFuturas() {
 
         // Container para os integrantes
         const integrantesDiv = document.createElement("div");
-        integrantesDiv.classList.add("row", "g-2"); 
+        integrantesDiv.classList.add("row", "g-2");
         integrantesDiv.style["margin-top"] = "2px";
 
         let integrantesTexto = "**Integrantes:**\n";
@@ -208,7 +230,7 @@ function carregarEscalasFuturas() {
 
               col.appendChild(img);
               integrantesDiv.appendChild(col);
-              
+
               // Adiciona ao texto
               integrantesTexto += `- ${integrante.nome}\n`;
             }
@@ -237,7 +259,7 @@ function carregarEscalasFuturas() {
             const musica = musicasData.find((m) => m.id === id);
             if (musica) {
               const col = document.createElement("div");
-              col.classList.add("col-4"); 
+              col.classList.add("col-4");
 
               const link = document.createElement("a");
               link.href = `https://www.youtube.com/watch?v=${musica.referLink}`;
@@ -251,14 +273,22 @@ function carregarEscalasFuturas() {
               link.appendChild(img);
               col.appendChild(link);
               musicasDiv.appendChild(col);
-              
-              // Adiciona ao texto
-              musicasTexto += `🎵 ${musica.titulo || ""} ${musica.artista ? "- " + musica.artista : ""}\n`
-              + (musica.referLink ? `🔗 Link: https://www.youtube.com/watch?v=${musica.referLink}\n` : "")
-              + (musica.categorias ? `📌 Categoria: ${musica.categorias}\n` : "")
-              + (musica.versiculos ? `📖 Versículo: ${musica.versiculos}\n` : "")
-              + "\n";
 
+              // Adiciona ao texto
+              musicasTexto +=
+                `🎵 ${musica.titulo || ""} ${
+                  musica.artista ? "- " + musica.artista : ""
+                }\n` +
+                (musica.referLink
+                  ? `🔗 Link: https://www.youtube.com/watch?v=${musica.referLink}\n`
+                  : "") +
+                (musica.categorias
+                  ? `📌 Categoria: ${musica.categorias}\n`
+                  : "") +
+                (musica.versiculos
+                  ? `📖 Versículo: ${musica.versiculos}\n`
+                  : "") +
+                "\n";
             }
           });
         } else {
@@ -275,11 +305,14 @@ function carregarEscalasFuturas() {
         btnCopiar.onclick = () => {
           const textoParaCopiar = `📅 *Escala: ${h3.textContent}*\n\n${integrantesTexto}\n${musicasTexto}`;
 
-          navigator.clipboard.writeText(textoParaCopiar).then(() => {
-            alert("Escala copiada para a área de transferência!");
-          }).catch((err) => {
-            console.error("Erro ao copiar:", err);
-          });
+          navigator.clipboard
+            .writeText(textoParaCopiar)
+            .then(() => {
+              alert("Escala copiada para a área de transferência!");
+            })
+            .catch((err) => {
+              console.error("Erro ao copiar:", err);
+            });
         };
 
         // Monta o card
@@ -344,55 +377,92 @@ function setupCategoriasButtons(musicas) {
   });
 }
 
-// Renderiza as músicas do repertório de acordo com os filtros de categorias
+// Função para renderizar as músicas do repertório com base no filtro
 function renderRepertorio() {
-  // Se houver categorias ativas, ordena as músicas com base no número de matches
-  // Em caso de empate, ordena alfabeticamente pelo título.
+  
+  const activeArr = Array.from(activeCategories);
+  const hoje = new Date();
+  // let TOCADA_NOS_ULTIMOS_X_DIAS = 35;
+  // let TOCADA_NOS_PROXIMOS_X_DIAS = 35;
+  
+  // Filtrar músicas tocadas ou agendadas nos últimos/próximos X dias
+  const musicasTocadas = new Set();
+  historicoEscalas.forEach((escala) => {
+    const dataEscala = new Date(escala.data.split("/").reverse().join("-"));
+    const diffDias = (dataEscala - hoje) / (1000 * 60 * 60 * 24);
+    if (Math.abs(diffDias) <= TOCADA_NOS_ULTIMOS_X_DIAS || diffDias >= 0 && diffDias <= TOCADA_NOS_PROXIMOS_X_DIAS) {
+      escala.musicas.forEach((id) => musicasTocadas.add(id));
+    }
+  });
+  
   const sortedMusicas = repertorioMusicas.slice().sort((a, b) => {
-    const countA = activeCategories.size > 0 ? a.categories.filter((c) => activeCategories.has(c)).length : 0;
-    const countB = activeCategories.size > 0 ? b.categories.filter((c) => activeCategories.has(c)).length : 0;
-    if (countA !== countB) {
-      return countB - countA; // Descendente: músicas com mais matches primeiro
+    const aTocada = musicasTocadas.has(a.id);
+    const bTocada = musicasTocadas.has(b.id);
+    
+    if (aTocada !== bTocada) {
+      return aTocada ? 1 : -1; // Músicas tocadas vão para o final
+    }
+    
+    if (activeCategories.size > 0) {
+      const aExact = (a.categories.length === activeCategories.size) && activeArr.every(c => a.categories.includes(c));
+      const bExact = (b.categories.length === activeCategories.size) && activeArr.every(c => b.categories.includes(c));
+      
+      if (aExact !== bExact) {
+        return aExact ? -1 : 1;
+      }
+      
+      const aMatchCount = a.categories.filter(c => activeCategories.has(c)).length;
+      const bMatchCount = b.categories.filter(c => activeCategories.has(c)).length;
+      if (aMatchCount !== bMatchCount) {
+        return bMatchCount - aMatchCount;
+      }
     }
     return a.titulo.localeCompare(b.titulo);
   });
-
+  
   const content = document.querySelector(".repertorio");
   content.innerHTML = "";
+  
   sortedMusicas.forEach((musica) => {
     const col = document.createElement("div");
     col.classList.add("col-lg-3", "col-sm-6", "col-6", "mb-4");
-    col.style["padding-left"] = "5px";
-    col.style["padding-right"] = "5px";
-    col.style["margin-bottom"] = "0px!important";
+    col.style.paddingLeft = "5px";
+    col.style.paddingRight = "5px";
+    col.style.marginBottom = "0px!important";
 
     const card = document.createElement("div");
     card.classList.add("card");
-
+    
     const link = document.createElement("a");
     link.href = "https://www.youtube.com/watch?v=" + musica.referLink;
     link.target = "_blank";
-
+    
     const img = document.createElement("img");
     img.src = "https://img.youtube.com/vi/" + musica.referLink + "/0.jpg";
     img.alt = `Thumbnail de ${musica.titulo}`;
     img.classList.add("img-fluid", "rounded");
-
+    
     const h3 = document.createElement("h3");
     h3.textContent = musica.titulo;
-    h3.style["font-size"] = "1rem";
-    h3.style["padding-top"] = "10px";
-    h3.style["padding-bottom"] = "1px";
-    h3.style["font-weight"] = "bold";
-    h3.style["color"] = "white";
-
+    h3.style.fontSize = "1rem";
+    h3.style.paddingTop = "10px";
+    h3.style.paddingBottom = "1px";
+    h3.style.fontWeight = "bold";
+    h3.style.color = "white";
+    
     const h32 = document.createElement("h3");
     h32.textContent = musica.artista;
-    h32.style["font-size"] = "1rem";
-    h32.style["padding-top"] = "0px";
-    h32.style["padding-bottom"] = "1px";
-    h32.style["color"] = "white";
-
+    h32.style.fontSize = "1rem";
+    h32.style.paddingTop = "0px";
+    h32.style.paddingBottom = "1px";
+    h32.style.color = "white";
+    
+    if (musicasTocadas.has(musica.id)) {
+      img.style.filter = "grayscale(100%)";
+      h3.style.textDecoration = "line-through";
+      h32.style.textDecoration = "line-through";
+    }
+    
     link.appendChild(img);
     card.appendChild(link);
     card.appendChild(h3);
@@ -402,17 +472,15 @@ function renderRepertorio() {
   });
 }
 
+
 // Função para carregar o repertório e configurar os filtros de categoria
 function carregarRepertorio() {
-  Promise.all([
-    fetch("musicas.json").then((res) => res.json()),
-    fetch("historico.json").then((res) => res.json())
-  ])
-    .then(([musicasData, historico]) => {
-      // Aqui usamos todas as músicas do JSON para o repertório
-      repertorioMusicas = musicasData.slice(); // Armazena uma cópia das músicas
+  fetch("musicas.json")
+    .then((res) => res.json())
+    .then((data) => {
+      repertorioMusicas = data.slice(); // Armazena uma cópia das músicas
 
-      // Preprocessa cada música para extrair as categorias (se ainda não estiverem definidas)
+      // Preprocessa para extrair as categorias, se houver
       repertorioMusicas.forEach((musica) => {
         if (musica.categorias) {
           musica.categories = musica.categorias.split(";").map((c) => c.trim());
@@ -421,19 +489,30 @@ function carregarRepertorio() {
         }
       });
 
-      // Cria os botões de filtro de categorias
-      activeCategories = new Set();
+      activeCategories = new Set(); // Reinicia os filtros
       setupCategoriasButtons(repertorioMusicas);
-      
+      renderRepertorio();
     })
     .catch((err) => console.error("Erro ao carregar as músicas:", err));
+}
+
+async function carregarHistorico() {
+  try {
+    const response = await fetch("historico.json");
+    if (!response.ok) throw new Error("Erro ao carregar o histórico");
+    historicoEscalas = await response.json();
+    renderRepertorio();
+  } catch (error) {
+    console.error("Erro ao carregar o histórico:", error);
+  }
 }
 
 // Chamadas para carregar os dados ao carregar a página
 window.onload = function () {
   carregarIntegrantes();
   carregarMusicas();
-  renderRepertorio();
+  carregarHistorico();
+  // renderRepertorio();
   carregarRepertorio();
   carregarEscalasFuturas();
 };
