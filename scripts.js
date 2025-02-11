@@ -1,9 +1,11 @@
 let TOCADA_NOS_ULTIMOS_X_DIAS = 28;
+let TOCADA_NOS_PROXIMOS_X_DIAS = 28;
 
 // Variáveis globais para controle do filtro
 let activeCategories = new Set();
 let repertorioMusicas = [];
 let historicoEscalas = [];
+let musicasTocadas = new Set();
 
 // Função para carregar e preencher os membros da banda
 function carregarIntegrantes() {
@@ -329,41 +331,43 @@ function carregarEscalasFuturas() {
 
 // Cria os botões de categorias (singleton) e os insere acima do repertório
 function setupCategoriasButtons(musicas) {
-  // Extrair categorias únicas
   const categoriesSet = new Set();
   musicas.forEach((musica) => {
     if (musica.categorias) {
       const cats = musica.categorias.split(";").map((c) => c.trim());
       cats.forEach((c) => categoriesSet.add(c));
-      // Também armazenamos as categorias em um array para facilitar a verificação
       musica.categories = cats;
     } else {
       musica.categories = [];
     }
   });
-  const uniqueCategories = Array.from(categoriesSet);
+  
+  const uniqueCategories = Array.from(categoriesSet).sort();
 
-  // Criar (ou limpar) o container para os botões
   let container = document.querySelector(".categorias-container");
   if (!container) {
     container = document.createElement("div");
     container.classList.add("categorias-container", "mb-3");
-    // Insere o container acima do repertório
     const repContainer = document.querySelector(".repertorio");
     repContainer.parentNode.insertBefore(container, repContainer);
   } else {
     container.innerHTML = "";
   }
 
-  // Cria um botão para cada categoria
+  const musicasDisponiveis = {};
+  uniqueCategories.forEach((cat) => {
+    musicasDisponiveis[cat] = musicas.filter(
+      (musica) => musica.categories.includes(cat) && !musicasTocadas.has(musica.id)
+    ).length;
+  });
+
   uniqueCategories.forEach((cat) => {
     const button = document.createElement("button");
-    button.textContent = cat;
+    button.innerHTML = `${cat} <span class="badge bg-light text-dark">${musicasDisponiveis[cat]}</span>`;
     button.classList.add("btn", "btn-sm", "btn-outline-light", "me-2");
+    button.style.margin = "2px";
 
-    button.style["margin"] = "2px";
     button.addEventListener("click", function () {
-      // Alterna a categoria no conjunto activeCategories
       if (activeCategories.has(cat)) {
         activeCategories.delete(cat);
         button.classList.remove("active");
@@ -373,17 +377,15 @@ function setupCategoriasButtons(musicas) {
       }
       renderRepertorio();
     });
+
     container.appendChild(button);
   });
 }
 
 // Função para renderizar as músicas do repertório com base no filtro
 function renderRepertorio() {
-  
   const activeArr = Array.from(activeCategories);
   const hoje = new Date();
-  // let TOCADA_NOS_ULTIMOS_X_DIAS = 35;
-  // let TOCADA_NOS_PROXIMOS_X_DIAS = 35;
   
   // Filtrar músicas tocadas ou agendadas nos últimos/próximos X dias
   const musicasTocadas = new Set();
@@ -463,6 +465,10 @@ function renderRepertorio() {
       h32.style.textDecoration = "line-through";
     }
     
+    if (musica.categories.some(c => activeCategories.has(c))) {
+      card.style.border = "2px solid white";
+    }
+    
     link.appendChild(img);
     card.appendChild(link);
     card.appendChild(h3);
@@ -471,6 +477,7 @@ function renderRepertorio() {
     content.appendChild(col);
   });
 }
+
 
 
 // Função para carregar o repertório e configurar os filtros de categoria

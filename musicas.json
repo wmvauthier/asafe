@@ -47,9 +47,9 @@
     {
         "id": 6,
         "titulo": "Ao único",
-        "artista": "Aline Barros",
-        "referLink": "60CuZyzGf5U",
-        "categorias": "Engrandecimento a Deus",
+        "artista": "MORADA",
+        "referLink": "VACfwhQ9QR0",
+        "categorias": "Adoração Congregacional",
         "keywords": "único, Jesus, adoração, amor, fidelidade",
         "versiculos": ""
     },
@@ -139,7 +139,7 @@
         "titulo": "Em teus Braços",
         "artista": "Laura Souguellis",
         "referLink": "IxpWNuxGmzc",
-        "categorias": "Proteção de Deus; Intimidade com Deus",
+        "categorias": "Proteção Divina; Intimidade com Deus",
         "keywords": "braços, proteção, amor, aconchego, refúgio",
         "versiculos": ""
     },
@@ -148,7 +148,7 @@
         "titulo": "Escape",
         "artista": "Renascer Praise",
         "referLink": "vM2A2XEm9TE",
-        "categorias": "Proteção de Deus; Confiança em Deus",
+        "categorias": "Proteção Divina; Confiança em Deus",
         "keywords": "escape, libertação, salvação, redenção, refúgio",
         "versiculos": ""
     },
@@ -325,10 +325,10 @@
     },
     {
         "id": 37,
-        "titulo": "",
-        "artista": "",
-        "referLink": "",
-        "categorias": "",
+        "titulo": "Santo pra Sempre",
+        "artista": "Gabriel Guedes",
+        "referLink": "JL7knyBP-Cw",
+        "categorias": "Adoração Congregacional;Engrandecimento a Deus;Santidade",
         "keywords": "",
         "versiculos": ""
     },
@@ -409,7 +409,7 @@
         "titulo": "Pra Sempre",
         "artista": "Fernandinho",
         "referLink": "DZvBlrJsFag",
-        "categorias": "Morte e Ressurreição de Jesus; Adoração Congregacional",
+        "categorias": "Morte e Ressurreição de Jesus",
         "keywords": "para sempre, eterno, fidelidade, amor, adoração",
         "versiculos": ""
     },
@@ -436,7 +436,7 @@
         "titulo": "Quebrantado",
         "artista": "Vineyard",
         "referLink": "QbnmpJo3DiI",
-        "categorias": "Morte e Ressurreição de Jesus; Adoração Congregacional",
+        "categorias": "Morte e Ressurreição de Jesus",
         "keywords": "quebrantado, humilhação, rendição, misericórdia, restauração",
         "versiculos": ""
     },
@@ -571,7 +571,7 @@
         "titulo": "Alvo mais que a Neve",
         "artista": "Missão Harpa",
         "referLink": "NI89N8QBOoM",
-        "categorias": "Morte e Ressurreição de Jesus; Adoração Congregacional",
+        "categorias": "Morte e Ressurreição de Jesus",
         "keywords": "alvo, neve, pureza, renovação, perdão",
         "versiculos": ""
     },
@@ -580,7 +580,7 @@
         "titulo": "Rude Cruz",
         "artista": "Missão Harpa",
         "referLink": "FncNPmyDjzg",
-        "categorias": "Morte e Ressurreição de Jesus; Adoração Congregacional",
+        "categorias": "Morte e Ressurreição de Jesus",
         "keywords": "rude, cruz, sacrifício, redenção, dor",
         "versiculos": ""
     },
