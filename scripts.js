@@ -392,10 +392,14 @@ function renderRepertorio() {
   historicoEscalas.forEach((escala) => {
     const dataEscala = new Date(escala.data.split("/").reverse().join("-"));
     const diffDias = (dataEscala - hoje) / (1000 * 60 * 60 * 24);
-    if (Math.abs(diffDias) <= TOCADA_NOS_ULTIMOS_X_DIAS || diffDias >= 0 && diffDias <= TOCADA_NOS_PROXIMOS_X_DIAS) {
-      escala.musicas.forEach((id) => musicasTocadas.add(id));
+
+    if (
+        Math.abs(diffDias) <= TOCADA_NOS_ULTIMOS_X_DIAS || 
+        diffDias >= 0 // Agora inclui qualquer escala futura
+    ) {
+        escala.musicas.forEach((id) => musicasTocadas.add(id));
     }
-  });
+});
   
   const sortedMusicas = repertorioMusicas.slice().sort((a, b) => {
     const aTocada = musicasTocadas.has(a.id);
