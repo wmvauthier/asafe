@@ -12,7 +12,6 @@ function carregarIntegrantes() {
   fetch("historico.json")
     .then((response) => response.json())
     .then((escalas) => {
-
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0); // Remove horas para evitar problemas de comparação
 
@@ -80,7 +79,6 @@ function carregarMusicas() {
   fetch("historico.json")
     .then((response) => response.json())
     .then((escalas) => {
-
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0); // Remove horas para evitar problemas de comparação
 
@@ -130,20 +128,49 @@ function carregarMusicas() {
               const h3 = document.createElement("h3");
               h3.textContent = musica.titulo;
               h3.style["font-size"] = "1rem";
-              h3.style["padding-bottom"] = "1px";
+              // h3.style["padding-bottom"] = "1px";
               h3.style["font-weight"] = "bold";
               h3.style["color"] = "white";
+              h3.style["padding-bottom"] = "0px";
 
               const h32 = document.createElement("h3");
               h32.textContent = musica.artista;
               h32.style["font-size"] = "1rem";
               h32.style["padding-top"] = "0px";
               h32.style["color"] = "white";
+              h32.style["padding-bottom"] = "0px";
+
+              const categoriesSet = new Set();
+              musicas.forEach((musica) => {
+                if (musica.categorias) {
+                  const cats = musica.categorias
+                    .split(";")
+                    .map((c) => c.trim());
+                  cats.forEach((c) => categoriesSet.add(c));
+                  musica.categories = cats;
+                } else {
+                  musica.categories = [];
+                }
+              });
+
+              // Criar container para categorias
+              const categoriasContainer = document.createElement("div");
+              categoriasContainer.style.margin = "5px";
+
+              musica.categories.forEach((categoria) => {
+                const badge = document.createElement("span");
+                badge.textContent = categoria;
+                badge.classList.add("badge", "bg-light", "text-dark", "me-1");
+                badge.style.margin = "5px";
+                badge.style.fontSize = "0.6rem";
+                categoriasContainer.appendChild(badge);
+              });
 
               link.appendChild(img);
               card.appendChild(link);
               card.appendChild(h3);
               card.appendChild(h32);
+              card.appendChild(categoriasContainer);
               col.appendChild(card);
 
               content.appendChild(col);
@@ -341,7 +368,7 @@ function setupCategoriasButtons(musicas) {
       musica.categories = [];
     }
   });
-  
+
   const uniqueCategories = Array.from(categoriesSet).sort();
 
   let container = document.querySelector(".categorias-container");
@@ -357,7 +384,8 @@ function setupCategoriasButtons(musicas) {
   const musicasDisponiveis = {};
   uniqueCategories.forEach((cat) => {
     musicasDisponiveis[cat] = musicas.filter(
-      (musica) => musica.categories.includes(cat) && !musicasTocadas.has(musica.id)
+      (musica) =>
+        musica.categories.includes(cat) && !musicasTocadas.has(musica.id)
     ).length;
   });
 
@@ -386,49 +414,58 @@ function setupCategoriasButtons(musicas) {
 function renderRepertorio() {
   const activeArr = Array.from(activeCategories);
   const hoje = new Date();
-  
+  let TOCADA_NOS_ULTIMOS_X_DIAS = 35;
+  let TOCADA_NOS_PROXIMOS_X_DIAS = 35;
+
   // Filtrar músicas tocadas ou agendadas nos últimos/próximos X dias
   const musicasTocadas = new Set();
   historicoEscalas.forEach((escala) => {
     const dataEscala = new Date(escala.data.split("/").reverse().join("-"));
     const diffDias = (dataEscala - hoje) / (1000 * 60 * 60 * 24);
-
     if (
-        Math.abs(diffDias) <= TOCADA_NOS_ULTIMOS_X_DIAS || 
-        diffDias >= 0 // Agora inclui qualquer escala futura
+      Math.abs(diffDias) <= TOCADA_NOS_ULTIMOS_X_DIAS ||
+      (diffDias >= 0 && diffDias <= TOCADA_NOS_PROXIMOS_X_DIAS)
     ) {
-        escala.musicas.forEach((id) => musicasTocadas.add(id));
+      escala.musicas.forEach((id) => musicasTocadas.add(id));
     }
-});
-  
+  });
+
   const sortedMusicas = repertorioMusicas.slice().sort((a, b) => {
     const aTocada = musicasTocadas.has(a.id);
     const bTocada = musicasTocadas.has(b.id);
-    
+
     if (aTocada !== bTocada) {
       return aTocada ? 1 : -1; // Músicas tocadas vão para o final
     }
-    
+
     if (activeCategories.size > 0) {
-      const aExact = (a.categories.length === activeCategories.size) && activeArr.every(c => a.categories.includes(c));
-      const bExact = (b.categories.length === activeCategories.size) && activeArr.every(c => b.categories.includes(c));
-      
+      const aExact =
+        a.categories.length === activeCategories.size &&
+        activeArr.every((c) => a.categories.includes(c));
+      const bExact =
+        b.categories.length === activeCategories.size &&
+        activeArr.every((c) => b.categories.includes(c));
+
       if (aExact !== bExact) {
         return aExact ? -1 : 1;
       }
-      
-      const aMatchCount = a.categories.filter(c => activeCategories.has(c)).length;
-      const bMatchCount = b.categories.filter(c => activeCategories.has(c)).length;
+
+      const aMatchCount = a.categories.filter((c) =>
+        activeCategories.has(c)
+      ).length;
+      const bMatchCount = b.categories.filter((c) =>
+        activeCategories.has(c)
+      ).length;
       if (aMatchCount !== bMatchCount) {
         return bMatchCount - aMatchCount;
       }
     }
     return a.titulo.localeCompare(b.titulo);
   });
-  
+
   const content = document.querySelector(".repertorio");
   content.innerHTML = "";
-  
+
   sortedMusicas.forEach((musica) => {
     const col = document.createElement("div");
     col.classList.add("col-lg-3", "col-sm-6", "col-6", "mb-4");
@@ -438,16 +475,16 @@ function renderRepertorio() {
 
     const card = document.createElement("div");
     card.classList.add("card");
-    
+
     const link = document.createElement("a");
     link.href = "https://www.youtube.com/watch?v=" + musica.referLink;
     link.target = "_blank";
-    
+
     const img = document.createElement("img");
     img.src = "https://img.youtube.com/vi/" + musica.referLink + "/0.jpg";
     img.alt = `Thumbnail de ${musica.titulo}`;
     img.classList.add("img-fluid", "rounded");
-    
+
     const h3 = document.createElement("h3");
     h3.textContent = musica.titulo;
     h3.style.fontSize = "1rem";
@@ -455,34 +492,46 @@ function renderRepertorio() {
     h3.style.paddingBottom = "1px";
     h3.style.fontWeight = "bold";
     h3.style.color = "white";
-    
+
     const h32 = document.createElement("h3");
     h32.textContent = musica.artista;
     h32.style.fontSize = "1rem";
     h32.style.paddingTop = "0px";
     h32.style.paddingBottom = "1px";
     h32.style.color = "white";
-    
+
     if (musicasTocadas.has(musica.id)) {
       img.style.filter = "grayscale(100%)";
       h3.style.textDecoration = "line-through";
       h32.style.textDecoration = "line-through";
     }
-    
-    if (musica.categories.some(c => activeCategories.has(c))) {
+
+    if (musica.categories.some((c) => activeCategories.has(c))) {
       card.style.border = "2px solid white";
     }
-    
+
+    // Criar container para categorias
+    const categoriasContainer = document.createElement("div");
+    categoriasContainer.style.margin = "5px";
+
+    musica.categories.forEach((categoria) => {
+      const badge = document.createElement("span");
+      badge.textContent = categoria;
+      badge.classList.add("badge", "bg-light", "text-dark", "me-1");
+      badge.style.margin = "5px";
+      badge.style.fontSize = "0.6rem";
+      categoriasContainer.appendChild(badge);
+    });
+
     link.appendChild(img);
     card.appendChild(link);
     card.appendChild(h3);
     card.appendChild(h32);
+    card.appendChild(categoriasContainer);
     col.appendChild(card);
     content.appendChild(col);
   });
 }
-
-
 
 // Função para carregar o repertório e configurar os filtros de categoria
 function carregarRepertorio() {
