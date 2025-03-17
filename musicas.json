@@ -38,8 +38,8 @@
     {
         "id": 5,
         "titulo": "Além do Rio Azul",
-        "artista": "Júlia Vitória",
-        "referLink": "tkhiN-Hvqh4",
+        "artista": "Voz da Verdade",
+        "referLink": "QpBNXkKIYZw",
         "categorias": "Vida Eterna",
         "keywords": "rio, azul, eternidade, jornada, promessa",
         "versiculos": ""
@@ -463,7 +463,7 @@
         "titulo": "Santo",
         "artista": "Fernanda Brum",
         "referLink": "DVgv6lE0aKE",
-        "categorias": "Santidade",
+        "categorias": "Santidade;Engrandecimento a Deus",
         "keywords": "santo, santidade, divino, adoração, glória",
         "versiculos": ""
     },
@@ -595,24 +595,15 @@
     },
     {
         "id": 67,
-        "titulo": "Quando a Luz se Apagar",
-        "artista": "Ministério Zoe",
+        "titulo": "Santo Espírito",
+        "artista": "Laura Souguellis",
         "referLink": "_2BImNvixHw",
-        "categorias": "Intimidade com Deus",
+        "categorias": "Espírito Santo; Glória de Deus;Intimidade com Deus",
         "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": ""
     },
     {
         "id": 68,
-        "titulo": "Você Me Leva ao Deserto",
-        "artista": "Ministério Zoe",
-        "referLink": "_2BImNvixHw",
-        "categorias": "Proteção Divina",
-        "keywords": "redenção, salvação, sacrifício, graça, amor",
-        "versiculos": ""
-    },
-    {
-        "id": 69,
         "titulo": "Só tu És Santo",
         "artista": "MORADA",
         "referLink": "Krw3YIZI-Ps",
@@ -620,5 +611,4 @@
         "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": ""
     }
-
 ]
