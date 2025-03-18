@@ -1,5 +1,5 @@
-let TOCADA_NOS_ULTIMOS_X_DIAS = 28;
-let TOCADA_NOS_PROXIMOS_X_DIAS = 28;
+let TOCADA_NOS_ULTIMOS_X_DIAS = 35;
+let TOCADA_NOS_PROXIMOS_X_DIAS = 35;
 
 // Variáveis globais para controle do filtro
 let activeCategories = new Set();
