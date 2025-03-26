@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", async function () {
   const resultado = await analisarDados();
 
-  // Preencher os dados do grupo na página (limitando aos 5 primeiros itens)
   function populateGroup() {
     const topMusicasUl = document.getElementById("top-musicas");
     const bottomMusicasUl = document.getElementById("bottom-musicas");
@@ -11,15 +10,29 @@ document.addEventListener("DOMContentLoaded", async function () {
     const bottomArtistasUl = document.getElementById("bottom-artistas");
 
     function createListItems(data, top = true) {
-      // Itens mais tocados: slice(0,5). Menos tocados: últimos 5 itens (revertendo para manter ordem crescente).
+      // Itens mais tocados: slice(0, 10). Menos tocados: últimos 10 itens (revertendo para manter ordem crescente).
       let items = top ? data.slice(0, 10) : data.slice(-10).reverse();
+
       return items
-        .map(
-          (item) => `<li>
-                <span class="stat-text">${limitText(item[0])}</span>
-                <span class="stat-value">${item[1]}</span>
-              </li>`
-        )
+        .map((item, index) => {
+          // Ajuste no rank para menos tocados. Agora, para "menos", começamos de 1 para o primeiro da lista.
+          const rank = top ? index + 1 : data.length - index; // Para "menos tocados", o rank começa a partir de 1
+
+          const isTop = top && index < 3;
+          const isBot = !top && index < 3; // Para "menos tocados", os 3 primeiros devem ser considerados bot (vermelho)
+          const rankClass = isTop
+            ? "top-rank"
+            : isBot
+            ? "bot-rank"
+            : "stat-rank";
+
+          return `
+            <li class="${isTop || isBot ? "bold-item" : ""}">
+              <span class="${rankClass}">#${rank}</span>
+              <span class="stat-text">${limitText(item[0])}</span>
+              <span class="stat-value">${item[1]}</span>
+            </li>`;
+        })
         .join("");
     }
 
@@ -31,7 +44,6 @@ document.addEventListener("DOMContentLoaded", async function () {
       resultado.resultadoGrupo.musica,
       false
     );
-
     topCategoriasUl.innerHTML = createListItems(
       resultado.resultadoGrupo.categoria,
       true
@@ -40,7 +52,6 @@ document.addEventListener("DOMContentLoaded", async function () {
       resultado.resultadoGrupo.categoria,
       false
     );
-
     topArtistasUl.innerHTML = createListItems(
       resultado.resultadoGrupo.artista,
       true
@@ -71,7 +82,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           <p><strong>Aparições:</strong> ${integrante.aparicoes}</p>
           <div class="stats">
             <div class="stat-group">
-              <h4><i class="fas fa-music"></i> Músicas</h4>
+              <h4><i class="fas fa-music"></i> MÚSICAS</h4>
               <ul>
                 ${integrante.musica
                   .slice(0, 5)
@@ -85,7 +96,7 @@ document.addEventListener("DOMContentLoaded", async function () {
               </ul>
             </div>
             <div class="stat-group">
-              <h4><i class="fas fa-th-list"></i> Categorias</h4>
+              <h4><i class="fas fa-th-list"></i> CATEGORIAS</h4>
               <ul>
                 ${integrante.categoria
                   .slice(0, 5)
@@ -99,7 +110,7 @@ document.addEventListener("DOMContentLoaded", async function () {
               </ul>
             </div>
             <div class="stat-group">
-              <h4><i class="fas fa-microphone-alt"></i> Artistas</h4>
+              <h4><i class="fas fa-microphone-alt"></i> ARTISTAS</h4>
               <ul>
                 ${integrante.artista
                   .slice(0, 5)
@@ -252,30 +263,206 @@ async function analisarDados() {
     });
   });
 
-  const sortData = (data) => Object.entries(data).sort((a, b) => b[1] - a[1]);
+  const tieBreakerMusic = (a, b, musicas, artistaCount, categoriaCount) => {
+    // Critério principal: quantidade total de vezes tocada
+    if (a[1] !== b[1]) {
+      return b[1] - a[1];
+    }
 
-  // Resultado por grupo
-  const resultadoGrupo = {
-    musica: sortData(musicaCount),
-    categoria: sortData(categoriaCount),
-    artista: sortData(artistaCount),
+    // Se a contagem for igual, faça o desempate:
+    // Obter os objetos de música com base no título:
+    const musicaA = musicas.find((m) => m.titulo === a[0]) || {
+      artista: "",
+      categorias: "",
+    };
+    const musicaB = musicas.find((m) => m.titulo === b[0]) || {
+      artista: "",
+      categorias: "",
+    };
+
+    // 1. Desempate por categoria:
+    const maxCatA = musicaA.categorias
+      .split(";")
+      .map((cat) => categoriaCount[cat.trim()] || 0)
+      .reduce((max, cur) => Math.max(max, cur), 0);
+    const maxCatB = musicaB.categorias
+      .split(";")
+      .map((cat) => categoriaCount[cat.trim()] || 0)
+      .reduce((max, cur) => Math.max(max, cur), 0);
+
+    if (maxCatA !== maxCatB) {
+      return maxCatB - maxCatA; // Prioriza a música com a categoria mais tocada
+    }
+
+    // 2. Desempate por artista:
+    const maxArtA = musicaA.artista
+      .split(";")
+      .map((art) => artistaCount[art.trim()] || 0)
+      .reduce((max, cur) => Math.max(max, cur), 0);
+    const maxArtB = musicaB.artista
+      .split(";")
+      .map((art) => artistaCount[art.trim()] || 0)
+      .reduce((max, cur) => Math.max(max, cur), 0);
+
+    if (maxArtA !== maxArtB) {
+      return maxArtB - maxArtA;
+    }
+
+    return 0;
   };
 
-  // Resultado por integrante, ordenado por aparições (DESC)
+  const tieBreakerCategory = (a, b, musicas, musicaCount, artistaCount) => {
+    // a e b são arrays: [categoria, count]
+    // Primeiro, critério principal: número total de vezes que a categoria foi tocada
+    if (a[1] !== b[1]) {
+      return b[1] - a[1];
+    }
+
+    const catA = a[0];
+    const catB = b[0];
+
+    // Filtrar as músicas que possuem cada categoria:
+    const musicasCatA = musicas.filter((m) =>
+      (m.categorias || "")
+        .split(";")
+        .map((c) => c.trim())
+        .includes(catA)
+    );
+    const musicasCatB = musicas.filter((m) =>
+      (m.categorias || "")
+        .split(";")
+        .map((c) => c.trim())
+        .includes(catB)
+    );
+
+    // 1. Desempate por música: pegar o maior valor de aparição entre as músicas daquela categoria.
+    const maxMusicaA = musicasCatA
+      .map((m) => musicaCount[m.titulo] || 0)
+      .reduce((max, cur) => Math.max(max, cur), 0);
+    const maxMusicaB = musicasCatB
+      .map((m) => musicaCount[m.titulo] || 0)
+      .reduce((max, cur) => Math.max(max, cur), 0);
+
+    if (maxMusicaA !== maxMusicaB) {
+      return maxMusicaB - maxMusicaA;
+    }
+
+    // 2. Desempate por artista: pegar o maior valor de aparição entre os artistas das músicas dessa categoria.
+    const maxArtistaA = musicasCatA
+      .flatMap((m) => (m.artista || "").split(";"))
+      .map((art) => artistaCount[art.trim()] || 0)
+      .reduce((max, cur) => Math.max(max, cur), 0);
+    const maxArtistaB = musicasCatB
+      .flatMap((m) => (m.artista || "").split(";"))
+      .map((art) => artistaCount[art.trim()] || 0)
+      .reduce((max, cur) => Math.max(max, cur), 0);
+
+    if (maxArtistaA !== maxArtistaB) {
+      return maxArtistaB - maxArtistaA;
+    }
+
+    return 0;
+  };
+
+  const tieBreakerArtist = (a, b, musicas, musicaCount, categoriaCount) => {
+    // a e b são arrays: [artista, count]
+    if (a[1] !== b[1]) {
+      return b[1] - a[1];
+    }
+
+    const artA = a[0];
+    const artB = b[0];
+
+    // Filtrar as músicas que contêm cada artista:
+    const musicasArtA = musicas.filter((m) =>
+      (m.artista || "")
+        .split(";")
+        .map((x) => x.trim())
+        .includes(artA)
+    );
+    const musicasArtB = musicas.filter((m) =>
+      (m.artista || "")
+        .split(";")
+        .map((x) => x.trim())
+        .includes(artB)
+    );
+
+    // 1. Desempate por música: pegar o maior valor de aparição entre as músicas desse artista.
+    const countsArtA = musicasArtA.map((m) => {
+      const count = musicaCount[m.titulo] || 0;
+      return count;
+    });
+    const countsArtB = musicasArtB.map((m) => {
+      const count = musicaCount[m.titulo] || 0;
+      return count;
+    });
+    const maxMusicaA = countsArtA.reduce((max, cur) => Math.max(max, cur), 0);
+    const maxMusicaB = countsArtB.reduce((max, cur) => Math.max(max, cur), 0);
+
+    if (maxMusicaA !== maxMusicaB) {
+      return maxMusicaB - maxMusicaA;
+    }
+
+    // 2. Desempate por categoria: pegar o maior valor de aparição entre as categorias das músicas desse artista.
+    const maxCategoriaA = musicasArtA
+      .flatMap((m) => (m.categorias || "").split(";"))
+      .map((cat) => categoriaCount[cat.trim()] || 0)
+      .reduce((max, cur) => Math.max(max, cur), 0);
+    const maxCategoriaB = musicasArtB
+      .flatMap((m) => (m.categorias || "").split(";"))
+      .map((cat) => categoriaCount[cat.trim()] || 0)
+      .reduce((max, cur) => Math.max(max, cur), 0);
+
+    if (maxCategoriaA !== maxCategoriaB) {
+      return maxCategoriaB - maxCategoriaA;
+    }
+
+    return 0;
+  };
+
+  const sortDataWithTieBreaker = (data, tieBreaker, ...args) => {
+    return Object.entries(data).sort((a, b) => tieBreaker(a, b, ...args));
+  };
+
+  const resultadoGrupo = {
+    musica: sortDataWithTieBreaker(
+      musicaCount,
+      tieBreakerMusic,
+      musicas,
+      artistaCount,
+      categoriaCount
+    ),
+    categoria: sortDataWithTieBreaker(
+      categoriaCount,
+      tieBreakerCategory,
+      musicas,
+      musicaCount,
+      artistaCount
+    ),
+    artista: sortDataWithTieBreaker(
+      artistaCount,
+      tieBreakerArtist,
+      musicas,
+      musicaCount,
+      categoriaCount
+    ),
+  };
+
   const resultadoIntegrantes = Array.from(integranteStats.values())
-    .map((stats) => ({
-      nome: stats.nome,
-      aparicoes: stats.aparicoes,
-      musica: sortData(stats.musicas),
-      categoria: sortData(stats.categorias),
-      artista: sortData(stats.artistas),
-    }))
-    .sort((a, b) => b.aparicoes - a.aparicoes);
+  .map((stats) => ({
+    nome: stats.nome,
+    aparicoes: stats.aparicoes,
+    musica: sortDataWithTieBreaker(stats.musicas, tieBreakerMusic, musicas, artistaCount, categoriaCount),
+    categoria: sortDataWithTieBreaker(stats.categorias, tieBreakerCategory, musicas, musicaCount, artistaCount),
+    artista: sortDataWithTieBreaker(stats.artistas, tieBreakerArtist, musicas, musicaCount, categoriaCount)
+  }))
+  .sort((a, b) => b.aparicoes - a.aparicoes);
 
   console.log(resultadoGrupo);
   console.log(resultadoIntegrantes);
 
   return { resultadoGrupo, resultadoIntegrantes };
+
 }
 
 function limitText(str) {
