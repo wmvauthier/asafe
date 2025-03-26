@@ -320,6 +320,47 @@ function carregarEscalasFuturas() {
                 "\n";
             }
           });
+
+          const categoriasTitulo = document.createElement("h4");
+          categoriasTitulo.textContent = "Categorias";
+          categoriasTitulo.style["margin-top"] = "10px";
+          categoriasTitulo.style["font-size"] = "1rem";
+          categoriasTitulo.style["font-weight"] = "bold";
+          musicasDiv.appendChild(categoriasTitulo);
+
+          const categoryCount = {};
+
+          escala.musicas.forEach((id) => {
+            const musica = musicasData.find((m) => m.id === id);
+            if (musica && musica.categorias) {
+              let cats = musica.categorias.split(";");
+          
+              // Contar as ocorrências de cada categoria, removendo espaços extras
+              cats.forEach((categoria) => {
+                const trimmedCategoria = categoria.trim();
+                if (trimmedCategoria) {
+                  categoryCount[trimmedCategoria] = (categoryCount[trimmedCategoria] || 0) + 1;
+                }
+              });
+            }
+          });
+          
+          // Ordenar as categorias pela quantidade de ocorrências, da mais frequente para a menos frequente
+          const sortedCategories = Object.entries(categoryCount)
+            .sort((a, b) => b[1] - a[1])  // Ordenar pelo valor (contagem), do maior para o menor
+            .map(([categoria]) => categoria); // Extrair apenas as categorias ordenadas
+          
+          // Criar os badges com as categorias ordenadas
+          sortedCategories.forEach((categoria) => {
+            const badge = document.createElement("span");
+            badge.textContent = categoria;
+            badge.classList.add("badge", "bg-light", "text-dark", "me-1", "col");
+            badge.style.margin = "5px";
+            badge.style.fontSize = "0.6rem";
+            musicasDiv.appendChild(badge);
+          });
+          
+
         } else {
           musicasDiv.innerHTML = "<p>Nenhuma música cadastrada.</p>";
           musicasTexto += "Nenhuma música cadastrada.\n";
@@ -359,6 +400,23 @@ function carregarEscalasFuturas() {
 // Cria os botões de categorias (singleton) e os insere acima do repertório
 function setupCategoriasButtons(musicas) {
   const categoriesSet = new Set();
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0); // Remove horas para evitar problemas de comparação
+
+  const musicasTocadas = new Set();
+  historicoEscalas.forEach((escala) => {
+    const dataEscala = new Date(escala.data.split("/").reverse().join("-"));
+    const diffDias = (dataEscala - hoje) / (1000 * 60 * 60 * 24);
+    if (
+      Math.abs(diffDias) <= TOCADA_NOS_ULTIMOS_X_DIAS ||
+      (diffDias >= 0 && diffDias <= TOCADA_NOS_PROXIMOS_X_DIAS)
+    ) {
+      escala.musicas.forEach((id) => musicasTocadas.add(id));
+    }
+  });
+
+  musicas = musicas.filter((musica) => !musicasTocadas.has(musica.id));
+
   musicas.forEach((musica) => {
     if (musica.categorias) {
       const cats = musica.categorias.split(";").map((c) => c.trim());
@@ -414,8 +472,6 @@ function setupCategoriasButtons(musicas) {
 function renderRepertorio() {
   const activeArr = Array.from(activeCategories);
   const hoje = new Date();
-  let TOCADA_NOS_ULTIMOS_X_DIAS = 35;
-  let TOCADA_NOS_PROXIMOS_X_DIAS = 35;
 
   // Filtrar músicas tocadas ou agendadas nos últimos/próximos X dias
   const musicasTocadas = new Set();
@@ -568,11 +624,11 @@ async function carregarHistorico() {
 }
 
 // Chamadas para carregar os dados ao carregar a página
-window.onload = function () {
-  carregarIntegrantes();
-  carregarMusicas();
-  carregarHistorico();
+window.onload = async function () {
+  await carregarIntegrantes();
+  await carregarMusicas();
+  await carregarHistorico();
   // renderRepertorio();
-  carregarRepertorio();
-  carregarEscalasFuturas();
+  await carregarRepertorio();
+  await carregarEscalasFuturas();
 };

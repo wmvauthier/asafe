@@ -45,11 +45,6 @@
       "icon": "fas fa-drum"
     },
     {
-      "id": 10,
-      "nome": "Guitarrista Substituto",
-      "icon": "fas fa-guitar"
-    },
-    {
       "id": 11,
       "nome": "Pedro",
       "icon": "fas fa-bass-guitar"
