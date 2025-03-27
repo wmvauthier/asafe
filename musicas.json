@@ -6,7 +6,16 @@
         "referLink": "mHu3UqXJ4tU",
         "categorias": "Morte e Ressurreição",
         "keywords": "cruz, sangue, ressurreição, morte, vida",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "",
+            "guitarra": "",
+            "baixo": "",
+            "violao": "",
+            "bateria": "",
+            "teclado": "",
+            "sax": ""
+        }
     },
     {
         "id": 2,
@@ -67,7 +76,7 @@
         "titulo": "Atos 2",
         "artista": "Gabriela Rocha",
         "referLink": "WWrU6LC_4ho",
-        "categorias": "Espírito Santo",
+        "categorias": "Espírito Santo; Engrandecimento a Deus",
         "keywords": "Atos, Espírito, Pentecostes, poder, igreja",
         "versiculos": ""
     },
