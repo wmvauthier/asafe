@@ -8,12 +8,12 @@
         "keywords": "cruz, sangue, ressurreição, morte, vida",
         "versiculos": "",
         "level": {
-            "vocal": "",
-            "guitarra": "",
-            "baixo": "",
+            "vocal": "easy",
+            "guitarra": "hard",
+            "baixo": "hard",
             "violao": "",
-            "bateria": "",
-            "teclado": "",
+            "bateria": "hard",
+            "teclado": "hard",
             "sax": ""
         }
     },
@@ -33,7 +33,16 @@
         "referLink": "zPD2W9WEm8s",
         "categorias": "Engrandecimento a Deus",
         "keywords": "senhor, rei, glória, adoração, poder",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 4,
@@ -51,7 +60,16 @@
         "referLink": "QpBNXkKIYZw",
         "categorias": "Vida Eterna",
         "keywords": "rio, azul, eternidade, jornada, promessa",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "hard",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
+            "sax": ""
+        }
     },
     {
         "id": 6,
@@ -67,9 +85,18 @@
         "titulo": "Aquieta minh'alma",
         "artista": "Ministério Zoe",
         "referLink": "ANfpF0pNob4",
-        "categorias": "Intimidade com Deus",
+        "categorias": "Intimidade com Deus; Amor de Deus",
         "keywords": "alma, calma, paz, quietude, descanso",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 8,
@@ -204,7 +231,16 @@
         "referLink": "PdJoTcOgwUA",
         "categorias": "Morte e Ressurreição; Engrandecimento a Deus",
         "keywords": "filho, vivo, Deus, salvação, poder",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "easy",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
+            "sax": "easy"
+        }
     },
     {
         "id": 23,
@@ -229,7 +265,7 @@
         "titulo": "Jesus em tua presença",
         "artista": "MORADA",
         "referLink": "aMpM68cb5MY",
-        "categorias": "Adoração Congregacional",
+        "categorias": "Adoração Congregacional;Morte e Ressurreição",
         "keywords": "presença, Jesus, amor, adoração, comunhão",
         "versiculos": ""
     },
@@ -303,7 +339,16 @@
         "referLink": "V9zmVN6KcJw",
         "categorias": "Amor de Deus",
         "keywords": "maior amor, Jesus, paixão, devoção, adoração",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "easy",
+            "guitarra": "hard",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 35,
@@ -393,7 +438,16 @@
         "referLink": "wSKKEAnLTDw",
         "categorias": "Morte e Ressurreição; Amor de Deus",
         "keywords": "ousado, amor, graça, redenção, transformação",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "easy",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 45,
@@ -429,16 +483,34 @@
         "referLink": "Hy6QJ6LJW2I",
         "categorias": "Confiança em Deus; Intimidade com Deus",
         "keywords": "preciso, Ti, amor, dependência, adoração",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "easy",
+            "guitarra": "hard",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 49,
         "titulo": "Quebrantado",
         "artista": "Vineyard",
         "referLink": "QbnmpJo3DiI",
-        "categorias": "Morte e Ressurreição",
+        "categorias": "Morte e Ressurreição; Amor de Deus",
         "keywords": "quebrantado, humilhação, rendição, misericórdia, restauração",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "easy",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
+            "sax": ""
+        }
     },
     {
         "id": 50,
@@ -483,7 +555,16 @@
         "referLink": "lMhEFpHzRsY",
         "categorias": "Adoração Congregacional;Engrandecimento a Deus",
         "keywords": "reino, Deus, governo, eternidade, poder",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "easy",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
+            "sax": "easy"
+        }
     },
     {
         "id": 55,
@@ -609,6 +690,15 @@
         "referLink": "2rpaccTwmio",
         "categorias": "Adoração Congregacional; Santidade",
         "keywords": "redenção, salvação, sacrifício, graça, amor",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "easy",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "hard",
+            "sax": ""
+        }
     }
 ]

@@ -334,3 +334,33 @@ h1, h2 {
 .bold-item {
     font-weight: bold;
 }
+
+/* Círculos do Instrumentos */
+.circle {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    line-height: 20px;
+    text-align: center;
+    /* margin-left: 5px; */
+    font-size: 0.8rem;
+    color: #fff;
+}
+
+.circle-hard {
+    background-color: #dc3545;
+    /* Vermelho (bg-danger) */
+}
+
+.circle-medium {
+    background-color: #ffc107;
+    /* Amarelo (bg-warning) */
+    color: #212529;
+    /* Texto escuro */
+}
+
+.circle-easy {
+    background-color: #28a745;
+    /* Verde (bg-success) */
+}

@@ -161,10 +161,51 @@ function carregarMusicas() {
                 const badge = document.createElement("span");
                 badge.textContent = categoria;
                 badge.classList.add("badge", "bg-light", "text-dark", "me-1");
-                badge.style.margin = "5px";
+                badge.style.margin = "1px";
                 badge.style.fontSize = "0.6rem";
                 categoriasContainer.appendChild(badge);
               });
+
+              if (musica.level && typeof musica.level === "object") {
+                Object.entries(musica.level).forEach(([key, value]) => {
+                  if (!value) return; // Se o valor for undefined/null, ignora
+
+                  let colorClass, textColor;
+                  switch (value) {
+                    case "hard":
+                      colorClass = "bg-danger"; // Vermelho
+                      textColor = "text-white"; // Texto branco
+                      break;
+                    case "medium":
+                      colorClass = "bg-warning"; // Amarelo
+                      textColor = "text-dark"; // Texto preto
+                      break;
+                    case "easy":
+                      colorClass = "bg-success"; // Verde
+                      textColor = "text-white"; // Texto branco
+                      break;
+                    default:
+                      colorClass = "bg-secondary"; // Cinza (caso tenha valores inesperados)
+                      textColor = "text-dark"; // Texto preto por padrão
+                  }
+
+                  // Cria o badge
+                  const badge = document.createElement("span");
+                  badge.textContent = `${
+                    key.charAt(0).toUpperCase() + key.slice(1)
+                  }`;
+                  badge.classList.add("badge", colorClass, textColor, "me-1");
+                  badge.style.margin = "1px";
+                  badge.style.fontSize = "0.6rem";
+
+                  // Adiciona ao container
+                  categoriasContainer.appendChild(badge);
+                });
+              } else {
+                console.warn(
+                  "musica.level não está definido ou não é um objeto."
+                );
+              }
 
               link.appendChild(img);
               card.appendChild(link);
@@ -334,32 +375,102 @@ function carregarEscalasFuturas() {
             const musica = musicasData.find((m) => m.id === id);
             if (musica && musica.categorias) {
               let cats = musica.categorias.split(";");
-          
+
               // Contar as ocorrências de cada categoria, removendo espaços extras
               cats.forEach((categoria) => {
                 const trimmedCategoria = categoria.trim();
                 if (trimmedCategoria) {
-                  categoryCount[trimmedCategoria] = (categoryCount[trimmedCategoria] || 0) + 1;
+                  categoryCount[trimmedCategoria] =
+                    (categoryCount[trimmedCategoria] || 0) + 1;
                 }
               });
             }
           });
-          
+
           // Ordenar as categorias pela quantidade de ocorrências, da mais frequente para a menos frequente
           const sortedCategories = Object.entries(categoryCount)
-            .sort((a, b) => b[1] - a[1])  // Ordenar pelo valor (contagem), do maior para o menor
+            .sort((a, b) => b[1] - a[1]) // Ordenar pelo valor (contagem), do maior para o menor
             .map(([categoria]) => categoria); // Extrair apenas as categorias ordenadas
-          
+
           // Criar os badges com as categorias ordenadas
           sortedCategories.forEach((categoria) => {
             const badge = document.createElement("span");
             badge.textContent = categoria;
-            badge.classList.add("badge", "bg-light", "text-dark", "me-1", "col");
+            badge.classList.add(
+              "badge",
+              "bg-light",
+              "text-dark",
+              "me-1",
+              "col"
+            );
             badge.style.margin = "5px";
             badge.style.fontSize = "0.6rem";
             musicasDiv.appendChild(badge);
           });
+
+          const levelsTitulo = document.createElement("h4");
+          levelsTitulo.textContent = "Levels";
+          levelsTitulo.style["margin-top"] = "10px";
+          levelsTitulo.style["font-size"] = "1rem";
+          levelsTitulo.style["font-weight"] = "bold";
+          musicasDiv.appendChild(levelsTitulo);
+
+          const levelPriority = { hard: 3, medium: 2, easy: 1 }; // Define a prioridade dos níveis
+          const levelCounts = {}; // Objeto acumulador para todas as músicas
           
+          // Itera sobre todas as músicas do repertório
+          escala.musicas.forEach((id) => {
+              const musica = musicasData.find((m) => m.id === id);
+              if (musica.level && typeof musica.level === "object") {
+                  Object.entries(musica.level).forEach(([key, value]) => {
+                      if (!value) return; // Ignora valores indefinidos/null
+          
+                      if (!levelCounts[key]) {
+                          levelCounts[key] = { level: value }; // Armazena o nível mais alto
+                      } else {
+                          // Se o nível atual tem maior prioridade, substitui
+                          if (levelPriority[value] > levelPriority[levelCounts[key].level]) {
+                              levelCounts[key] = { level: value };
+                          }
+                      }
+                  });
+              }
+          });
+          
+          // Agora percorremos o acumulador para criar os badges corretamente
+          Object.entries(levelCounts).forEach(([key, { level }]) => {
+              let colorClass, textColor;
+              switch (level) {
+                  case "hard":
+                      colorClass = "bg-danger"; // Vermelho
+                      textColor = "text-white"; // Texto branco
+                      break;
+                  case "medium":
+                      colorClass = "bg-warning"; // Amarelo
+                      textColor = "text-dark"; // Texto preto
+                      break;
+                  case "easy":
+                      colorClass = "bg-success"; // Verde
+                      textColor = "text-white"; // Texto branco
+                      break;
+                  default:
+                      colorClass = "bg-secondary"; // Cinza (caso tenha valores inesperados)
+                      textColor = "text-dark"; // Texto preto por padrão
+              }
+          
+              // Formata a chave e nível (primeira letra maiúscula)
+              const formattedKey = key.charAt(0).toUpperCase() + key.slice(1);
+          
+              // Cria o badge
+              const badge = document.createElement("span");
+              badge.textContent = `${formattedKey}`;
+              badge.classList.add("badge", "col", colorClass, textColor, "me-1");
+              badge.style.margin = "1px";
+              badge.style.fontSize = "0.6rem";
+          
+              // Adiciona ao container
+              musicasDiv.appendChild(badge);
+          });                 
 
         } else {
           musicasDiv.innerHTML = "<p>Nenhuma música cadastrada.</p>";
@@ -415,6 +526,7 @@ function setupCategoriasButtons(musicas) {
     }
   });
 
+  // Filtra músicas que não foram tocadas
   musicas = musicas.filter((musica) => !musicasTocadas.has(musica.id));
 
   musicas.forEach((musica) => {
@@ -427,7 +539,19 @@ function setupCategoriasButtons(musicas) {
     }
   });
 
-  const uniqueCategories = Array.from(categoriesSet).sort();
+  // Cria um objeto com a quantidade de músicas disponíveis para cada categoria
+  const musicasDisponiveis = {};
+  categoriesSet.forEach((cat) => {
+    musicasDisponiveis[cat] = musicas.filter(
+      (musica) =>
+        musica.categories.includes(cat) && !musicasTocadas.has(musica.id)
+    ).length;
+  });
+
+  // Ordena as categorias pela quantidade, em ordem decrescente
+  const sortedCategories = Object.keys(musicasDisponiveis).sort(
+    (a, b) => musicasDisponiveis[b] - musicasDisponiveis[a]
+  );
 
   let container = document.querySelector(".categorias-container");
   if (!container) {
@@ -439,15 +563,7 @@ function setupCategoriasButtons(musicas) {
     container.innerHTML = "";
   }
 
-  const musicasDisponiveis = {};
-  uniqueCategories.forEach((cat) => {
-    musicasDisponiveis[cat] = musicas.filter(
-      (musica) =>
-        musica.categories.includes(cat) && !musicasTocadas.has(musica.id)
-    ).length;
-  });
-
-  uniqueCategories.forEach((cat) => {
+  sortedCategories.forEach((cat) => {
     const button = document.createElement("button");
     button.innerHTML = `${cat} <span class="badge bg-light text-dark">${musicasDisponiveis[cat]}</span>`;
     button.classList.add("btn", "btn-sm", "btn-outline-light", "me-2");
@@ -574,10 +690,47 @@ function renderRepertorio() {
       const badge = document.createElement("span");
       badge.textContent = categoria;
       badge.classList.add("badge", "bg-light", "text-dark", "me-1");
-      badge.style.margin = "5px";
+      badge.style.margin = "1px";
       badge.style.fontSize = "0.6rem";
       categoriasContainer.appendChild(badge);
     });
+
+    if (musica.level && typeof musica.level === "object") {
+      Object.entries(musica.level).forEach(([key, value]) => {
+        if (!value) return; // Se o valor for undefined/null, ignora
+
+        let colorClass, textColor;
+        switch (value) {
+          case "hard":
+            colorClass = "bg-danger"; // Vermelho
+            textColor = "text-white"; // Texto branco
+            break;
+          case "medium":
+            colorClass = "bg-warning"; // Amarelo
+            textColor = "text-dark"; // Texto preto
+            break;
+          case "easy":
+            colorClass = "bg-success"; // Verde
+            textColor = "text-white"; // Texto branco
+            break;
+          default:
+            colorClass = "bg-secondary"; // Cinza (caso tenha valores inesperados)
+            textColor = "text-dark"; // Texto preto por padrão
+        }
+
+        // Cria o badge
+        const badge = document.createElement("span");
+        badge.textContent = `${key.charAt(0).toUpperCase() + key.slice(1)}`;
+        badge.classList.add("badge", colorClass, textColor, "me-1");
+        badge.style.margin = "1px";
+        badge.style.fontSize = "0.6rem";
+
+        // Adiciona ao container
+        categoriasContainer.appendChild(badge);
+      });
+    } else {
+      console.warn("musica.level não está definido ou não é um objeto.");
+    }
 
     link.appendChild(img);
     card.appendChild(link);
