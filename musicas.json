@@ -24,7 +24,16 @@
         "referLink": "com5UB-SWYY",
         "categorias": "Intimidade com Deus",
         "keywords": "abraço, inocência, amor, dependência, afago",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 3,
@@ -51,7 +60,16 @@
         "referLink": "ag1StnggWkM",
         "categorias": "Engrandecimento a Deus",
         "keywords": "agnus, cordeiro, sacrifício, redenção, amor",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 5,
@@ -78,7 +96,16 @@
         "referLink": "T3Y9Q1vWKRM",
         "categorias": "Adoração Congregacional; Espírito Santo",
         "keywords": "único, Jesus, adoração, amor, fidelidade",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 7,
@@ -105,7 +132,16 @@
         "referLink": "WWrU6LC_4ho",
         "categorias": "Espírito Santo; Engrandecimento a Deus",
         "keywords": "Atos, Espírito, Pentecostes, poder, igreja",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 9,
@@ -114,7 +150,16 @@
         "referLink": "VuApXUlveLM",
         "categorias": "Engrandecimento a Deus; Confiança em Deus",
         "keywords": "deserto, caminho, fé, provação, confiança",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 10,
@@ -123,7 +168,16 @@
         "referLink": "5j0arvaKdqk",
         "categorias": "Engrandecimento a Deus; Vida Eterna",
         "keywords": "apocalipse, fim dos tempos, juízo, revelação, poder",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 11,
@@ -132,7 +186,16 @@
         "referLink": "MeX0yHMs9Nk",
         "categorias": "Morte e Ressurreição",
         "keywords": "colossenses, amor, ensinamento, vida, fé",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 12,
@@ -141,7 +204,16 @@
         "referLink": "BcX-KWrsSYk",
         "categorias": "Morte e Ressurreição",
         "keywords": "cruz, ressurreição, vitória, vida nova, salvação",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "hard",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "hard",
+            "sax": ""
+        }
     },
     {
         "id": 13,
@@ -150,7 +222,16 @@
         "referLink": "3aYIoi1q2Do",
         "categorias": "Engrandecimento a Deus; Confiança em Deus",
         "keywords": "bom, amor, fidelidade, graça, bondade",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "easy",
+            "guitarra": "medium",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
+            "sax": "easy"
+        }
     },
     {
         "id": 14,
@@ -159,7 +240,16 @@
         "referLink": "YudXB8MZRTs",
         "categorias": "Volta de Jesus; Vida Eterna",
         "keywords": "ele vem, retorno, segunda vinda, esperança, juízo",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 15,
@@ -168,7 +258,16 @@
         "referLink": "b8RSKRumBRs",
         "categorias": "Adoração Congregacional",
         "keywords": "espírito, verdade, adoração, coração, sinceridade",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "easy",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "hard",
+            "sax": ""
+        }
     },
     {
         "id": 16,
@@ -177,7 +276,16 @@
         "referLink": "IxpWNuxGmzc",
         "categorias": "Proteção Divina; Intimidade com Deus",
         "keywords": "braços, proteção, amor, aconchego, refúgio",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
+            "sax": ""
+        }
     },
     {
         "id": 17,
@@ -186,7 +294,16 @@
         "referLink": "vM2A2XEm9TE",
         "categorias": "Proteção Divina; Confiança em Deus",
         "keywords": "escape, libertação, salvação, redenção, refúgio",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 18,
@@ -195,7 +312,16 @@
         "referLink": "_SzVzMh7qfM",
         "categorias": "Confiança em Deus",
         "keywords": "rendo, entrega, rendição, submissão, devoção",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 19,
@@ -204,7 +330,16 @@
         "referLink": "_qDKrvstS9c",
         "categorias": "Confiança em Deus",
         "keywords": "rendição, entrega, fé, devoção, amor",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 20,
@@ -213,7 +348,16 @@
         "referLink": "RXlDfjDg738",
         "categorias": "Intimidade com Deus",
         "keywords": "vaso, quebrar, rendição, fragilidade, restauração",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 21,
@@ -222,7 +366,16 @@
         "referLink": "xu8Zel1u-6k",
         "categorias": "Amor de Deus;Intimidade com Deus",
         "keywords": "amor, graça, incondicional, adoração, maravilha",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 22,
@@ -249,7 +402,16 @@
         "referLink": "bOFbr2RpLek",
         "categorias": "Morte e Ressurreição",
         "keywords": "galileu, Jesus, ministério, fé, discipulado",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 24,
@@ -258,7 +420,16 @@
         "referLink": "icalvyOpiAU",
         "categorias": "Adoração Congregacional;Engrandecimento a Deus",
         "keywords": "grande, Senhor, majestade, poder, louvor",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 25,
@@ -267,7 +438,16 @@
         "referLink": "aMpM68cb5MY",
         "categorias": "Adoração Congregacional;Morte e Ressurreição",
         "keywords": "presença, Jesus, amor, adoração, comunhão",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 26,
@@ -276,7 +456,16 @@
         "referLink": "q6B4MMSxzQQ",
         "categorias": "Intimidade com Deus",
         "keywords": "primeiro amor, Jesus, devoção, paixão, adoração",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 27,
@@ -285,7 +474,16 @@
         "referLink": "OtDvlKRgJrc",
         "categorias": "Morte e Ressurreição",
         "keywords": "plano, perfeito, salvação, redenção, graça",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 28,
@@ -294,7 +492,16 @@
         "referLink": "YnrN0o0lubM",
         "categorias": "Intimidade com Deus",
         "keywords": "lugar secreto, comunhão, intimidade, retiro, adoração",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 29,
@@ -303,7 +510,16 @@
         "referLink": "iS6GXPbhCwU",
         "categorias": "Volta de Jesus; Vida Eterna",
         "keywords": "maranata, retorno, esperança, espera, segunda vinda",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 30,
@@ -312,7 +528,16 @@
         "referLink": "nv-T2_JPKZA",
         "categorias": "Morte e Ressurreição; Adoração Congregacional",
         "keywords": "graça, amor, redenção, salvação, favor",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 31,
@@ -321,7 +546,16 @@
         "referLink": "Z6cONvRUFZQ",
         "categorias": "Glória de Deus",
         "keywords": "atraiu, chamado, amor, devoção, transformação",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 32,
@@ -330,7 +564,34 @@
         "referLink": "qsmHYPk4XGM",
         "categorias": "Adoração Congregacional; Intimidade com Deus",
         "keywords": "derrama, amor, entrega, adoração, intensidade",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
+    },
+    {
+        "id": 33,
+        "titulo": "Único",
+        "artista": "Fhop Music",
+        "referLink": "0vCmIKyJPRI",
+        "categorias": "Engrandecimento a Deus",
+        "keywords": "derrama, amor, entrega, adoração, intensidade",
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 34,
@@ -357,7 +618,16 @@
         "referLink": "QTC7_DVENZA",
         "categorias": "Engrandecimento a Deus",
         "keywords": "mil graus, intensidade, amor, transformação, poder",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 36,
@@ -366,7 +636,16 @@
         "referLink": "pSMeSrg4zqo",
         "categorias": "Santidade",
         "keywords": "Egito, corte, libertação, juízo, milagres",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "hard",
+            "guitarra": "hard",
+            "baixo": "hard",
+            "violao": "",
+            "bateria": "hard",
+            "teclado": "hard",
+            "sax": ""
+        }
     },
     {
         "id": 37,
@@ -375,7 +654,16 @@
         "referLink": "JL7knyBP-Cw",
         "categorias": "Adoração Congregacional;Engrandecimento a Deus;Santidade",
         "keywords": "",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 38,
@@ -384,7 +672,16 @@
         "referLink": "csPaNdL6ndA",
         "categorias": "Morte e Ressurreição",
         "keywords": "sangue, redenção, salvação, cruz, sacrifício",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "easy",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
+            "sax": ""
+        }
     },
     {
         "id": 39,
@@ -393,7 +690,16 @@
         "referLink": "LYsaKn8FRhc",
         "categorias": "Engrandecimento a Deus",
         "keywords": "mistério, Deus, infinito, adoração, poder",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "hard",
+            "guitarra": "hard",
+            "baixo": "",
+            "violao": "",
+            "bateria": "",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 40,
@@ -402,7 +708,16 @@
         "referLink": "lWax47zymUE",
         "categorias": "Engrandecimento a Deus; Confiança em Deus; Proteção Divina",
         "keywords": "escudo, milagre, proteção, poder, fé",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 41,
@@ -411,7 +726,16 @@
         "referLink": "9fZph9kZkgM",
         "categorias": "Glória de Deus; Santidade",
         "keywords": "glória, transformação, mudança, amor, fé",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 42,
@@ -420,7 +744,16 @@
         "referLink": "1XqHlWsMThA",
         "categorias": "Confiança em Deus",
         "keywords": "oceanos, fé, confiança, desafio, adoração",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 43,
@@ -429,7 +762,16 @@
         "referLink": "8XUqcxgH8r4",
         "categorias": "Morte e Ressurreição; Engrandecimento a Deus",
         "keywords": "lindo, nome, beleza, adoração, poder",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 44,
@@ -456,7 +798,16 @@
         "referLink": "2Z6nW7jU_uU",
         "categorias": "Confiança em Deus",
         "keywords": "ouvir, palavra, falar, instrução, adoração",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 46,
@@ -465,7 +816,16 @@
         "referLink": "DZvBlrJsFag",
         "categorias": "Morte e Ressurreição",
         "keywords": "para sempre, eterno, fidelidade, amor, adoração",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 47,
@@ -474,7 +834,16 @@
         "referLink": "n0fDvJAyrQ8",
         "categorias": "Volta de Jesus; Vida Eterna",
         "keywords": "morar, presença, habitar, comunhão, adoração",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 48,
@@ -519,7 +888,16 @@
         "referLink": "7deRQXyV_-A",
         "categorias": "Intimidade com Deus",
         "keywords": "criança, inocência, pureza, fé, confiança",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 51,
@@ -528,7 +906,16 @@
         "referLink": "gTRFVMkMajw",
         "categorias": "Volta de Jesus; Engrandecimento a Deus; Glória de Deus",
         "keywords": "leão, ruja, poder, força, vitória",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 52,
@@ -537,7 +924,16 @@
         "referLink": "DVgv6lE0aKE",
         "categorias": "Santidade;Engrandecimento a Deus",
         "keywords": "santo, santidade, divino, adoração, glória",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 53,
@@ -546,7 +942,16 @@
         "referLink": "XEa2jjT9SyQ",
         "categorias": "Confiança em Deus",
         "keywords": "humilhar, humildade, rendição, submissão, adoração",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 54,
@@ -558,11 +963,11 @@
         "versiculos": "",
         "level": {
             "vocal": "easy",
-            "guitarra": "easy",
+            "guitarra": "medium",
             "baixo": "easy",
             "violao": "",
             "bateria": "easy",
-            "teclado": "easy",
+            "teclado": "medium",
             "sax": "easy"
         }
     },
@@ -573,7 +978,16 @@
         "referLink": "YXnQ02HYB1w",
         "categorias": "Engrandecimento a Deus",
         "keywords": "águas, purificadoras, limpeza, renovação, graça",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 56,
@@ -582,7 +996,16 @@
         "referLink": "2CAwy1l8DwE",
         "categorias": "Engrandecimento a Deus; Adoração Congregacional",
         "keywords": "bom, bondade, amor, fidelidade, adoração",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 57,
@@ -591,7 +1014,16 @@
         "referLink": "4y0_rOSnb_g",
         "categorias": "Engrandecimento a Deus; Confiança em Deus",
         "keywords": "graça, basta, salvação, amor, redenção",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 58,
@@ -600,7 +1032,16 @@
         "referLink": "t6Pd8gXIASU",
         "categorias": "Volta de Jesus; Vida Eterna",
         "keywords": "buscar, vir, salvação, resgate, amor",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 59,
@@ -609,7 +1050,16 @@
         "referLink": "-4AAHPM98Do",
         "categorias": "Adoração Congregacional;Engrandecimento a Deus;Morte e Ressurreição",
         "keywords": "adorar, vir, louvar, devoção, presença",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 60,
@@ -618,7 +1068,16 @@
         "referLink": "dlGOiuxSzVw",
         "categorias": "Engrandecimento a Deus",
         "keywords": "boa parte, bênção, amor, provisão, graça",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 61,
@@ -627,7 +1086,16 @@
         "referLink": "5qMJJPwoJZE",
         "categorias": "Engrandecimento a Deus; Adoração Congregacional; Intimidade com Deus",
         "keywords": "confiança, fé, Senhor, segurança, esperança",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 62,
@@ -636,7 +1104,16 @@
         "referLink": "E0F9NvrSoa0",
         "categorias": "Espírito Santo; Glória de Deus",
         "keywords": "venha, espera, retorno, juízo, esperança",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 63,
@@ -645,7 +1122,16 @@
         "referLink": "rYeSiNf1uos",
         "categorias": "Confiança em Deus",
         "keywords": "nau, cabo, soltar, confiança, entrega",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 64,
@@ -654,7 +1140,16 @@
         "referLink": "NI89N8QBOoM",
         "categorias": "Morte e Ressurreição",
         "keywords": "alvo, neve, pureza, renovação, perdão",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
     },
     {
         "id": 65,
@@ -663,7 +1158,16 @@
         "referLink": "FncNPmyDjzg",
         "categorias": "Morte e Ressurreição",
         "keywords": "rude, cruz, sacrifício, redenção, dor",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "easy",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "hard",
+            "sax": ""
+        }
     },
     {
         "id": 66,
@@ -672,7 +1176,16 @@
         "referLink": "_2BImNvixHw",
         "categorias": "Morte e Ressurreição",
         "keywords": "redenção, salvação, sacrifício, graça, amor",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "hard",
+            "guitarra": "hard",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "hard",
+            "sax": ""
+        }
     },
     {
         "id": 67,
@@ -681,7 +1194,16 @@
         "referLink": "jF23NIVWapo",
         "categorias": "Espírito Santo; Glória de Deus;Intimidade com Deus",
         "keywords": "redenção, salvação, sacrifício, graça, amor",
-        "versiculos": ""
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
+            "sax": ""
+        }
     },
     {
         "id": 68,
