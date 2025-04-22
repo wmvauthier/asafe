@@ -409,68 +409,72 @@ function carregarEscalasFuturas() {
           });
 
           const levelsTitulo = document.createElement("h4");
-          levelsTitulo.textContent = "Levels";
-          levelsTitulo.style["margin-top"] = "10px";
-          levelsTitulo.style["font-size"] = "1rem";
-          levelsTitulo.style["font-weight"] = "bold";
-          musicasDiv.appendChild(levelsTitulo);
+levelsTitulo.textContent = "Levels do Dia";
+levelsTitulo.style["margin-top"] = "10px";
+levelsTitulo.style["font-size"] = "1rem";
+levelsTitulo.style["font-weight"] = "bold";
+musicasDiv.appendChild(levelsTitulo);
 
-          const levelPriority = { hard: 3, medium: 2, easy: 1 }; // Define a prioridade dos níveis
-          const levelCounts = {}; // Objeto acumulador para todas as músicas
-          
-          // Itera sobre todas as músicas do repertório
-          escala.musicas.forEach((id) => {
-              const musica = musicasData.find((m) => m.id === id);
-              if (musica.level && typeof musica.level === "object") {
-                  Object.entries(musica.level).forEach(([key, value]) => {
-                      if (!value) return; // Ignora valores indefinidos/null
-          
-                      if (!levelCounts[key]) {
-                          levelCounts[key] = { level: value }; // Armazena o nível mais alto
-                      } else {
-                          // Se o nível atual tem maior prioridade, substitui
-                          if (levelPriority[value] > levelPriority[levelCounts[key].level]) {
-                              levelCounts[key] = { level: value };
-                          }
-                      }
-                  });
-              }
-          });
-          
-          // Agora percorremos o acumulador para criar os badges corretamente
-          Object.entries(levelCounts).forEach(([key, { level }]) => {
-              let colorClass, textColor;
-              switch (level) {
-                  case "hard":
-                      colorClass = "bg-danger"; // Vermelho
-                      textColor = "text-white"; // Texto branco
-                      break;
-                  case "medium":
-                      colorClass = "bg-warning"; // Amarelo
-                      textColor = "text-dark"; // Texto preto
-                      break;
-                  case "easy":
-                      colorClass = "bg-success"; // Verde
-                      textColor = "text-white"; // Texto branco
-                      break;
-                  default:
-                      colorClass = "bg-secondary"; // Cinza (caso tenha valores inesperados)
-                      textColor = "text-dark"; // Texto preto por padrão
-              }
-          
-              // Formata a chave e nível (primeira letra maiúscula)
-              const formattedKey = key.charAt(0).toUpperCase() + key.slice(1);
-          
-              // Cria o badge
-              const badge = document.createElement("span");
-              badge.textContent = `${formattedKey}`;
-              badge.classList.add("badge", "col", colorClass, textColor, "me-1");
-              badge.style.margin = "1px";
-              badge.style.fontSize = "0.6rem";
-          
-              // Adiciona ao container
-              musicasDiv.appendChild(badge);
-          });                 
+const levelPriority = { hard: 3, medium: 2, easy: 1 }; // Prioridade
+const levelPoints = { easy: 1, medium: 3, hard: 5 }; // Pontuação
+
+const levelTotals = {}; // Acumulador por instrumento
+
+// Itera sobre todas as músicas do repertório
+escala.musicas.forEach((id) => {
+  const musica = musicasData.find((m) => m.id === id);
+  if (musica?.level && typeof musica.level === "object") {
+    Object.entries(musica.level).forEach(([instrumento, dificuldade]) => {
+      if (!dificuldade || !levelPoints[dificuldade]) return;
+
+      // Acumula os pontos de dificuldade por instrumento
+      if (!levelTotals[instrumento]) {
+        levelTotals[instrumento] = 0;
+      }
+      levelTotals[instrumento] += levelPoints[dificuldade];
+    });
+  }
+});
+
+// Agora percorremos os totais para determinar o "level do dia"
+Object.entries(levelTotals).forEach(([instrumento, totalPontos]) => {
+  let levelDoDia;
+  if (totalPontos >= 10) {
+    levelDoDia = "hard";
+  } else if (totalPontos >= 6) {
+    levelDoDia = "medium";
+  } else {
+    levelDoDia = "easy";
+  }
+
+  let colorClass, textColor;
+  switch (levelDoDia) {
+    case "hard":
+      colorClass = "bg-danger";
+      textColor = "text-white";
+      break;
+    case "medium":
+      colorClass = "bg-warning";
+      textColor = "text-dark";
+      break;
+    case "easy":
+      colorClass = "bg-success";
+      textColor = "text-white";
+      break;
+  }
+
+  // Formata o nome do instrumento
+  const formattedInstrument = instrumento.charAt(0).toUpperCase() + instrumento.slice(1);
+
+  // Cria o badge
+  const badge = document.createElement("span");
+  badge.textContent = `${formattedInstrument}`;
+  badge.classList.add("badge", "col", colorClass, textColor, "me-1");
+  badge.style.margin = "1px";
+  badge.style.fontSize = "0.6rem";
+
+  musicasDiv.appendChild(badge);
+});   
 
         } else {
           musicasDiv.innerHTML = "<p>Nenhuma música cadastrada.</p>";

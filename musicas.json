@@ -10,10 +10,10 @@
         "level": {
             "vocal": "easy",
             "guitarra": "hard",
-            "baixo": "hard",
+            "baixo": "medium",
             "violao": "",
-            "bateria": "hard",
-            "teclado": "hard",
+            "bateria": "medium",
+            "teclado": "medium",
             "sax": ""
         }
     },
@@ -26,12 +26,12 @@
         "keywords": "abraço, inocência, amor, dependência, afago",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "vocal": "easy",
+            "guitarra": "easy",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -62,7 +62,7 @@
         "keywords": "agnus, cordeiro, sacrifício, redenção, amor",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
+            "vocal": "hard",
             "guitarra": "medium",
             "baixo": "medium",
             "violao": "",
@@ -117,11 +117,11 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -136,10 +136,10 @@
         "level": {
             "vocal": "medium",
             "guitarra": "medium",
-            "baixo": "medium",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -153,11 +153,11 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -174,7 +174,7 @@
             "guitarra": "medium",
             "baixo": "medium",
             "violao": "",
-            "bateria": "medium",
+            "bateria": "easy",
             "teclado": "medium",
             "sax": ""
         }
@@ -188,12 +188,12 @@
         "keywords": "colossenses, amor, ensinamento, vida, fé",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "vocal": "easy",
+            "guitarra": "hard",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -207,11 +207,11 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "hard",
-            "baixo": "medium",
+            "guitarra": "medium",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "hard",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -230,7 +230,7 @@
             "violao": "",
             "bateria": "easy",
             "teclado": "easy",
-            "sax": "easy"
+            "sax": ""
         }
     },
     {
@@ -242,12 +242,12 @@
         "keywords": "ele vem, retorno, segunda vinda, esperança, juízo",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "vocal": "easy",
+            "guitarra": "easy",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -261,10 +261,10 @@
         "versiculos": "",
         "level": {
             "vocal": "easy",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "guitarra": "hard",
+            "baixo": "hard",
             "violao": "",
-            "bateria": "medium",
+            "bateria": "hard",
             "teclado": "hard",
             "sax": ""
         }
@@ -278,7 +278,7 @@
         "keywords": "braços, proteção, amor, aconchego, refúgio",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
+            "vocal": "easy",
             "guitarra": "easy",
             "baixo": "easy",
             "violao": "",
@@ -300,7 +300,7 @@
             "guitarra": "medium",
             "baixo": "medium",
             "violao": "",
-            "bateria": "medium",
+            "bateria": "hard",
             "teclado": "medium",
             "sax": ""
         }
@@ -334,10 +334,10 @@
         "level": {
             "vocal": "medium",
             "guitarra": "medium",
-            "baixo": "medium",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -351,11 +351,11 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -369,11 +369,11 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -387,12 +387,12 @@
         "versiculos": "",
         "level": {
             "vocal": "easy",
-            "guitarra": "easy",
-            "baixo": "easy",
+            "guitarra": "hard",
+            "baixo": "medium",
             "violao": "",
-            "bateria": "easy",
+            "bateria": "hard",
             "teclado": "easy",
-            "sax": "easy"
+            "sax": ""
         }
     },
     {
@@ -406,7 +406,7 @@
         "level": {
             "vocal": "medium",
             "guitarra": "medium",
-            "baixo": "medium",
+            "baixo": "easy",
             "violao": "",
             "bateria": "medium",
             "teclado": "medium",
@@ -422,12 +422,12 @@
         "keywords": "grande, Senhor, majestade, poder, louvor",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "vocal": "easy",
+            "guitarra": "easy",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -459,11 +459,11 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -477,10 +477,10 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
+            "bateria": "easy",
             "teclado": "medium",
             "sax": ""
         }
@@ -494,9 +494,9 @@
         "keywords": "lugar secreto, comunhão, intimidade, retiro, adoração",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "vocal": "hard",
+            "guitarra": "hard",
+            "baixo": "easy",
             "violao": "",
             "bateria": "medium",
             "teclado": "medium",
@@ -531,8 +531,8 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
             "violao": "",
             "bateria": "medium",
             "teclado": "medium",
@@ -549,11 +549,11 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -566,12 +566,12 @@
         "keywords": "derrama, amor, entrega, adoração, intensidade",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
+            "vocal": "easy",
             "guitarra": "medium",
-            "baixo": "medium",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -602,11 +602,11 @@
         "keywords": "maior amor, Jesus, paixão, devoção, adoração",
         "versiculos": "",
         "level": {
-            "vocal": "easy",
+            "vocal": "medium",
             "guitarra": "hard",
-            "baixo": "medium",
+            "baixo": "hard",
             "violao": "",
-            "bateria": "medium",
+            "bateria": "hard",
             "teclado": "medium",
             "sax": ""
         }
@@ -625,7 +625,7 @@
             "baixo": "medium",
             "violao": "",
             "bateria": "medium",
-            "teclado": "medium",
+            "teclado": "hard",
             "sax": ""
         }
     },
@@ -728,12 +728,12 @@
         "keywords": "glória, transformação, mudança, amor, fé",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
+            "vocal": "easy",
             "guitarra": "medium",
-            "baixo": "medium",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -765,10 +765,10 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
+            "bateria": "easy",
             "teclado": "medium",
             "sax": ""
         }
@@ -783,10 +783,10 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "easy",
-            "baixo": "medium",
+            "guitarra": "medium",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
+            "bateria": "easy",
             "teclado": "medium",
             "sax": ""
         }
@@ -818,12 +818,12 @@
         "keywords": "para sempre, eterno, fidelidade, amor, adoração",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "vocal": "easy",
+            "guitarra": "easy",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -854,8 +854,8 @@
         "keywords": "preciso, Ti, amor, dependência, adoração",
         "versiculos": "",
         "level": {
-            "vocal": "easy",
-            "guitarra": "hard",
+            "vocal": "medium",
+            "guitarra": "medium",
             "baixo": "medium",
             "violao": "",
             "bateria": "medium",
@@ -890,12 +890,12 @@
         "keywords": "criança, inocência, pureza, fé, confiança",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "vocal": "easy",
+            "guitarra": "easy",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -928,10 +928,10 @@
         "level": {
             "vocal": "medium",
             "guitarra": "medium",
-            "baixo": "medium",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -962,13 +962,13 @@
         "keywords": "reino, Deus, governo, eternidade, poder",
         "versiculos": "",
         "level": {
-            "vocal": "easy",
+            "vocal": "medium",
             "guitarra": "medium",
             "baixo": "easy",
             "violao": "",
             "bateria": "easy",
             "teclado": "medium",
-            "sax": "easy"
+            "sax": ""
         }
     },
     {
@@ -982,10 +982,10 @@
         "level": {
             "vocal": "medium",
             "guitarra": "medium",
-            "baixo": "medium",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -1017,10 +1017,10 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "medium",
+            "guitarra": "hard",
             "baixo": "medium",
             "violao": "",
-            "bateria": "medium",
+            "bateria": "easy",
             "teclado": "medium",
             "sax": ""
         }
@@ -1035,11 +1035,11 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "hard",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -1052,12 +1052,12 @@
         "keywords": "adorar, vir, louvar, devoção, presença",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "vocal": "easy",
+            "guitarra": "easy",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -1074,7 +1074,7 @@
             "guitarra": "medium",
             "baixo": "medium",
             "violao": "",
-            "bateria": "medium",
+            "bateria": "easy",
             "teclado": "medium",
             "sax": ""
         }
@@ -1126,10 +1126,10 @@
         "level": {
             "vocal": "medium",
             "guitarra": "medium",
-            "baixo": "medium",
+            "baixo": "hard",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "hard",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -1142,7 +1142,7 @@
         "keywords": "alvo, neve, pureza, renovação, perdão",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
+            "vocal": "easy",
             "guitarra": "medium",
             "baixo": "medium",
             "violao": "",
@@ -1161,11 +1161,11 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "easy",
+            "guitarra": "medium",
             "baixo": "medium",
             "violao": "",
-            "bateria": "easy",
-            "teclado": "hard",
+            "bateria": "medium",
+            "teclado": "medium",
             "sax": ""
         }
     },
@@ -1214,7 +1214,7 @@
         "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
-            "vocal": "easy",
+            "vocal": "medium",
             "guitarra": "easy",
             "baixo": "easy",
             "violao": "",
