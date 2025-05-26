@@ -13,6 +13,8 @@ document.addEventListener("DOMContentLoaded", async function () {
       // Itens mais tocados: slice(0, 10). Menos tocados: últimos 10 itens (revertendo para manter ordem crescente).
       let items = top ? data.slice(0, 10) : data.slice(-10).reverse();
 
+      console.log(data);
+
       return items
         .map((item, index) => {
           // Ajuste no rank para menos tocados. Agora, para "menos", começamos de 1 para o primeiro da lista.
