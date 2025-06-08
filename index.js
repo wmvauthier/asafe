@@ -1,5 +1,5 @@
-let TOCADA_NOS_ULTIMOS_X_DIAS = 35;
-let TOCADA_NOS_PROXIMOS_X_DIAS = 35;
+let TOCADA_NOS_ULTIMOS_X_DIAS = 42;
+let TOCADA_NOS_PROXIMOS_X_DIAS = 42;
 
 // Variáveis globais para controle do filtro
 let activeCategories = new Set();
@@ -104,149 +104,162 @@ function carregarMusicas() {
           const content = document.querySelector(".musicas");
           content.innerHTML = ""; // Limpa antes de adicionar
 
-// Calcula resumo de categorias e níveis
-const resumoCategorias = {};
-const resumoLevels = {};
+          // Calcula resumo de categorias e níveis
+          const resumoCategorias = {};
+          const resumoLevels = {};
 
-proximaEscala.musicas.forEach((id) => {
-  const musica = musicas.find((m) => m.id === id);
-  if (musica) {
-    // Categorias
-    if (musica.categorias) {
-      const categorias = musica.categorias.split(";").map((c) => c.trim());
-      categorias.forEach((cat) => {
-        resumoCategorias[cat] = (resumoCategorias[cat] || 0) + 1;
-      });
-    }
+          proximaEscala.musicas.forEach((id) => {
+            const musica = musicas.find((m) => m.id === id);
+            if (musica) {
+              // Categorias
+              if (musica.categorias) {
+                const categorias = musica.categorias
+                  .split(";")
+                  .map((c) => c.trim());
+                categorias.forEach((cat) => {
+                  resumoCategorias[cat] = (resumoCategorias[cat] || 0) + 1;
+                });
+              }
 
-    // Levels
-    if (musica.level && typeof musica.level === "object") {
-      Object.entries(musica.level).forEach(([instrumento, dificuldade]) => {
-        if (!resumoLevels[instrumento]) {
-          resumoLevels[instrumento] = { easy: 0, medium: 0, hard: 0 };
-        }
-        if (["easy", "medium", "hard"].includes(dificuldade)) {
-          resumoLevels[instrumento][dificuldade]++;
-        }
-      });
-    }
-  }
-});
+              // Levels
+              if (musica.level && typeof musica.level === "object") {
+                Object.entries(musica.level).forEach(
+                  ([instrumento, dificuldade]) => {
+                    if (!resumoLevels[instrumento]) {
+                      resumoLevels[instrumento] = {
+                        easy: 0,
+                        medium: 0,
+                        hard: 0,
+                      };
+                    }
+                    if (["easy", "medium", "hard"].includes(dificuldade)) {
+                      resumoLevels[instrumento][dificuldade]++;
+                    }
+                  }
+                );
+              }
+            }
+          });
 
-//**
-// Adiciona o painel de resumo antes da lista de músicas
-content.innerHTML = ""; // Limpa a lista
+          //**
+          // Adiciona o painel de resumo antes da lista de músicas
+          content.innerHTML = ""; // Limpa a lista
 
-const resumoDiv = document.createElement("div");
-resumoDiv.classList.add("mb-4", "text-white");
-// resumoDiv.style.padding = "0px!important";
-resumoDiv.style["padding"] = "0px!important";
+          const resumoDiv = document.createElement("div");
+          resumoDiv.classList.add("mb-4", "text-white");
+          // resumoDiv.style.padding = "0px!important";
+          resumoDiv.style["padding"] = "0px!important";
 
-// Container dos badges
-const badgeContainer = document.createElement("div");
-badgeContainer.style.display = "flex";
-badgeContainer.style.flexWrap = "wrap";
-// badgeContainer.style.gap = "6px";
+          // Container dos badges
+          const badgeContainer = document.createElement("div");
+          badgeContainer.style.display = "flex";
+          badgeContainer.style.flexWrap = "wrap";
+          // badgeContainer.style.gap = "6px";
 
-// === BADGES DE CATEGORIAS ===
-const totalMusicas = proximaEscala.musicas.length;
+          // === BADGES DE CATEGORIAS ===
+          const totalMusicas = proximaEscala.musicas.length;
 
-const sortedCategories = Object.entries(resumoCategorias)
-  .sort((a, b) => b[1] - a[1]);
+          const sortedCategories = Object.entries(resumoCategorias).sort(
+            (a, b) => b[1] - a[1]
+          );
 
-sortedCategories.forEach(([categoria, count]) => {
-  const porcentagem = (count / totalMusicas) * 100;
-  let level;
+          sortedCategories.forEach(([categoria, count]) => {
+            const porcentagem = (count / totalMusicas) * 100;
+            let level;
 
-  if (count === 1) {
-    level = "hard";
-  } else if (porcentagem > 50) {
-    level = "easy";
-  } else {
-    level = "medium";
-  }
+            if (count === 1) {
+              level = "hard";
+            } else if (porcentagem > 50) {
+              level = "easy";
+            } else {
+              level = "medium";
+            }
 
-  let colorClass, textColor;
-  switch (level) {
-    case "hard":
-      colorClass = "bg-danger";
-      textColor = "text-white";
-      break;
-    case "medium":
-      colorClass = "bg-warning";
-      textColor = "text-dark";
-      break;
-    case "easy":
-      colorClass = "bg-success";
-      textColor = "text-white";
-      break;
-  }
+            let colorClass, textColor;
+            switch (level) {
+              case "hard":
+                colorClass = "bg-danger";
+                textColor = "text-white";
+                break;
+              case "medium":
+                colorClass = "bg-warning";
+                textColor = "text-dark";
+                break;
+              case "easy":
+                colorClass = "bg-success";
+                textColor = "text-white";
+                break;
+            }
 
-  const badge = document.createElement("span");
-  badge.textContent = categoria;
-  badge.classList.add("badge", colorClass, textColor);
-  badge.style.fontSize = "0.7rem";
-  badge.style.margin = "2px";
-  badgeContainer.appendChild(badge);
-});
+            if (level == "easy") {
+              const badge = document.createElement("span");
+              badge.textContent = categoria;
+              badge.classList.add("badge", colorClass, textColor);
+              badge.style.fontSize = "0.7rem";
+              badge.style.margin = "2px";
+              badgeContainer.appendChild(badge);
+            }
+          });
 
-// === BADGES DE LEVELS POR INSTRUMENTO ===
-const levelPoints = { easy: 1, medium: 3, hard: 5 };
-const levelTotals = {};
+          // === BADGES DE LEVELS POR INSTRUMENTO ===
+          const levelPoints = { easy: 1, medium: 3, hard: 5 };
+          const levelTotals = {};
 
-proximaEscala.musicas.forEach((id) => {
-  const musica = musicas.find((m) => m.id === id);
-  if (musica?.level && typeof musica.level === "object") {
-    Object.entries(musica.level).forEach(([instrumento, dificuldade]) => {
-      if (!dificuldade || !levelPoints[dificuldade]) return;
-      if (!levelTotals[instrumento]) levelTotals[instrumento] = 0;
-      levelTotals[instrumento] += levelPoints[dificuldade];
-    });
-  }
-});
+          proximaEscala.musicas.forEach((id) => {
+            const musica = musicas.find((m) => m.id === id);
+            if (musica?.level && typeof musica.level === "object") {
+              Object.entries(musica.level).forEach(
+                ([instrumento, dificuldade]) => {
+                  if (!dificuldade || !levelPoints[dificuldade]) return;
+                  if (!levelTotals[instrumento]) levelTotals[instrumento] = 0;
+                  levelTotals[instrumento] += levelPoints[dificuldade];
+                }
+              );
+            }
+          });
 
-Object.entries(levelTotals).forEach(([instrumento, totalPontos]) => {
-  let levelDoDia;
-  if (totalPontos >= 10) {
-    levelDoDia = "hard";
-  } else if (totalPontos >= 6) {
-    levelDoDia = "medium";
-  } else {
-    levelDoDia = "easy";
-  }
+          Object.entries(levelTotals).forEach(([instrumento, totalPontos]) => {
+            let levelDoDia;
+            if (totalPontos >= 10) {
+              levelDoDia = "hard";
+            } else if (totalPontos >= 6) {
+              levelDoDia = "medium";
+            } else {
+              levelDoDia = "easy";
+            }
 
-  let colorClass, textColor;
-  switch (levelDoDia) {
-    case "hard":
-      colorClass = "bg-danger";
-      textColor = "text-white";
-      break;
-    case "medium":
-      colorClass = "bg-warning";
-      textColor = "text-dark";
-      break;
-    case "easy":
-      colorClass = "bg-success";
-      textColor = "text-white";
-      break;
-  }
+            let colorClass, textColor;
+            switch (levelDoDia) {
+              case "hard":
+                colorClass = "bg-danger";
+                textColor = "text-white";
+                break;
+              case "medium":
+                colorClass = "bg-warning";
+                textColor = "text-dark";
+                break;
+              case "easy":
+                colorClass = "bg-success";
+                textColor = "text-white";
+                break;
+            }
 
-  const formattedInstrument =
-    instrumento.charAt(0).toUpperCase() + instrumento.slice(1);
+            const formattedInstrument =
+              instrumento.charAt(0).toUpperCase() + instrumento.slice(1);
 
-  const badge = document.createElement("span");
-  badge.textContent = formattedInstrument;
-  badge.classList.add("badge", colorClass, textColor);
-  badge.style.fontSize = "0.7rem";
-  badge.style.margin = "2px";
-  badgeContainer.appendChild(badge);
-});
+            const badge = document.createElement("span");
+            badge.textContent = formattedInstrument;
+            badge.classList.add("badge", colorClass, textColor);
+            badge.style.fontSize = "0.7rem";
+            badge.style.margin = "2px";
+            badgeContainer.appendChild(badge);
+          });
 
-// Adiciona tudo no DOM
-resumoDiv.appendChild(badgeContainer);
-content.appendChild(resumoDiv);
+          // Adiciona tudo no DOM
+          resumoDiv.appendChild(badgeContainer);
+          content.appendChild(resumoDiv);
 
-//** */
+          //** */
 
           proximaEscala.musicas.forEach((musicaEscala) => {
             const musica = musicas.find((m) => m.id === musicaEscala);
@@ -512,34 +525,36 @@ function carregarEscalasFuturas() {
           categoriasTitulo.style["font-size"] = "1rem";
           categoriasTitulo.style["font-weight"] = "bold";
           musicasDiv.appendChild(categoriasTitulo);
-          
+
           const categoryCount = {};
           const totalMusicas = escala.musicas.length;
-          
+
           // Conta quantas vezes cada categoria aparece
           escala.musicas.forEach((id) => {
             const musica = musicasData.find((m) => m.id === id);
             if (musica?.categorias) {
               let cats = musica.categorias.split(";");
-          
+
               cats.forEach((categoria) => {
                 const trimmedCategoria = categoria.trim();
                 if (trimmedCategoria) {
-                  categoryCount[trimmedCategoria] = (categoryCount[trimmedCategoria] || 0) + 1;
+                  categoryCount[trimmedCategoria] =
+                    (categoryCount[trimmedCategoria] || 0) + 1;
                 }
               });
             }
           });
-          
+
           // Ordena as categorias da mais comum pra menos comum
-          const sortedCategories = Object.entries(categoryCount)
-            .sort((a, b) => b[1] - a[1]);
-          
+          const sortedCategories = Object.entries(categoryCount).sort(
+            (a, b) => b[1] - a[1]
+          );
+
           // Cria os badges com cor baseada na "afinidade"
           sortedCategories.forEach(([categoria, count]) => {
             const porcentagem = (count / totalMusicas) * 100;
             let level;
-          
+
             if (count === 1) {
               level = "hard";
             } else if (porcentagem > 50) {
@@ -547,7 +562,7 @@ function carregarEscalasFuturas() {
             } else {
               level = "medium";
             }
-          
+
             // Define a cor do badge
             let colorClass, textColor;
             switch (level) {
@@ -564,15 +579,23 @@ function carregarEscalasFuturas() {
                 textColor = "text-white";
                 break;
             }
-          
-            const badge = document.createElement("span");
-            badge.textContent = `${categoria}`;
-            badge.classList.add("badge", colorClass, textColor, "me-1", "col");
-            badge.style.margin = "5px";
-            badge.style.fontSize = "0.6rem";
-          
-            musicasDiv.appendChild(badge);
-          });          
+
+            if (level == "easy") {
+              const badge = document.createElement("span");
+              badge.textContent = `${categoria}`;
+              badge.classList.add(
+                "badge",
+                colorClass,
+                textColor,
+                "me-1",
+                "col"
+              );
+              badge.style.margin = "5px";
+              badge.style.fontSize = "0.6rem";
+
+              musicasDiv.appendChild(badge);
+            }
+          });
 
           const levelsTitulo = document.createElement("h4");
           levelsTitulo.textContent = "Levels";
@@ -715,7 +738,9 @@ function setupCategoriasButtons(musicas) {
   categoriesSet.forEach((cat) => {
     musicasDisponiveis[cat] = musicas.filter(
       (musica) =>
-        musica.categories.includes(cat) && !musicasTocadas.has(musica.id)
+        musica.categories.includes(cat) &&
+        !musicasTocadas.has(musica.id) &&
+        !musica.ban
     ).length;
   });
 
@@ -774,13 +799,20 @@ function renderRepertorio() {
   });
 
   const sortedMusicas = repertorioMusicas.slice().sort((a, b) => {
+    // Prioridade 1: Músicas banidas sempre por último
+    if (a.ban !== b.ban) {
+      return a.ban ? 1 : -1;
+    }
+
+    // Prioridade 2: Músicas tocadas vão para o final
     const aTocada = musicasTocadas.has(a.id);
     const bTocada = musicasTocadas.has(b.id);
 
     if (aTocada !== bTocada) {
-      return aTocada ? 1 : -1; // Músicas tocadas vão para o final
+      return aTocada ? 1 : -1;
     }
 
+    // Prioridade 3: Categorias ativas
     if (activeCategories.size > 0) {
       const aExact =
         a.categories.length === activeCategories.size &&
@@ -803,6 +835,8 @@ function renderRepertorio() {
         return bMatchCount - aMatchCount;
       }
     }
+
+    // Prioridade 4: Ordem alfabética
     return a.titulo.localeCompare(b.titulo);
   });
 
@@ -843,7 +877,7 @@ function renderRepertorio() {
     h32.style.paddingBottom = "1px";
     h32.style.color = "white";
 
-    if (musicasTocadas.has(musica.id)) {
+    if (musicasTocadas.has(musica.id) || musica.ban == true) {
       img.style.filter = "grayscale(100%)";
       h3.style.textDecoration = "line-through";
       h32.style.textDecoration = "line-through";

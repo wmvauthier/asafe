@@ -213,7 +213,8 @@
             "bateria": "easy",
             "teclado": "easy",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 13,
@@ -303,7 +304,8 @@
             "bateria": "hard",
             "teclado": "medium",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 18,
@@ -357,7 +359,8 @@
             "bateria": "easy",
             "teclado": "easy",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 21,
@@ -375,7 +378,8 @@
             "bateria": "easy",
             "teclado": "easy",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 22,
@@ -393,7 +397,8 @@
             "bateria": "hard",
             "teclado": "easy",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 23,
@@ -609,7 +614,8 @@
             "bateria": "hard",
             "teclado": "medium",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 35,
@@ -645,7 +651,8 @@
             "bateria": "hard",
             "teclado": "hard",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 37,
@@ -699,7 +706,8 @@
             "bateria": "",
             "teclado": "medium",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 40,
@@ -735,7 +743,8 @@
             "bateria": "easy",
             "teclado": "easy",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 42,
@@ -897,7 +906,8 @@
             "bateria": "medium",
             "teclado": "medium",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 52,
@@ -915,7 +925,8 @@
             "bateria": "easy",
             "teclado": "easy",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 53,
@@ -1023,7 +1034,8 @@
             "bateria": "hard",
             "teclado": "easy",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 59,
@@ -1095,7 +1107,8 @@
             "bateria": "medium",
             "teclado": "medium",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 63,
@@ -1113,7 +1126,8 @@
             "bateria": "hard",
             "teclado": "easy",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 64,
