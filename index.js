@@ -733,7 +733,7 @@ function setupCategoriasButtons(musicas) {
     }
   });
 
-  // Cria um objeto com a quantidade de músicas disponíveis para cada categoria
+  // Cria um objeto com a quantidade de músicas disponíveis para cada categoria 
   const musicasDisponiveis = {};
   categoriesSet.forEach((cat) => {
     musicasDisponiveis[cat] = musicas.filter(
