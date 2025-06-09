@@ -49,7 +49,7 @@
             "baixo": "medium",
             "violao": "",
             "bateria": "medium",
-            "teclado": "medium",
+            "teclado": "hard",
             "sax": ""
         }
     },
@@ -257,7 +257,7 @@
         "titulo": "Em Espírito e em Verdade",
         "artista": "Alexandre Alves",
         "referLink": "b8RSKRumBRs",
-        "categorias": "Adoração Congregacional",
+        "categorias": "Adoração Congregacional; Engrandecimento a Deus",
         "keywords": "espírito, verdade, adoração, coração, sinceridade",
         "versiculos": "",
         "level": {

@@ -1,5 +1,5 @@
-let TOCADA_NOS_ULTIMOS_X_DIAS = 42;
-let TOCADA_NOS_PROXIMOS_X_DIAS = 42;
+let TOCADA_NOS_ULTIMOS_X_DIAS = 49;
+let TOCADA_NOS_PROXIMOS_X_DIAS = 49;
 
 // Variáveis globais para controle do filtro
 let activeCategories = new Set();
@@ -419,7 +419,7 @@ function carregarEscalasFuturas() {
         const mes = String(data.getMonth() + 1).padStart(2, "0");
         const ano = data.getFullYear();
 
-        h3.textContent = `${
+        h3.textContent = `📅 ${
           diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)
         } - ${dia}/${mes}/${ano}`;
         h3.style["font-size"] = "1.3rem";
