@@ -261,7 +261,7 @@
         "keywords": "espírito, verdade, adoração, coração, sinceridade",
         "versiculos": "",
         "level": {
-            "vocal": "easy",
+            "vocal": "medium",
             "guitarra": "hard",
             "baixo": "hard",
             "violao": "",
@@ -1203,18 +1203,252 @@
     },
     {
         "id": 68,
-        "titulo": "Só tu És Santo",
-        "artista": "MORADA",
-        "referLink": "2rpaccTwmio",
-        "categorias": "Adoração Congregacional; Santidade",
+        "titulo": "Estamos de Pé",
+        "artista": "Marcus Salles",
+        "referLink": "4x-yrCz1D9g",
+        "categorias": "Adoração Congregacional",
+        "keywords": "redenção, salvação, sacrifício, graça, amor",
+        "versiculos": "",
+        "level": {
+            "vocal": "easy",
+            "guitarra": "medium",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
+    },
+    {
+        "id": 69,
+        "titulo": "Redenção",
+        "artista": "Projeto Sola",
+        "referLink": "sX0KVSex6lI",
+        "categorias": "Morte e Ressurreição; Amor de Deus",
         "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
             "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
+    },
+    {
+        "id": 70,
+        "titulo": "Êxodo",
+        "artista": "Projeto Sola",
+        "referLink": "GlF6k39Bj0g",
+        "categorias": "Morte e Ressurreição; Engrandecimento a Deus",
+        "keywords": "redenção, salvação, sacrifício, graça, amor",
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "hard",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "hard",
+            "teclado": "medium",
+            "sax": ""
+        }
+    },
+    {
+        "id": 70,
+        "titulo": "Graça",
+        "artista": "Israel Salazar",
+        "referLink": "_hL1pguiHX0",
+        "categorias": "Morte e Ressurreição; Engrandecimento a Deus",
+        "keywords": "redenção, salvação, sacrifício, graça, amor",
+        "versiculos": "",
+        "level": {
+            "vocal": "hard",
+            "guitarra": "hard",
+            "baixo": "hard",
+            "violao": "",
+            "bateria": "hard",
+            "teclado": "hard",
+            "sax": ""
+        }
+    },
+    {
+        "id": 71,
+        "titulo": "No Meio dos Louvores",
+        "artista": "Israel Salazar",
+        "referLink": "Ts1h1EDiLpc",
+        "categorias": "Adoração Congregacional",
+        "keywords": "redenção, salvação, sacrifício, graça, amor",
+        "versiculos": "",
+        "level": {
+            "vocal": "hard",
+            "guitarra": "hard",
+            "baixo": "hard",
+            "violao": "",
+            "bateria": "hard",
+            "teclado": "hard",
+            "sax": ""
+        }
+    },
+    {
+        "id": 72,
+        "titulo": "Creio que Tu és a Cura",
+        "artista": "Gabriela Rocha",
+        "referLink": "4X0mSNyZcxQ",
+        "categorias": "Proteção Divina; Confiança em Deus",
+        "keywords": "redenção, salvação, sacrifício, graça, amor",
+        "versiculos": "",
+        "level": {
+            "vocal": "hard",
+            "guitarra": "medium",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
+    },
+    {
+        "id": 73,
+        "titulo": "De Graça em Graça",
+        "artista": "Hillsong",
+        "referLink": "SMRN-uXRQmc",
+        "categorias": "Morte e Ressurreição; Amor de Deus",
+        "keywords": "redenção, salvação, sacrifício, graça, amor",
+        "versiculos": "",
+        "level": {
+            "vocal": "easy",
             "guitarra": "easy",
             "baixo": "easy",
             "violao": "",
             "bateria": "easy",
+            "teclado": "easy",
+            "sax": ""
+        }
+    },
+    {
+        "id": 74,
+        "titulo": "Ao Único",
+        "artista": "Louvor e Adoração Filadélfia",
+        "referLink": "thhBwc3qLfE",
+        "categorias": "Engrandecimento a Deus; Adoração Congregacional",
+        "keywords": "redenção, salvação, sacrifício, graça, amor",
+        "versiculos": "",
+        "level": {
+            "vocal": "easy",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
+            "sax": ""
+        }
+    },
+    {
+        "id": 75,
+        "titulo": "O Nosso General é Cristo",
+        "artista": "CEIZS",
+        "referLink": "dS35Xhf2UeI",
+        "categorias": "Proteção Divina; Confiança em Deus",
+        "keywords": "redenção, salvação, sacrifício, graça, amor",
+        "versiculos": "",
+        "level": {
+            "vocal": "easy",
+            "guitarra": "medium",
+            "baixo": "hard",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
+    },
+    {
+        "id": 76,
+        "titulo": "Vitorioso És",
+        "artista": "Gabriel Guedes",
+        "referLink": "k7tGP-vidwc",
+        "categorias": "Engrandecimento a Deus; Adoração Congregacional",
+        "keywords": "redenção, salvação, sacrifício, graça, amor",
+        "versiculos": "",
+        "level": {
+            "vocal": "hard",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "medium",
+            "sax": ""
+        }
+    },
+    {
+        "id": 77,
+        "titulo": "O Espírito de Deus está Aqui",
+        "artista": "Arianne",
+        "referLink": "7ivOU0qJUbQ",
+        "categorias": "Espírito Santo; Glória de Deus; Intimidade com Deus; Adoração Congregacional",
+        "keywords": "redenção, salvação, sacrifício, graça, amor",
+        "versiculos": "",
+        "level": {
+            "vocal": "hard",
+            "guitarra": "hard",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
+    },
+    {
+        "id": 78,
+        "titulo": "Palavras",
+        "artista": "Carol Braga",
+        "referLink": "Hb5J1-ovVZA",
+        "categorias": "Confiança em Deus; Intimidade com Deus",
+        "keywords": "redenção, salvação, sacrifício, graça, amor",
+        "versiculos": "",
+        "level": {
+            "vocal": "hard",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "medium",
+            "sax": ""
+        }
+    },
+    {
+        "id": 79,
+        "titulo": "Só uma Coisa me satisfaz",
+        "artista": "Ministério Zoe",
+        "referLink": "AkGogdtNlkE",
+        "categorias": "Glória de Deus; Intimidade com Deus",
+        "keywords": "redenção, salvação, sacrifício, graça, amor",
+        "versiculos": "",
+        "level": {
+            "vocal": "hard",
+            "guitarra": "medium",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "hard",
+            "sax": ""
+        }
+    },
+    {
+        "id": 80,
+        "titulo": "Quão Formoso És",
+        "artista": "Ministério Zoe",
+        "referLink": "ORomQ177Utg",
+        "categorias": "Engrandecimento a Deus; Glória de Deus",
+        "keywords": "redenção, salvação, sacrifício, graça, amor",
+        "versiculos": "",
+        "level": {
+            "vocal": "hard",
+            "guitarra": "hard",
+            "baixo": "hard",
+            "violao": "",
+            "bateria": "medium",
             "teclado": "hard",
             "sax": ""
         }

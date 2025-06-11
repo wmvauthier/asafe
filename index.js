@@ -733,7 +733,7 @@ function setupCategoriasButtons(musicas) {
     }
   });
 
-  // Cria um objeto com a quantidade de músicas disponíveis para cada categoria 
+  // Cria um objeto com a quantidade de músicas disponíveis para cada categoria
   const musicasDisponiveis = {};
   categoriesSet.forEach((cat) => {
     musicasDisponiveis[cat] = musicas.filter(
@@ -760,23 +760,25 @@ function setupCategoriasButtons(musicas) {
   }
 
   sortedCategories.forEach((cat) => {
-    const button = document.createElement("button");
-    button.innerHTML = `${cat} <span class="badge bg-light text-dark">${musicasDisponiveis[cat]}</span>`;
-    button.classList.add("btn", "btn-sm", "btn-outline-light", "me-2");
-    button.style.margin = "2px";
+    if (musicasDisponiveis[cat] > 0) {
+      const button = document.createElement("button");
+      button.innerHTML = `${cat} <span class="badge bg-light text-dark">${musicasDisponiveis[cat]}</span>`;
+      button.classList.add("btn", "btn-sm", "btn-outline-light", "me-2");
+      button.style.margin = "2px";
 
-    button.addEventListener("click", function () {
-      if (activeCategories.has(cat)) {
-        activeCategories.delete(cat);
-        button.classList.remove("active");
-      } else {
-        activeCategories.add(cat);
-        button.classList.add("active");
-      }
-      renderRepertorio();
-    });
+      button.addEventListener("click", function () {
+        if (activeCategories.has(cat)) {
+          activeCategories.delete(cat);
+          button.classList.remove("active");
+        } else {
+          activeCategories.add(cat);
+          button.classList.add("active");
+        }
+        renderRepertorio();
+      });
 
-    container.appendChild(button);
+      container.appendChild(button);
+    }
   });
 }
 
