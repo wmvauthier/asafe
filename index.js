@@ -42,24 +42,38 @@ function carregarIntegrantes() {
             if (integrante) {
               const col = document.createElement("div");
               col.classList.add("col-lg-1", "col-sm-6", "col-4", "mb-4");
-              col.style["padding-left"] = "5px";
-              col.style["padding-right"] = "5px";
-              col.style["margin-bottom"] = "5px!important";
+              col.style.paddingLeft = "5px";
+              col.style.paddingRight = "5px";
+              col.style.marginBottom = "5px";
 
               const memberDiv = document.createElement("div");
               memberDiv.classList.add("band-member", "text-center");
+              memberDiv.style.position = "relative";
 
               const img = document.createElement("img");
-              img.src =
-                "integrantes/" + integrante.nome.toLowerCase() + ".jpeg";
+              img.src = "integrantes/" + integrante.nome.toLowerCase() + ".jpeg";
               img.alt = integrante.nome;
+              img.classList.add("img-fluid", "rounded");
+
+              // 🔥 Verifica se esse integrante está em header
+              if (proximaEscala.header?.includes(integranteEscala)) {
+                img.classList.add("integrante-header");
+
+                const crown = document.createElement("div");
+                crown.textContent = "👑";
+                crown.classList.add("crown-icon");
+                memberDiv.appendChild(crown);
+              }
 
               const icon = document.createElement("i");
               icon.classList.add(...integrante.icon.split(" "));
+              icon.style.display = "block";
+              icon.style.marginTop = "4px";
 
               const p = document.createElement("p");
-              // p.textContent = `${integranteEscala.funcao}`;
-              p.style["margin-bottom"] = "0px";
+              p.style.marginBottom = "0px";
+              // Caso você tenha uma propriedade função no integrante, pode ativar:
+              // p.textContent = integrante.funcao || "";
 
               memberDiv.appendChild(img);
               memberDiv.appendChild(icon);
@@ -430,14 +444,15 @@ function carregarEscalasFuturas() {
 
         // Container para os integrantes
         const integrantesDiv = document.createElement("div");
-        integrantesDiv.classList.add("row", "g-2");
+        integrantesDiv.classList.add("row", "g-3");
         integrantesDiv.style["margin-top"] = "2px";
 
-        let integrantesTexto = "**Integrantes:**\n";
+        let integrantesTexto = `🧑‍🤝‍🧑 ** Integrantes:**\n`;
 
         if (escala.integrantes.length > 0) {
+
           const integrantesTitulo = document.createElement("h4");
-          integrantesTitulo.textContent = "Integrantes";
+          integrantesTitulo.textContent = "🧑‍🤝‍🧑 Integrantes";
           integrantesTitulo.style["margin-top"] = "5px";
           integrantesTitulo.style["font-size"] = "1rem";
           integrantesTitulo.style["font-weight"] = "bold";
@@ -450,18 +465,45 @@ function carregarEscalasFuturas() {
               col.classList.add("col-2");
               col.style["margin-bottom"] = "13px";
 
+              const imgWrapper = document.createElement("div");
+              imgWrapper.style.position = "relative"; // para posicionar a coroa
+              imgWrapper.style.display = "inline-block";
+
               const img = document.createElement("img");
               img.src = `integrantes/${integrante.nome.toLowerCase()}.jpeg`;
               img.alt = integrante.nome;
               img.classList.add("img-fluid", "rounded");
 
-              col.appendChild(img);
+              // 👉 Se for header, adiciona borda e coroa
+              if (escala.header?.includes(id)) {
+                img.style.border = "3px solid gold"; // borda amarela
+                img.style.boxShadow = "0 0 10px gold";
+
+                // Adiciona um símbolo de coroa (pode ser substituído por <img>)
+                const crown = document.createElement("div");
+                crown.textContent = "👑";
+                crown.style.position = "absolute";
+                crown.style.top = "-25px";
+                crown.style.right = "-8px";
+                crown.style.fontSize = "15px";
+                crown.style.textShadow = "0 0 3px black";
+
+                imgWrapper.appendChild(crown);
+              }
+
+              imgWrapper.appendChild(img);
+              col.appendChild(imgWrapper);
               integrantesDiv.appendChild(col);
 
               // Adiciona ao texto
-              integrantesTexto += `- ${integrante.nome}\n`;
+              integrantesTexto += `- ${integrante.nome}`;
+              if (escala.header?.includes(id)) {
+                integrantesTexto += " 👑";
+              }
+              integrantesTexto += "\n";
             }
           });
+
         } else {
           integrantesDiv.innerHTML = "<p>Nenhum integrante cadastrado.</p>";
           integrantesTexto += "Nenhum integrante cadastrado.\n";
@@ -476,7 +518,7 @@ function carregarEscalasFuturas() {
 
         if (escala.musicas.length > 0) {
           const musicasTitulo = document.createElement("h4");
-          musicasTitulo.textContent = "Músicas";
+          musicasTitulo.textContent = "🎶 Músicas";
           musicasTitulo.style["margin-top"] = "5px";
           musicasTitulo.style["font-size"] = "1rem";
           musicasTitulo.style["font-weight"] = "bold";
@@ -520,7 +562,7 @@ function carregarEscalasFuturas() {
           });
 
           const categoriasTitulo = document.createElement("h4");
-          categoriasTitulo.textContent = "Categorias";
+          categoriasTitulo.textContent = "📌 Categorias";
           categoriasTitulo.style["margin-top"] = "10px";
           categoriasTitulo.style["font-size"] = "1rem";
           categoriasTitulo.style["font-weight"] = "bold";
@@ -598,7 +640,7 @@ function carregarEscalasFuturas() {
           });
 
           const levelsTitulo = document.createElement("h4");
-          levelsTitulo.textContent = "Levels";
+          levelsTitulo.textContent = "🏷️Levels";
           levelsTitulo.style["margin-top"] = "10px";
           levelsTitulo.style["font-size"] = "1rem";
           levelsTitulo.style["font-weight"] = "bold";
