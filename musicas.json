@@ -5,7 +5,6 @@
         "artista": "Kleber Lucas",
         "referLink": "mHu3UqXJ4tU",
         "categorias": "Morte e Ressurreição",
-        "keywords": "cruz, sangue, ressurreição, morte, vida",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -23,7 +22,6 @@
         "artista": "David Quinlan",
         "referLink": "com5UB-SWYY",
         "categorias": "Intimidade com Deus",
-        "keywords": "abraço, inocência, amor, dependência, afago",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -41,7 +39,6 @@
         "artista": "Davi Sacer",
         "referLink": "zPD2W9WEm8s",
         "categorias": "Engrandecimento a Deus; Adoração Congregacional",
-        "keywords": "senhor, rei, glória, adoração, poder",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -59,7 +56,6 @@
         "artista": "Gabriela Rocha",
         "referLink": "ag1StnggWkM",
         "categorias": "Engrandecimento a Deus",
-        "keywords": "agnus, cordeiro, sacrifício, redenção, amor",
         "versiculos": "",
         "level": {
             "vocal": "hard",
@@ -77,7 +73,6 @@
         "artista": "Voz da Verdade",
         "referLink": "QpBNXkKIYZw",
         "categorias": "Vida Eterna",
-        "keywords": "rio, azul, eternidade, jornada, promessa",
         "versiculos": "",
         "level": {
             "vocal": "hard",
@@ -90,30 +85,11 @@
         }
     },
     {
-        "id": 6,
-        "titulo": "Espírito Enche a Minha Vida",
-        "artista": "Alexandre Alves",
-        "referLink": "T3Y9Q1vWKRM",
-        "categorias": "Adoração Congregacional; Espírito Santo",
-        "keywords": "único, Jesus, adoração, amor, fidelidade",
-        "versiculos": "",
-        "level": {
-            "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
-            "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
-            "sax": ""
-        }
-    },
-    {
         "id": 7,
         "titulo": "Aquieta minh'alma",
         "artista": "Ministério Zoe",
         "referLink": "ANfpF0pNob4",
         "categorias": "Intimidade com Deus; Amor de Deus",
-        "keywords": "alma, calma, paz, quietude, descanso",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -131,7 +107,6 @@
         "artista": "Gabriela Rocha",
         "referLink": "WWrU6LC_4ho",
         "categorias": "Espírito Santo; Engrandecimento a Deus",
-        "keywords": "Atos, Espírito, Pentecostes, poder, igreja",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -146,10 +121,9 @@
     {
         "id": 9,
         "titulo": "Caminho no Deserto",
-        "artista": "Viva Adoração",
+        "artista": "Bethel Music",
         "referLink": "VuApXUlveLM",
         "categorias": "Engrandecimento a Deus; Confiança em Deus",
-        "keywords": "deserto, caminho, fé, provação, confiança",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -167,7 +141,6 @@
         "artista": "Diante do Trono",
         "referLink": "5j0arvaKdqk",
         "categorias": "Engrandecimento a Deus; Vida Eterna",
-        "keywords": "apocalipse, fim dos tempos, juízo, revelação, poder",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -185,7 +158,6 @@
         "artista": "Fhop Music",
         "referLink": "MeX0yHMs9Nk",
         "categorias": "Morte e Ressurreição; Amor de Deus",
-        "keywords": "colossenses, amor, ensinamento, vida, fé",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -203,7 +175,6 @@
         "artista": "Aline Barros",
         "referLink": "BcX-KWrsSYk",
         "categorias": "Morte e Ressurreição",
-        "keywords": "cruz, ressurreição, vitória, vida nova, salvação",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -222,7 +193,6 @@
         "artista": "Paulo César Baruk",
         "referLink": "3aYIoi1q2Do",
         "categorias": "Engrandecimento a Deus; Confiança em Deus",
-        "keywords": "bom, amor, fidelidade, graça, bondade",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -240,7 +210,6 @@
         "artista": "Gabriel Guedes",
         "referLink": "YudXB8MZRTs",
         "categorias": "Volta de Jesus; Vida Eterna",
-        "keywords": "ele vem, retorno, segunda vinda, esperança, juízo",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -258,7 +227,6 @@
         "artista": "Alexandre Alves",
         "referLink": "b8RSKRumBRs",
         "categorias": "Adoração Congregacional; Engrandecimento a Deus",
-        "keywords": "espírito, verdade, adoração, coração, sinceridade",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -276,7 +244,6 @@
         "artista": "Laura Souguellis",
         "referLink": "IxpWNuxGmzc",
         "categorias": "Proteção Divina; Intimidade com Deus",
-        "keywords": "braços, proteção, amor, aconchego, refúgio",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -294,7 +261,6 @@
         "artista": "Renascer Praise",
         "referLink": "vM2A2XEm9TE",
         "categorias": "Proteção Divina; Confiança em Deus",
-        "keywords": "escape, libertação, salvação, redenção, refúgio",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -313,7 +279,6 @@
         "artista": "Leonardo Gonçalves",
         "referLink": "_SzVzMh7qfM",
         "categorias": "Confiança em Deus",
-        "keywords": "rendo, entrega, rendição, submissão, devoção",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -331,7 +296,6 @@
         "artista": "Hillsong",
         "referLink": "_qDKrvstS9c",
         "categorias": "Confiança em Deus",
-        "keywords": "rendição, entrega, fé, devoção, amor",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -349,7 +313,6 @@
         "artista": "Som do Reino",
         "referLink": "RXlDfjDg738",
         "categorias": "Intimidade com Deus",
-        "keywords": "vaso, quebrar, rendição, fragilidade, restauração",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -368,7 +331,6 @@
         "artista": "Luma Elpídio",
         "referLink": "xu8Zel1u-6k",
         "categorias": "Amor de Deus;Intimidade com Deus",
-        "keywords": "amor, graça, incondicional, adoração, maravilha",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -387,7 +349,6 @@
         "artista": "Nívea Soares",
         "referLink": "PdJoTcOgwUA",
         "categorias": "Morte e Ressurreição; Engrandecimento a Deus",
-        "keywords": "filho, vivo, Deus, salvação, poder",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -406,7 +367,6 @@
         "artista": "Fernandinho",
         "referLink": "bOFbr2RpLek",
         "categorias": "Morte e Ressurreição; Amor de Deus",
-        "keywords": "galileu, Jesus, ministério, fé, discipulado",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -424,7 +384,6 @@
         "artista": "Adhemar de Campos",
         "referLink": "icalvyOpiAU",
         "categorias": "Adoração Congregacional;Engrandecimento a Deus",
-        "keywords": "grande, Senhor, majestade, poder, louvor",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -442,7 +401,6 @@
         "artista": "MORADA",
         "referLink": "aMpM68cb5MY",
         "categorias": "Adoração Congregacional;Morte e Ressurreição",
-        "keywords": "presença, Jesus, amor, adoração, comunhão",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -460,7 +418,6 @@
         "artista": "Fernanda Brum",
         "referLink": "q6B4MMSxzQQ",
         "categorias": "Intimidade com Deus",
-        "keywords": "primeiro amor, Jesus, devoção, paixão, adoração",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -478,7 +435,6 @@
         "artista": "Renascer Praise",
         "referLink": "OtDvlKRgJrc",
         "categorias": "Morte e Ressurreição",
-        "keywords": "plano, perfeito, salvação, redenção, graça",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -496,7 +452,6 @@
         "artista": "Gabriela Rocha",
         "referLink": "YnrN0o0lubM",
         "categorias": "Intimidade com Deus",
-        "keywords": "lugar secreto, comunhão, intimidade, retiro, adoração",
         "versiculos": "",
         "level": {
             "vocal": "hard",
@@ -514,7 +469,6 @@
         "artista": "Ministério Avivah",
         "referLink": "iS6GXPbhCwU",
         "categorias": "Volta de Jesus; Vida Eterna",
-        "keywords": "maranata, retorno, esperança, espera, segunda vinda",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -532,7 +486,6 @@
         "artista": "DROPS",
         "referLink": "nv-T2_JPKZA",
         "categorias": "Morte e Ressurreição; Adoração Congregacional",
-        "keywords": "graça, amor, redenção, salvação, favor",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -550,7 +503,6 @@
         "artista": "Gabriela Rocha",
         "referLink": "Z6cONvRUFZQ",
         "categorias": "Glória de Deus",
-        "keywords": "atraiu, chamado, amor, devoção, transformação",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -568,7 +520,6 @@
         "artista": "Vineyard",
         "referLink": "qsmHYPk4XGM",
         "categorias": "Adoração Congregacional; Intimidade com Deus",
-        "keywords": "derrama, amor, entrega, adoração, intensidade",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -586,7 +537,6 @@
         "artista": "Fhop Music",
         "referLink": "0vCmIKyJPRI",
         "categorias": "Engrandecimento a Deus",
-        "keywords": "derrama, amor, entrega, adoração, intensidade",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -604,7 +554,6 @@
         "artista": "Nívea Soares",
         "referLink": "V9zmVN6KcJw",
         "categorias": "Amor de Deus",
-        "keywords": "maior amor, Jesus, paixão, devoção, adoração",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -623,7 +572,6 @@
         "artista": "Renascer Praise",
         "referLink": "QTC7_DVENZA",
         "categorias": "Engrandecimento a Deus",
-        "keywords": "mil graus, intensidade, amor, transformação, poder",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -641,7 +589,6 @@
         "artista": "Trazendo a Arca",
         "referLink": "pSMeSrg4zqo",
         "categorias": "Santidade",
-        "keywords": "Egito, corte, libertação, juízo, milagres",
         "versiculos": "",
         "level": {
             "vocal": "hard",
@@ -660,7 +607,6 @@
         "artista": "Gabriel Guedes",
         "referLink": "ijNCc7ICCck",
         "categorias": "Adoração Congregacional;Engrandecimento a Deus;Santidade",
-        "keywords": "",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -678,7 +624,6 @@
         "artista": "Fernandinho",
         "referLink": "csPaNdL6ndA",
         "categorias": "Morte e Ressurreição",
-        "keywords": "sangue, redenção, salvação, cruz, sacrifício",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -696,7 +641,6 @@
         "artista": "Preto no Branco",
         "referLink": "LYsaKn8FRhc",
         "categorias": "Engrandecimento a Deus",
-        "keywords": "mistério, Deus, infinito, adoração, poder",
         "versiculos": "",
         "level": {
             "vocal": "hard",
@@ -715,7 +659,6 @@
         "artista": "Lukas Agustinho",
         "referLink": "lWax47zymUE",
         "categorias": "Engrandecimento a Deus; Confiança em Deus; Proteção Divina",
-        "keywords": "escudo, milagre, proteção, poder, fé",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -733,7 +676,6 @@
         "artista": "Fernanda Brum",
         "referLink": "9fZph9kZkgM",
         "categorias": "Glória de Deus; Santidade",
-        "keywords": "glória, transformação, mudança, amor, fé",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -752,7 +694,6 @@
         "artista": "Hillsong",
         "referLink": "1XqHlWsMThA",
         "categorias": "Confiança em Deus",
-        "keywords": "oceanos, fé, confiança, desafio, adoração",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -770,7 +711,6 @@
         "artista": "Hillsong",
         "referLink": "8XUqcxgH8r4",
         "categorias": "Morte e Ressurreição; Engrandecimento a Deus",
-        "keywords": "lindo, nome, beleza, adoração, poder",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -788,7 +728,6 @@
         "artista": "Isaias Saad",
         "referLink": "wSKKEAnLTDw",
         "categorias": "Morte e Ressurreição; Amor de Deus",
-        "keywords": "ousado, amor, graça, redenção, transformação",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -806,7 +745,6 @@
         "artista": "Discopraise",
         "referLink": "2Z6nW7jU_uU",
         "categorias": "Confiança em Deus",
-        "keywords": "ouvir, palavra, falar, instrução, adoração",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -824,7 +762,6 @@
         "artista": "Fernandinho",
         "referLink": "DZvBlrJsFag",
         "categorias": "Morte e Ressurreição",
-        "keywords": "para sempre, eterno, fidelidade, amor, adoração",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -842,7 +779,6 @@
         "artista": "Theo Rubia",
         "referLink": "n0fDvJAyrQ8",
         "categorias": "Volta de Jesus; Vida Eterna",
-        "keywords": "morar, presença, habitar, comunhão, adoração",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -860,7 +796,6 @@
         "artista": "Diante do Trono",
         "referLink": "Hy6QJ6LJW2I",
         "categorias": "Confiança em Deus; Intimidade com Deus",
-        "keywords": "preciso, Ti, amor, dependência, adoração",
         "versiculos": "",
         "level": {
             "vocal": "hard",
@@ -878,7 +813,6 @@
         "artista": "Vineyard",
         "referLink": "QbnmpJo3DiI",
         "categorias": "Morte e Ressurreição; Amor de Deus",
-        "keywords": "quebrantado, humilhação, rendição, misericórdia, restauração",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -896,7 +830,6 @@
         "artista": "Isaias Saad",
         "referLink": "gTRFVMkMajw",
         "categorias": "Volta de Jesus; Engrandecimento a Deus; Glória de Deus",
-        "keywords": "leão, ruja, poder, força, vitória",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -915,7 +848,6 @@
         "artista": "Fernanda Brum",
         "referLink": "DVgv6lE0aKE",
         "categorias": "Santidade;Engrandecimento a Deus",
-        "keywords": "santo, santidade, divino, adoração, glória",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -934,7 +866,6 @@
         "artista": "Discopraise",
         "referLink": "XEa2jjT9SyQ",
         "categorias": "Confiança em Deus",
-        "keywords": "humilhar, humildade, rendição, submissão, adoração",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -952,7 +883,6 @@
         "artista": "Ministério Cristo Vivo",
         "referLink": "lMhEFpHzRsY",
         "categorias": "Adoração Congregacional;Engrandecimento a Deus",
-        "keywords": "reino, Deus, governo, eternidade, poder",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -970,7 +900,6 @@
         "artista": "Fhop Music",
         "referLink": "YXnQ02HYB1w",
         "categorias": "Engrandecimento a Deus",
-        "keywords": "águas, purificadoras, limpeza, renovação, graça",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -988,7 +917,6 @@
         "artista": "Adoração & Adoradores",
         "referLink": "2CAwy1l8DwE",
         "categorias": "Engrandecimento a Deus; Adoração Congregacional",
-        "keywords": "bom, bondade, amor, fidelidade, adoração",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -1006,7 +934,6 @@
         "artista": "Davi Sacer",
         "referLink": "4y0_rOSnb_g",
         "categorias": "Engrandecimento a Deus; Confiança em Deus",
-        "keywords": "graça, basta, salvação, amor, redenção",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -1024,7 +951,6 @@
         "artista": "Jeefferson e Suellen",
         "referLink": "t6Pd8gXIASU",
         "categorias": "Volta de Jesus; Vida Eterna",
-        "keywords": "buscar, vir, salvação, resgate, amor",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -1043,7 +969,6 @@
         "artista": "Adoração & Adoradores",
         "referLink": "-4AAHPM98Do",
         "categorias": "Adoração Congregacional;Engrandecimento a Deus;Morte e Ressurreição",
-        "keywords": "adorar, vir, louvar, devoção, presença",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -1061,7 +986,6 @@
         "artista": "Fhop Music",
         "referLink": "dlGOiuxSzVw",
         "categorias": "Engrandecimento a Deus",
-        "keywords": "boa parte, bênção, amor, provisão, graça",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -1079,7 +1003,6 @@
         "artista": "Alexandre Alves",
         "referLink": "5qMJJPwoJZE",
         "categorias": "Engrandecimento a Deus; Adoração Congregacional; Intimidade com Deus",
-        "keywords": "confiança, fé, Senhor, segurança, esperança",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -1097,7 +1020,6 @@
         "artista": "Cultura do Céu",
         "referLink": "E0F9NvrSoa0",
         "categorias": "Espírito Santo; Glória de Deus",
-        "keywords": "venha, espera, retorno, juízo, esperança",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -1116,7 +1038,6 @@
         "artista": "Thalles Roberto",
         "referLink": "rYeSiNf1uos",
         "categorias": "Confiança em Deus",
-        "keywords": "nau, cabo, soltar, confiança, entrega",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -1135,7 +1056,6 @@
         "artista": "Missão Harpa",
         "referLink": "NI89N8QBOoM",
         "categorias": "Morte e Ressurreição",
-        "keywords": "alvo, neve, pureza, renovação, perdão",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -1153,7 +1073,6 @@
         "artista": "Missão Harpa",
         "referLink": "FncNPmyDjzg",
         "categorias": "Morte e Ressurreição",
-        "keywords": "rude, cruz, sacrifício, redenção, dor",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -1171,7 +1090,6 @@
         "artista": "Fernanda Brum",
         "referLink": "_2BImNvixHw",
         "categorias": "Morte e Ressurreição",
-        "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
             "vocal": "hard",
@@ -1189,7 +1107,6 @@
         "artista": "Laura Souguellis",
         "referLink": "jF23NIVWapo",
         "categorias": "Espírito Santo; Glória de Deus; Intimidade com Deus",
-        "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -1207,7 +1124,6 @@
         "artista": "Marcus Salles",
         "referLink": "4x-yrCz1D9g",
         "categorias": "Proteção Divina; Confiança em Deus; Adoração Congregacional",
-        "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -1225,7 +1141,6 @@
         "artista": "Projeto Sola",
         "referLink": "sX0KVSex6lI",
         "categorias": "Morte e Ressurreição; Amor de Deus",
-        "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -1243,7 +1158,6 @@
         "artista": "Projeto Sola",
         "referLink": "GlF6k39Bj0g",
         "categorias": "Morte e Ressurreição; Engrandecimento a Deus",
-        "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -1261,7 +1175,6 @@
         "artista": "Israel Salazar",
         "referLink": "_hL1pguiHX0",
         "categorias": "Morte e Ressurreição; Engrandecimento a Deus",
-        "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
             "vocal": "hard",
@@ -1279,7 +1192,6 @@
         "artista": "Israel Salazar",
         "referLink": "Ts1h1EDiLpc",
         "categorias": "Adoração Congregacional",
-        "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
             "vocal": "hard",
@@ -1297,7 +1209,6 @@
         "artista": "Gabriela Rocha",
         "referLink": "4X0mSNyZcxQ",
         "categorias": "Proteção Divina; Confiança em Deus",
-        "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
             "vocal": "hard",
@@ -1315,7 +1226,6 @@
         "artista": "Hillsong",
         "referLink": "SMRN-uXRQmc",
         "categorias": "Morte e Ressurreição; Amor de Deus",
-        "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -1333,7 +1243,6 @@
         "artista": "Louvor e Adoração Filadélfia",
         "referLink": "thhBwc3qLfE",
         "categorias": "Engrandecimento a Deus; Adoração Congregacional",
-        "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -1351,7 +1260,6 @@
         "artista": "CEIZS",
         "referLink": "dS35Xhf2UeI",
         "categorias": "Proteção Divina; Confiança em Deus",
-        "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -1369,7 +1277,6 @@
         "artista": "Gabriel Guedes",
         "referLink": "k7tGP-vidwc",
         "categorias": "Engrandecimento a Deus; Adoração Congregacional",
-        "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
             "vocal": "hard",
@@ -1387,7 +1294,6 @@
         "artista": "Arianne",
         "referLink": "7ivOU0qJUbQ",
         "categorias": "Espírito Santo; Glória de Deus; Intimidade com Deus; Adoração Congregacional",
-        "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
             "vocal": "hard",
@@ -1405,7 +1311,6 @@
         "artista": "Carol Braga",
         "referLink": "Hb5J1-ovVZA",
         "categorias": "Confiança em Deus; Intimidade com Deus",
-        "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
             "vocal": "hard",
@@ -1423,7 +1328,6 @@
         "artista": "Ministério Zoe",
         "referLink": "AkGogdtNlkE",
         "categorias": "Glória de Deus; Intimidade com Deus",
-        "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
             "vocal": "hard",
@@ -1441,7 +1345,6 @@
         "artista": "Leandro e Josi",
         "referLink": "ORomQ177Utg",
         "categorias": "Engrandecimento a Deus; Glória de Deus",
-        "keywords": "redenção, salvação, sacrifício, graça, amor",
         "versiculos": "",
         "level": {
             "vocal": "hard",
