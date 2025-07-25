@@ -590,7 +590,7 @@ function carregarEscalasFuturas() {
           // Ordena as categorias da mais comum pra menos comum
           const sortedCategories = Object.entries(categoryCount).sort(
             (a, b) => b[1] - a[1]
-          );
+          ).slice(0, 3);
 
           // Cria os badges com cor baseada na "afinidade"
           sortedCategories.forEach(([categoria, count]) => {
@@ -622,7 +622,7 @@ function carregarEscalasFuturas() {
                 break;
             }
 
-            if (level == "easy") {
+            // if (level == "easy") {
               const badge = document.createElement("span");
               badge.textContent = `${categoria}`;
               badge.classList.add(
@@ -632,11 +632,12 @@ function carregarEscalasFuturas() {
                 "me-1",
                 "col"
               );
-              badge.style.margin = "5px";
+              badge.style.margin = "1px";
               badge.style.fontSize = "0.6rem";
 
               musicasDiv.appendChild(badge);
-            }
+            // }
+
           });
 
           const levelsTitulo = document.createElement("h4");
