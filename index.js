@@ -590,7 +590,7 @@ function carregarEscalasFuturas() {
           // Ordena as categorias da mais comum pra menos comum
           const sortedCategories = Object.entries(categoryCount).sort(
             (a, b) => b[1] - a[1]
-          ).slice(0, 3);
+        ).slice(0, 3);
 
           // Cria os badges com cor baseada na "afinidade"
           sortedCategories.forEach(([categoria, count]) => {

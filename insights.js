@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     function createListItems(data, top = true) {
       // Itens mais tocados: slice(0, 10). Menos tocados: últimos 10 itens (revertendo para manter ordem crescente).
-      let items = top ? data.slice(0, 10) : data.slice(-10).reverse();
+      let items = top ? data.slice(0, 20) : data.slice(-20).reverse();
 
       console.log(data);
 
@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
           return `
             <li class="${isTop || isBot ? "bold-item" : ""}">
-              <span class="${rankClass}">#${rank}</span>
+              <span class="${rankClass}"><b>#${rank}</b></span>
               <span class="stat-text">${limitText(item[0])}</span>
               <span class="stat-value">${item[1]}</span>
             </li>`;
