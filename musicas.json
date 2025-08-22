@@ -759,7 +759,7 @@
     {
         "id": 46,
         "titulo": "Pra Sempre",
-        "artista": "Fernandinho",
+        "artista": "Gateway Church",
         "referLink": "DZvBlrJsFag",
         "categorias": "Morte e Ressurreição",
         "versiculos": "",
@@ -810,7 +810,7 @@
     {
         "id": 49,
         "titulo": "Quebrantado",
-        "artista": "Vineyard",
+        "artista": "Bethel Music",
         "referLink": "QbnmpJo3DiI",
         "categorias": "Morte e Ressurreição; Amor de Deus",
         "versiculos": "",
@@ -1355,5 +1355,23 @@
             "teclado": "hard",
             "sax": ""
         }
+    },
+    {
+        "id": 81,
+        "titulo": "Pai Nosso",
+        "artista": "Ministério Pedras Vivas",
+        "referLink": "NYFcTj-KmvI",
+        "categorias": "Confiança e Esperança; Engrandecimento e Exaltação",
+        "versiculos": "",
+        "level": {
+            "vocal": "hard",
+            "guitarra": "hard",
+            "baixo": "hard",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "hard",
+            "sax": ""
+        },
+        "ban": true
     }
 ]
