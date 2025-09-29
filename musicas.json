@@ -1355,23 +1355,5 @@
             "teclado": "hard",
             "sax": ""
         }
-    },
-    {
-        "id": 81,
-        "titulo": "Pai Nosso",
-        "artista": "Ministério Pedras Vivas",
-        "referLink": "NYFcTj-KmvI",
-        "categorias": "Confiança e Esperança; Engrandecimento e Exaltação",
-        "versiculos": "",
-        "level": {
-            "vocal": "hard",
-            "guitarra": "hard",
-            "baixo": "hard",
-            "violao": "",
-            "bateria": "medium",
-            "teclado": "hard",
-            "sax": ""
-        },
-        "ban": true
     }
 ]
