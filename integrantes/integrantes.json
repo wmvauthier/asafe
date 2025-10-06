@@ -162,5 +162,15 @@
         "teclado": "medium"
       }
     ]
+  },
+  {
+    "id": 18,
+    "nome": "Eli",
+    "icon": "fas fa-microphone",
+    "function": [
+      {
+        "sax": "medium"
+      }
+    ]
   }
 ]
