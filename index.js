@@ -462,7 +462,7 @@ function carregarEscalasFuturas() {
             const integrante = integrantesData.find((p) => p.id === id);
             if (integrante) {
               const col = document.createElement("div");
-              col.classList.add("col-2");
+              col.classList.add("col-3");
               col.style["margin-bottom"] = "13px";
 
               const imgWrapper = document.createElement("div");
