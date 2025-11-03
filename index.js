@@ -822,43 +822,42 @@ function renderRepertorio() {
   const activeArr = Array.from(activeCategories);
   const hoje = new Date();
 
-  // --- Contagem de execuções (TODO o histórico) normalizando ID como string
+  // --- Contagem de execuções (normalizando ID como string)
   const contagemMusicas = new Map();
 
-  // Mantém o set de "tocadas" dentro da janela caso você use em outro lugar
+  // Também montamos o set de "tocadas" dentro da janela, se ainda precisar dele para outras regras
   const musicasTocadas = new Set();
 
   historicoEscalas.forEach((escala) => {
-    // 1) Conta SEM janela (histórico completo)
-    escala.musicas.forEach((rawId) => {
-      const id = String(rawId);
-      contagemMusicas.set(id, (contagemMusicas.get(id) || 0) + 1);
-    });
-
-    // 2) Opcional: marca tocadas dentro da janela (se ainda precisar disso)
+    // Garante que datas no formato dd/mm/yyyy sejam convertidas corretamente
     const [dia, mes, ano] = escala.data.split("/");
     const dataEscala = new Date(`${ano}-${mes}-${dia}T00:00:00`);
     const diffDias = (dataEscala - hoje) / (1000 * 60 * 60 * 24);
+
     const dentroDaJanela =
       Math.abs(diffDias) <= TOCADA_NOS_ULTIMOS_X_DIAS ||
       (diffDias >= 0 && diffDias <= TOCADA_NOS_PROXIMOS_X_DIAS);
 
     if (dentroDaJanela) {
       escala.musicas.forEach((rawId) => {
-        const id = String(rawId);
+        const id = String(rawId); // 🔑 normalização de ID
         musicasTocadas.add(id);
+        contagemMusicas.set(id, (contagemMusicas.get(id) || 0) + 1);
       });
     }
   });
+
+  // --- Debug opcional para ver quantas vezes cada música foi tocada
+  // console.log("Contagem de músicas:", Object.fromEntries(contagemMusicas));
 
   const sortedMusicas = repertorioMusicas.slice().sort((a, b) => {
     // Prioridade 1: músicas banidas sempre por último
     if (a.ban !== b.ban) return a.ban ? 1 : -1;
 
-    // Prioridade 2: menos tocada primeiro (usando o HISTÓRICO COMPLETO)
+    // Prioridade 2: menos tocada primeiro (na janela)
     const aCount = contagemMusicas.get(String(a.id)) || 0;
     const bCount = contagemMusicas.get(String(b.id)) || 0;
-    if (aCount !== bCount) return aCount - bCount;
+    if (aCount !== bCount) return aCount - bCount; // 🔥 Menos tocada vem antes
 
     // Prioridade 3: categorias ativas (exato > mais matches)
     if (activeCategories.size > 0) {
@@ -884,6 +883,14 @@ function renderRepertorio() {
     // Prioridade 4: ordem alfabética
     return a.titulo.localeCompare(b.titulo);
   });
+
+  // --- Debug opcional para validar resultado final
+  console.table(
+    sortedMusicas.map((m) => ({
+      titulo: m.titulo,
+      tocadas: contagemMusicas.get(String(m.id)) || 0,
+    }))
+  );
 
   const content = document.querySelector(".repertorio");
   content.innerHTML = "";
