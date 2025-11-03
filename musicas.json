@@ -65,7 +65,8 @@
             "bateria": "medium",
             "teclado": "medium",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 5,
@@ -288,7 +289,8 @@
             "bateria": "medium",
             "teclado": "medium",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 19,
@@ -305,7 +307,8 @@
             "bateria": "easy",
             "teclado": "easy",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 20,
@@ -376,7 +379,8 @@
             "bateria": "medium",
             "teclado": "medium",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 24,
@@ -427,7 +431,8 @@
             "bateria": "easy",
             "teclado": "easy",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 27,
@@ -581,7 +586,8 @@
             "bateria": "medium",
             "teclado": "hard",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 36,
@@ -692,7 +698,7 @@
         "id": 42,
         "titulo": "Oceanos",
         "artista": "Hillsong",
-        "referLink": "1XqHlWsMThA",
+        "referLink": "2LeqOo2EV24",
         "categorias": "Confiança e Esperança; Intimidade com Deus",
         "versiculos": "",
         "level": {
@@ -754,7 +760,8 @@
             "bateria": "medium",
             "teclado": "medium",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 46,
@@ -794,7 +801,7 @@
         "id": 48,
         "titulo": "Preciso de Ti",
         "artista": "Diante do Trono",
-        "referLink": "Hy6QJ6LJW2I",
+        "referLink": "ieyQpi1j78E",
         "categorias": "Confiança e Esperança; Intimidade com Deus; Engrandecimento e Exaltação",
         "versiculos": "",
         "level": {
@@ -822,7 +829,8 @@
             "bateria": "easy",
             "teclado": "easy",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 51,
@@ -875,7 +883,8 @@
             "bateria": "medium",
             "teclado": "medium",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 54,
@@ -943,7 +952,8 @@
             "bateria": "easy",
             "teclado": "medium",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 58,
@@ -1035,8 +1045,8 @@
     {
         "id": 63,
         "titulo": "Solta o Cabo da Nau",
-        "artista": "Thalles Roberto",
-        "referLink": "rYeSiNf1uos",
+        "artista": "Harpa Cristã",
+        "referLink": "5Vp1NWgqZEU",
         "categorias": "Confiança e Esperança",
         "versiculos": "",
         "level": {
@@ -1053,7 +1063,7 @@
     {
         "id": 64,
         "titulo": "Alvo mais que a Neve",
-        "artista": "Missão Harpa",
+        "artista": "Harpa Cristã",
         "referLink": "NI89N8QBOoM",
         "categorias": "Morte e Ressurreição",
         "versiculos": "",
@@ -1070,7 +1080,7 @@
     {
         "id": 65,
         "titulo": "Rude Cruz",
-        "artista": "Missão Harpa",
+        "artista": "Harpa Cristã",
         "referLink": "FncNPmyDjzg",
         "categorias": "Morte e Ressurreição",
         "versiculos": "",
@@ -1082,7 +1092,8 @@
             "bateria": "medium",
             "teclado": "medium",
             "sax": ""
-        }
+        },
+        "ban": true
     },
     {
         "id": 66,
@@ -1353,6 +1364,261 @@
             "violao": "",
             "bateria": "medium",
             "teclado": "hard",
+            "sax": ""
+        }
+    },
+    {
+        "id": 81,
+        "titulo": "Clamo Jesus",
+        "artista": "Paulo César Baruk",
+        "referLink": "ye9caqETC0A",
+        "categorias": "Engrandecimento e Exaltação",
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "medium",
+            "sax": ""
+        }
+    },
+    {
+        "id": 82,
+        "titulo": "Somente Cristo",
+        "artista": "Fhop Music",
+        "referLink": "7sX_vqk8VeE",
+        "categorias": "Amor de Deus; Morte e Ressurreição; Engrandecimento e Exaltação",
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
+            "sax": ""
+        }
+    },
+    {
+        "id": 82,
+        "titulo": "Sublime",
+        "artista": "Fhop Music",
+        "referLink": "7GWZwO0MdsY",
+        "categorias": "Adoração Congregacional; Engrandecimento e Exaltação; Segunda Vinda",
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
+            "sax": ""
+        }
+    },
+    {
+        "id": 83,
+        "titulo": "Gratidão",
+        "artista": "Fhop Music",
+        "referLink": "3SEz_SemHtk",
+        "categorias": "Adoração Congregacional; Engrandecimento e Exaltação; Intimidade com Deus",
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
+            "sax": ""
+        }
+    },
+    {
+        "id": 84,
+        "titulo": "Só Tu és Santo",
+        "artista": "Morada",
+        "referLink": "REJGnZQIFnA",
+        "categorias": "Adoração Congregacional; Engrandecimento e Exaltação; Intimidade com Deus",
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
+            "sax": ""
+        }
+    },
+    {
+        "id": 85,
+        "titulo": "Eu vou Construir",
+        "artista": "Juliano Son",
+        "referLink": "1htnqzaKLP8",
+        "categorias": "Adoração Congregacional; Engrandecimento e Exaltação; Confiança e Esperança",
+        "versiculos": "",
+        "level": {
+            "vocal": "easy",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
+            "sax": ""
+        }
+    },
+    {
+        "id": 86,
+        "titulo": "Quem é esse?",
+        "artista": "Julliany Souza",
+        "referLink": "0ZF5em0MTwY",
+        "categorias": "Morte e Ressurreição; Engrandecimento e Exaltação; Amor de Deus",
+        "versiculos": "",
+        "level": {
+            "vocal": "hard",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
+    },
+    {
+        "id": 87,
+        "titulo": "Hosana",
+        "artista": "Hillsong",
+        "referLink": "2UtcyWiS2aI",
+        "categorias": "Adoração Congregacional;Segunda Vinda",
+        "versiculos": "",
+        "level": {
+            "vocal": "easy",
+            "guitarra": "medium",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
+            "sax": ""
+        }
+    },
+    {
+        "id": 88,
+        "titulo": "Louve",
+        "artista": "Elevation Worship",
+        "referLink": "mL3pDu4NYJw",
+        "categorias": "Adoração Congregacional; Engrandecimento e Exaltação; Morte e Ressurreição",
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "hard",
+            "teclado": "easy",
+            "sax": ""
+        }
+    },
+    {
+        "id": 89,
+        "titulo": "Nada é Impossível",
+        "artista": "Planetshakers",
+        "referLink": "kIp7xyZYbp4",
+        "categorias": "Engrandecimento e Exaltação; Confiança e Esperança",
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "medium",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
+    },
+    {
+        "id": 90,
+        "titulo": "Quero subir",
+        "artista": "Diante do Trono",
+        "referLink": "JpdwXAp_1iM",
+        "categorias": "Engrandecimento e Exaltação; Intimidade com Deus",
+        "versiculos": "",
+        "level": {
+            "vocal": "hard",
+            "guitarra": "medium",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "medium",
+            "sax": ""
+        }
+    },
+    {
+        "id": 91,
+        "titulo": "Rompendo em Fé",
+        "artista": "CEIZS",
+        "referLink": "3iwWQJk6OBw",
+        "categorias": "Confiança e Esperança",
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
+            "sax": ""
+        }
+    },
+    {
+        "id": 92,
+        "titulo": "Digno é o Cordeiro",
+        "artista": "Davi Silva",
+        "referLink": "BfOJEuR5chE",
+        "categorias": "Engrandecimento e Exaltação",
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "easy",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
+            "sax": ""
+        }
+    },
+    {
+        "id": 93,
+        "titulo": "Vencendo vem Jesus",
+        "artista": "Harpa Cristã",
+        "referLink": "-swhFRi7czM",
+        "categorias": "Segunda Vinda",
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "hard",
+            "baixo": "hard",
+            "violao": "",
+            "bateria": "medium",
+            "teclado": "medium",
+            "sax": ""
+        }
+    },
+    {
+        "id": 94,
+        "titulo": "Tu és Soberano",
+        "artista": "Ministério Koinonya",
+        "referLink": "kUxCKk5EQFg",
+        "categorias": "Adoração Congregacional; Engrandecimento e Exaltação; Amor de Deus",
+        "versiculos": "",
+        "level": {
+            "vocal": "easy",
+            "guitarra": "medium",
+            "baixo": "easy",
+            "violao": "",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     }

@@ -51,7 +51,8 @@ function carregarIntegrantes() {
               memberDiv.style.position = "relative";
 
               const img = document.createElement("img");
-              img.src = "integrantes/" + integrante.nome.toLowerCase() + ".jpeg";
+              img.src =
+                "integrantes/" + integrante.nome.toLowerCase() + ".jpeg";
               img.alt = integrante.nome;
               img.classList.add("img-fluid", "rounded");
 
@@ -450,7 +451,6 @@ function carregarEscalasFuturas() {
         let integrantesTexto = `🧑‍🤝‍🧑 ** Integrantes:**\n`;
 
         if (escala.integrantes.length > 0) {
-
           const integrantesTitulo = document.createElement("h4");
           integrantesTitulo.textContent = "🧑‍🤝‍🧑 Integrantes";
           integrantesTitulo.style["margin-top"] = "5px";
@@ -503,7 +503,6 @@ function carregarEscalasFuturas() {
               integrantesTexto += "\n";
             }
           });
-
         } else {
           integrantesDiv.innerHTML = "<p>Nenhum integrante cadastrado.</p>";
           integrantesTexto += "Nenhum integrante cadastrado.\n";
@@ -588,9 +587,9 @@ function carregarEscalasFuturas() {
           });
 
           // Ordena as categorias da mais comum pra menos comum
-          const sortedCategories = Object.entries(categoryCount).sort(
-            (a, b) => b[1] - a[1]
-        ).slice(0, 3);
+          const sortedCategories = Object.entries(categoryCount)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3);
 
           // Cria os badges com cor baseada na "afinidade"
           sortedCategories.forEach(([categoria, count]) => {
@@ -623,21 +622,14 @@ function carregarEscalasFuturas() {
             }
 
             // if (level == "easy") {
-              const badge = document.createElement("span");
-              badge.textContent = `${categoria}`;
-              badge.classList.add(
-                "badge",
-                colorClass,
-                textColor,
-                "me-1",
-                "col"
-              );
-              badge.style.margin = "1px";
-              badge.style.fontSize = "0.6rem";
+            const badge = document.createElement("span");
+            badge.textContent = `${categoria}`;
+            badge.classList.add("badge", colorClass, textColor, "me-1", "col");
+            badge.style.margin = "1px";
+            badge.style.fontSize = "0.6rem";
 
-              musicasDiv.appendChild(badge);
+            musicasDiv.appendChild(badge);
             // }
-
           });
 
           const levelsTitulo = document.createElement("h4");
@@ -830,34 +822,45 @@ function renderRepertorio() {
   const activeArr = Array.from(activeCategories);
   const hoje = new Date();
 
-  // Filtrar músicas tocadas ou agendadas nos últimos/próximos X dias
+  // --- Contagem de execuções (TODO o histórico) normalizando ID como string
+  const contagemMusicas = new Map();
+
+  // Mantém o set de "tocadas" dentro da janela caso você use em outro lugar
   const musicasTocadas = new Set();
+
   historicoEscalas.forEach((escala) => {
-    const dataEscala = new Date(escala.data.split("/").reverse().join("-"));
+    // 1) Conta SEM janela (histórico completo)
+    escala.musicas.forEach((rawId) => {
+      const id = String(rawId);
+      contagemMusicas.set(id, (contagemMusicas.get(id) || 0) + 1);
+    });
+
+    // 2) Opcional: marca tocadas dentro da janela (se ainda precisar disso)
+    const [dia, mes, ano] = escala.data.split("/");
+    const dataEscala = new Date(`${ano}-${mes}-${dia}T00:00:00`);
     const diffDias = (dataEscala - hoje) / (1000 * 60 * 60 * 24);
-    if (
+    const dentroDaJanela =
       Math.abs(diffDias) <= TOCADA_NOS_ULTIMOS_X_DIAS ||
-      (diffDias >= 0 && diffDias <= TOCADA_NOS_PROXIMOS_X_DIAS)
-    ) {
-      escala.musicas.forEach((id) => musicasTocadas.add(id));
+      (diffDias >= 0 && diffDias <= TOCADA_NOS_PROXIMOS_X_DIAS);
+
+    if (dentroDaJanela) {
+      escala.musicas.forEach((rawId) => {
+        const id = String(rawId);
+        musicasTocadas.add(id);
+      });
     }
   });
 
   const sortedMusicas = repertorioMusicas.slice().sort((a, b) => {
-    // Prioridade 1: Músicas banidas sempre por último
-    if (a.ban !== b.ban) {
-      return a.ban ? 1 : -1;
-    }
+    // Prioridade 1: músicas banidas sempre por último
+    if (a.ban !== b.ban) return a.ban ? 1 : -1;
 
-    // Prioridade 2: Músicas tocadas vão para o final
-    const aTocada = musicasTocadas.has(a.id);
-    const bTocada = musicasTocadas.has(b.id);
+    // Prioridade 2: menos tocada primeiro (usando o HISTÓRICO COMPLETO)
+    const aCount = contagemMusicas.get(String(a.id)) || 0;
+    const bCount = contagemMusicas.get(String(b.id)) || 0;
+    if (aCount !== bCount) return aCount - bCount;
 
-    if (aTocada !== bTocada) {
-      return aTocada ? 1 : -1;
-    }
-
-    // Prioridade 3: Categorias ativas
+    // Prioridade 3: categorias ativas (exato > mais matches)
     if (activeCategories.size > 0) {
       const aExact =
         a.categories.length === activeCategories.size &&
@@ -866,9 +869,7 @@ function renderRepertorio() {
         b.categories.length === activeCategories.size &&
         activeArr.every((c) => b.categories.includes(c));
 
-      if (aExact !== bExact) {
-        return aExact ? -1 : 1;
-      }
+      if (aExact !== bExact) return aExact ? -1 : 1;
 
       const aMatchCount = a.categories.filter((c) =>
         activeCategories.has(c)
@@ -876,12 +877,11 @@ function renderRepertorio() {
       const bMatchCount = b.categories.filter((c) =>
         activeCategories.has(c)
       ).length;
-      if (aMatchCount !== bMatchCount) {
-        return bMatchCount - aMatchCount;
-      }
+
+      if (aMatchCount !== bMatchCount) return bMatchCount - aMatchCount;
     }
 
-    // Prioridade 4: Ordem alfabética
+    // Prioridade 4: ordem alfabética
     return a.titulo.localeCompare(b.titulo);
   });
 
