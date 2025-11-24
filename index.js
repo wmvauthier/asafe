@@ -828,61 +828,92 @@ function renderRepertorio() {
   // Também montamos o set de "tocadas" dentro da janela, se ainda precisar dele para outras regras
   const musicasTocadas = new Set();
 
-  historicoEscalas.forEach((escala) => {
-    // Garante que datas no formato dd/mm/yyyy sejam convertidas corretamente
-    const [dia, mes, ano] = escala.data.split("/");
-    const dataEscala = new Date(`${ano}-${mes}-${dia}T00:00:00`);
-    const diffDias = (dataEscala - hoje) / (1000 * 60 * 60 * 24);
+  // --- marcar futuras e recentes separadamente ---
+const musicasRecentes = new Set();
+const musicasFuturas = new Set();
 
-    const dentroDaJanela =
-      Math.abs(diffDias) <= TOCADA_NOS_ULTIMOS_X_DIAS ||
-      (diffDias >= 0 && diffDias <= TOCADA_NOS_PROXIMOS_X_DIAS);
+// Identificação das tocadas recentes/futuras
+historicoEscalas.forEach((escala) => {
+  const [dia, mes, ano] = escala.data.split("/");
+  const dataEscala = new Date(`${ano}-${mes}-${dia}T00:00:00`);
+  const diffDias = (dataEscala - hoje) / (1000 * 60 * 60 * 24);
 
-    if (dentroDaJanela) {
-      escala.musicas.forEach((rawId) => {
-        const id = String(rawId); // 🔑 normalização de ID
-        musicasTocadas.add(id);
-        contagemMusicas.set(id, (contagemMusicas.get(id) || 0) + 1);
-      });
-    }
-  });
+  const dentroDaJanela =
+    Math.abs(diffDias) <= TOCADA_NOS_ULTIMOS_X_DIAS ||
+    (diffDias >= 0 && diffDias <= TOCADA_NOS_PROXIMOS_X_DIAS);
 
-  // --- Debug opcional para ver quantas vezes cada música foi tocada
-  // console.log("Contagem de músicas:", Object.fromEntries(contagemMusicas));
+  if (dentroDaJanela) {
+    escala.musicas.forEach((rawId) => {
+      const id = String(rawId);
 
-  const sortedMusicas = repertorioMusicas.slice().sort((a, b) => {
-    // Prioridade 1: músicas banidas sempre por último
-    if (a.ban !== b.ban) return a.ban ? 1 : -1;
+      // separa recentes e futuras
+      if (diffDias < 0) musicasRecentes.add(id);
+      else musicasFuturas.add(id);
 
-    // Prioridade 2: menos tocada primeiro (na janela)
-    const aCount = contagemMusicas.get(String(a.id)) || 0;
-    const bCount = contagemMusicas.get(String(b.id)) || 0;
-    if (aCount !== bCount) return aCount - bCount; // 🔥 Menos tocada vem antes
+      musicasTocadas.add(id);
+      contagemMusicas.set(
+        id,
+        (contagemMusicas.get(id) || 0) + 1
+      );
+    });
+  }
+});
 
-    // Prioridade 3: categorias ativas (exato > mais matches)
-    if (activeCategories.size > 0) {
-      const aExact =
-        a.categories.length === activeCategories.size &&
-        activeArr.every((c) => a.categories.includes(c));
-      const bExact =
-        b.categories.length === activeCategories.size &&
-        activeArr.every((c) => b.categories.includes(c));
 
-      if (aExact !== bExact) return aExact ? -1 : 1;
+// -------- ORDENADOR PRINCIPAL REESCRITO --------
+const sortedMusicas = repertorioMusicas.slice().sort((a, b) => {
+  const idA = String(a.id);
+  const idB = String(b.id);
 
-      const aMatchCount = a.categories.filter((c) =>
-        activeCategories.has(c)
-      ).length;
-      const bMatchCount = b.categories.filter((c) =>
-        activeCategories.has(c)
-      ).length;
+  // 1) Banidas sempre absolutamente por último
+  const aBan = !!a.ban;
+  const bBan = !!b.ban;
+  if (aBan !== bBan) return aBan ? 1 : -1;
 
-      if (aMatchCount !== bMatchCount) return bMatchCount - aMatchCount;
-    }
+  // 2) Futuras antes das banidas, mas depois de todas as normais
+  const aFut = musicasFuturas.has(idA);
+  const bFut = musicasFuturas.has(idB);
+  if (aFut !== bFut) return aFut ? 1 : -1;
 
-    // Prioridade 4: ordem alfabética
-    return a.titulo.localeCompare(b.titulo);
-  });
+  // 3) Recentes depois das futuras
+  const aRec = musicasRecentes.has(idA);
+  const bRec = musicasRecentes.has(idB);
+  if (aRec !== bRec) return aRec ? 1 : -1;
+
+  // Daqui pra frente estamos lidando APENAS com músicas normais
+
+  // 4) Se houver filtros, match exato primeiro, depois mais matches
+  if (activeCategories.size > 0) {
+    const aExact =
+      a.categories.length === activeCategories.size &&
+      activeArr.every((c) => a.categories.includes(c));
+
+    const bExact =
+      b.categories.length === activeCategories.size &&
+      activeArr.every((c) => b.categories.includes(c));
+
+    if (aExact !== bExact) return aExact ? -1 : 1;
+
+    const aMatchCount = a.categories.filter((c) =>
+      activeCategories.has(c)
+    ).length;
+
+    const bMatchCount = b.categories.filter((c) =>
+      activeCategories.has(c)
+    ).length;
+
+    if (aMatchCount !== bMatchCount) return bMatchCount - aMatchCount;
+  }
+
+  // 5) Entre músicas equivalentes, menos tocada vem antes
+  const aCount = contagemMusicas.get(idA) || 0;
+  const bCount = contagemMusicas.get(idB) || 0;
+  if (aCount !== bCount) return aCount - bCount;
+
+  // 6) Empate final → ordem alfabética
+  return a.titulo.localeCompare(b.titulo);
+});
+
 
   // --- Debug opcional para validar resultado final
   console.table(
@@ -929,11 +960,15 @@ function renderRepertorio() {
     h32.style.paddingBottom = "1px";
     h32.style.color = "white";
 
-    if (musicasTocadas.has(musica.id) || musica.ban == true) {
-      img.style.filter = "grayscale(100%)";
-      h3.style.textDecoration = "line-through";
-      h32.style.textDecoration = "line-through";
-    }
+const isRecent = musicasRecentes.has(String(musica.id));
+const isFuture = musicasFuturas.has(String(musica.id));
+const isBanned = musica.ban === true;
+
+if (isRecent || isFuture || isBanned) {
+  img.style.filter = "grayscale(100%)";
+  h3.style.textDecoration = "line-through";
+  h32.style.textDecoration = "line-through";
+}
 
     if (musica.categories.some((c) => activeCategories.has(c))) {
       card.style.border = "2px solid white";
