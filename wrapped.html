@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wrapped da Banda</title>
+  <link rel="stylesheet" href="wrapped.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div>
+        <div class="app-title">Banda Wrapped</div>
+        <div class="app-subtitle">
+          Um resumo em estilo Spotify Wrapped da história recente da banda:
+          músicas mais tocadas, artistas favoritos, participação dos integrantes e muito mais.
+        </div>
+      </div>
+      <div class="filters">
+        <div class="filter-group">
+          <label for="startDate">De:</label>
+          <input type="date" id="startDate" />
+        </div>
+        <div class="filter-group">
+          <label for="endDate">Até:</label>
+          <input type="date" id="endDate" />
+        </div>
+        <div class="filter-group">
+          <label for="memberFilter">Integrante:</label>
+          <select id="memberFilter"></select>
+        </div>
+      </div>
+      <div class="view-toggle">
+        <button class="view-tab active" data-view="band">
+          <span class="icon">📊</span>
+          <span>Visão da banda</span>
+        </button>
+        <button class="view-tab" data-view="member">
+          <span class="icon">👤</span>
+          <span>Perfil do integrante</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="sections">
+      <div class="views-wrapper">
+        <div class="views-inner">
+          <section class="view-panel" data-view="band">
+            <h2 class="section-title"><span class="icon">📊</span>Visão da banda</h2>
+            <p class="section-subtitle">
+              Estatísticas gerais da banda no período selecionado: repertório, artistas, entradas novas e raridades.
+            </p>
+            <div id="bandSection"></div>
+          </section>
+
+          <section class="view-panel" data-view="member">
+            <h2 class="section-title"><span class="icon">👤</span>Perfil do integrante</h2>
+            <p class="section-subtitle">
+              Escolha um integrante no filtro acima para ver o “Wrapped pessoal”: músicas e artistas que mais tocou,
+              o que mais escolheu, parcerias de palco e desafios.
+            </p>
+            <div id="memberSection"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="wrapped.js"></script>
+</body>
+</html>

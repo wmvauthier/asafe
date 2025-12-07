@@ -833,6 +833,23 @@
         "ban": true
     },
     {
+        "id": 50,
+        "titulo": "Êxodo",
+        "artista": "Projeto Sola",
+        "referLink": "GlF6k39Bj0g",
+        "categorias": "Morte e Ressurreição; Engrandecimento e Exaltação",
+        "versiculos": "",
+        "level": {
+            "vocal": "medium",
+            "guitarra": "hard",
+            "baixo": "medium",
+            "violao": "",
+            "bateria": "hard",
+            "teclado": "medium",
+            "sax": ""
+        }
+    },
+    {
         "id": 51,
         "titulo": "Ruja o Leão",
         "artista": "Isaias Saad",
@@ -1159,23 +1176,6 @@
             "baixo": "easy",
             "violao": "",
             "bateria": "medium",
-            "teclado": "medium",
-            "sax": ""
-        }
-    },
-    {
-        "id": 82,
-        "titulo": "Êxodo",
-        "artista": "Projeto Sola",
-        "referLink": "GlF6k39Bj0g",
-        "categorias": "Morte e Ressurreição; Engrandecimento e Exaltação",
-        "versiculos": "",
-        "level": {
-            "vocal": "medium",
-            "guitarra": "hard",
-            "baixo": "medium",
-            "violao": "",
-            "bateria": "hard",
             "teclado": "medium",
             "sax": ""
         }
