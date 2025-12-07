@@ -147,9 +147,23 @@ body {
 }
 
 .view-panel {
+
   flex: 0 0 100%;
   max-width: 100%;
-  padding-top: 4px;
+
+  padding-top: 6px;
+  padding-left: 6px;
+  padding-right: 6px;
+  padding-bottom: 6px;
+
+}
+
+.view-panel[data-view="member"] .section-title {
+  margin-bottom: 18px; /* espaçamento real abaixo do título */
+}
+
+.view-panel[data-view="member"] .section-subtitle {
+  margin-bottom: 22px;
 }
 
 .section-title {
@@ -386,6 +400,24 @@ body {
   border: 1px solid rgba(148,163,184,0.4);
   font-size: 11px;
   color: var(--muted);
+}
+
+.track-rank-badge.rank-1 {
+  background: linear-gradient(135deg, #facc15, #eab308); /* OURO */
+  color: #000;
+  border: none;
+}
+
+.track-rank-badge.rank-2 {
+  background: linear-gradient(135deg, #e5e7eb, #d1d5db); /* PRATA */
+  color: #000;
+  border: none;
+}
+
+.track-rank-badge.rank-3 {
+  background: linear-gradient(135deg, #d97706, #b45309); /* BRONZE */
+  color: #000;
+  border: none;
 }
 
 .track-feature-info {
@@ -712,3 +744,10 @@ body {
     flex-direction: column;
   }
 }
+
+#memberSection .card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(280px, 1fr));
+  gap: 16px;
+}
+

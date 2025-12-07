@@ -16,21 +16,21 @@ function parseBrDate(str) {
 
 async function loadData() {
   const [musicas, integrantes, historico] = await Promise.all([
-    fetch("musicas.json").then(r => r.json()),
-    fetch("integrantes/integrantes.json").then(r => r.json()),
-    fetch("historico.json").then(r => r.json())
+    fetch("musicas.json").then((r) => r.json()),
+    fetch("integrantes/integrantes.json").then((r) => r.json()),
+    fetch("historico.json").then((r) => r.json()),
   ]);
 
   MUSICAS_RAW = musicas;
   INTEGRANTES_RAW = integrantes;
   HISTORICO_RAW = historico;
 
-  MUSIC_BY_ID = new Map(MUSICAS_RAW.map(m => [m.id, m]));
-  MEMBER_BY_ID = new Map(INTEGRANTES_RAW.map(i => [i.id, i]));
+  MUSIC_BY_ID = new Map(MUSICAS_RAW.map((m) => [m.id, m]));
+  MEMBER_BY_ID = new Map(INTEGRANTES_RAW.map((i) => [i.id, i]));
 
-  HISTORICO = HISTORICO_RAW.map(ev => ({
+  HISTORICO = HISTORICO_RAW.map((ev) => ({
     ...ev,
-    dateObj: parseBrDate(ev.data)
+    dateObj: parseBrDate(ev.data),
   }));
 }
 
@@ -45,14 +45,16 @@ function isValidEvent(ev) {
 function getDateFilters() {
   const startInput = document.getElementById("startDate");
   const endInput = document.getElementById("endDate");
-  let start = startInput.value ? new Date(startInput.value + "T00:00:00") : null;
+  let start = startInput.value
+    ? new Date(startInput.value + "T00:00:00")
+    : null;
   let end = endInput.value ? new Date(endInput.value + "T23:59:59") : null;
   return { start, end };
 }
 
 function filterEvents() {
   const { start, end } = getDateFilters();
-  return HISTORICO.filter(ev => {
+  return HISTORICO.filter((ev) => {
     if (!isValidEvent(ev)) return false;
     if (start && ev.dateObj < start) return false;
     if (end && ev.dateObj > end) return false;
@@ -64,7 +66,7 @@ function filterEvents() {
 // Helpers gerais
 // ---------------------------
 
-function mapToSortedArray(map, keyFn = x => x[1], desc = true) {
+function mapToSortedArray(map, keyFn = (x) => x[1], desc = true) {
   const arr = Array.from(map.entries());
   arr.sort((a, b) => {
     const ka = keyFn(a);
@@ -76,7 +78,10 @@ function mapToSortedArray(map, keyFn = x => x[1], desc = true) {
 
 function splitCategorias(categorias) {
   if (!categorias) return [];
-  return categorias.split(";").map(c => c.trim()).filter(Boolean);
+  return categorias
+    .split(";")
+    .map((c) => c.trim())
+    .filter(Boolean);
 }
 
 function integranteImg(member) {
@@ -128,7 +133,10 @@ function computeBandInsights(events) {
       if (!musica) continue;
       allArtists.push(musica.artista);
 
-      artistCounts.set(musica.artista, (artistCounts.get(musica.artista) || 0) + 1);
+      artistCounts.set(
+        musica.artista,
+        (artistCounts.get(musica.artista) || 0) + 1
+      );
 
       for (const cat of splitCategorias(musica.categorias)) {
         categoriaCounts.set(cat, (categoriaCounts.get(cat) || 0) + 1);
@@ -152,7 +160,7 @@ function computeBandInsights(events) {
   const memberUniqueCount = new Set(allMembers).size;
 
   const totalMusicasCatalogo = MUSICAS_RAW.length;
-  const artistasCatalogoSet = new Set(MUSICAS_RAW.map(m => m.artista));
+  const artistasCatalogoSet = new Set(MUSICAS_RAW.map((m) => m.artista));
   const totalArtistasCatalogo = artistasCatalogoSet.size;
 
   // Peso de categoria para desempate de top músicas
@@ -169,7 +177,9 @@ function computeBandInsights(events) {
   }
 
   // Top músicas (apenas tocadas no período)
-  const musicEntries = Array.from(musicCounts.entries()).filter(([_, c]) => c > 0);
+  const musicEntries = Array.from(musicCounts.entries()).filter(
+    ([_, c]) => c > 0
+  );
   musicEntries.sort((a, b) => {
     const [idA, countA] = a;
     const [idB, countB] = b;
@@ -186,7 +196,7 @@ function computeBandInsights(events) {
     id,
     count,
     musica: MUSIC_BY_ID.get(id),
-    categoriaScore: categoriaScoreByMusic.get(id) || 0
+    categoriaScore: categoriaScoreByMusic.get(id) || 0,
   }));
 
   // Raridades (inclui 0 execuções)
@@ -202,7 +212,7 @@ function computeBandInsights(events) {
   const raridades = raridadesEntries.slice(0, 10).map(([id, count]) => ({
     id,
     count,
-    musica: MUSIC_BY_ID.get(id)
+    musica: MUSIC_BY_ID.get(id),
   }));
 
   // Artistas mais e menos tocados
@@ -212,19 +222,25 @@ function computeBandInsights(events) {
     return a[0].localeCompare(b[0]);
   });
   const topArtistsArr = artistEntries.filter(([_, c]) => c > 0);
-  const topArtists = topArtistsArr.slice(0, 10).map(([name, count]) => ({ name, count }));
+  const topArtists = topArtistsArr
+    .slice(0, 10)
+    .map(([name, count]) => ({ name, count }));
 
   const leastArtistEntries = Array.from(artistCounts.entries());
   leastArtistEntries.sort((a, b) => {
     if (a[1] !== b[1]) return a[1] - b[1];
     return a[0].localeCompare(b[0]);
   });
-  const leastArtists = leastArtistEntries.slice(0, 10).map(([name, count]) => ({ name, count }));
+  const leastArtists = leastArtistEntries
+    .slice(0, 10)
+    .map(([name, count]) => ({ name, count }));
 
   // Novas músicas por mês (mantido se quiser usar no futuro, mas não exibido)
   const newPerMonth = new Map();
   for (const [mid, firstDate] of musicFirstSeen.entries()) {
-    const key = `${firstDate.getFullYear()}-${String(firstDate.getMonth()+1).padStart(2,"0")}`;
+    const key = `${firstDate.getFullYear()}-${String(
+      firstDate.getMonth() + 1
+    ).padStart(2, "0")}`;
     newPerMonth.set(key, (newPerMonth.get(key) || 0) + 1);
   }
   const newPerMonthArr = Array.from(newPerMonth.entries()).sort();
@@ -241,7 +257,7 @@ function computeBandInsights(events) {
     raridades,
     topArtists,
     leastArtists,
-    newPerMonthArr
+    newPerMonthArr,
   };
 }
 
@@ -262,12 +278,15 @@ function computeMemberInsights(events, memberId) {
   const member = MEMBER_BY_ID.get(memberId);
   if (!member) return null;
 
-  const eventsWithMember = events.filter(ev => (ev.integrantes || []).includes(memberId));
+  const eventsWithMember = events.filter((ev) =>
+    (ev.integrantes || []).includes(memberId)
+  );
   const totalCultosComMembro = eventsWithMember.length;
   const totalCultosPeriodo = events.length;
-  const participacaoPercent = totalCultosPeriodo > 0
-    ? Math.round((totalCultosComMembro / totalCultosPeriodo) * 100)
-    : 0;
+  const participacaoPercent =
+    totalCultosPeriodo > 0
+      ? Math.round((totalCultosComMembro / totalCultosPeriodo) * 100)
+      : 0;
 
   const allMusicIds = [];
   const allArtists = [];
@@ -286,7 +305,7 @@ function computeMemberInsights(events, memberId) {
   const musicCountsComMembro = new Map();
 
   for (const ev of eventsWithMember) {
-    const outros = (ev.integrantes || []).filter(id => id !== memberId);
+    const outros = (ev.integrantes || []).filter((id) => id !== memberId);
     for (const o of outros) {
       parceiroCounts.set(o, (parceiroCounts.get(o) || 0) + 1);
     }
@@ -297,7 +316,10 @@ function computeMemberInsights(events, memberId) {
       const musica = MUSIC_BY_ID.get(mid);
       if (!musica) continue;
       allArtists.push(musica.artista);
-      artistCounts.set(musica.artista, (artistCounts.get(musica.artista) || 0) + 1);
+      artistCounts.set(
+        musica.artista,
+        (artistCounts.get(musica.artista) || 0) + 1
+      );
 
       musicCountsComMembro.set(mid, (musicCountsComMembro.get(mid) || 0) + 1);
     }
@@ -309,25 +331,43 @@ function computeMemberInsights(events, memberId) {
       musicCountsEscolhidas.set(mid, (musicCountsEscolhidas.get(mid) || 0) + 1);
       const musica = MUSIC_BY_ID.get(mid);
       if (!musica) continue;
-      artistCountsEscolhidos.set(musica.artista, (artistCountsEscolhidos.get(musica.artista) || 0) + 1);
+      artistCountsEscolhidos.set(
+        musica.artista,
+        (artistCountsEscolhidos.get(musica.artista) || 0) + 1
+      );
     }
   }
 
   const totalExecucoes = allMusicIds.length;
   const uniqueArtistsCount = new Set(allArtists).size;
 
-  const topMusicsTocadas = mapToSortedArray(musicCounts).slice(0, 10).map(([id, count]) => ({
-    id, count, musica: MUSIC_BY_ID.get(id)
-  }));
-  const topMusicsEscolhidas = mapToSortedArray(musicCountsEscolhidas).slice(0, 10).map(([id, count]) => ({
-    id, count, musica: MUSIC_BY_ID.get(id)
-  }));
-  const topArtistsTocados = mapToSortedArray(artistCounts).slice(0, 10).map(([name, count]) => ({ name, count }));
-  const topArtistsEscolhidos = mapToSortedArray(artistCountsEscolhidos).slice(0, 10).map(([name, count]) => ({ name, count }));
+  const topMusicsTocadas = mapToSortedArray(musicCounts)
+    .slice(0, 10)
+    .map(([id, count]) => ({
+      id,
+      count,
+      musica: MUSIC_BY_ID.get(id),
+    }));
+  const topMusicsEscolhidas = mapToSortedArray(musicCountsEscolhidas)
+    .slice(0, 10)
+    .map(([id, count]) => ({
+      id,
+      count,
+      musica: MUSIC_BY_ID.get(id),
+    }));
+  const topArtistsTocados = mapToSortedArray(artistCounts)
+    .slice(0, 10)
+    .map(([name, count]) => ({ name, count }));
+  const topArtistsEscolhidos = mapToSortedArray(artistCountsEscolhidos)
+    .slice(0, 10)
+    .map(([name, count]) => ({ name, count }));
 
-  const parceiros = mapToSortedArray(parceiroCounts).slice(0, 10).map(([pid, count]) => ({
-    member: MEMBER_BY_ID.get(pid), count
-  }));
+  const parceiros = mapToSortedArray(parceiroCounts)
+    .slice(0, 10)
+    .map(([pid, count]) => ({
+      member: MEMBER_BY_ID.get(pid),
+      count,
+    }));
 
   const assinatura = [];
   for (const [mid, withCount] of musicCountsComMembro.entries()) {
@@ -340,7 +380,7 @@ function computeMemberInsights(events, memberId) {
         musica: MUSIC_BY_ID.get(mid),
         withCount,
         total,
-        ratio
+        ratio,
       });
     }
   }
@@ -378,7 +418,7 @@ function computeMemberInsights(events, memberId) {
     parceiros,
     assinaturaTop,
     primaryInstrument,
-    difficultyCounts
+    difficultyCounts,
   };
 }
 
@@ -409,9 +449,10 @@ function renderBandSection(events) {
   const summary = document.createElement("div");
   summary.className = "card-grid summary-grid";
 
-  summary.appendChild(createCard(
-    "Cultos no período",
-    `
+  summary.appendChild(
+    createCard(
+      "Cultos no período",
+      `
     <div class="summary-metric">
       <div class="summary-icon summary-icon-purple">📅</div>
       <div>
@@ -420,12 +461,14 @@ function renderBandSection(events) {
       </div>
     </div>
     `,
-    "summary-card summary-cultos"
-  ));
+      "summary-card summary-cultos"
+    )
+  );
 
-  summary.appendChild(createCard(
-    "Execuções de músicas",
-    `
+  summary.appendChild(
+    createCard(
+      "Execuções de músicas",
+      `
     <div class="summary-metric">
       <div class="summary-icon summary-icon-green">🎵</div>
       <div>
@@ -434,12 +477,14 @@ function renderBandSection(events) {
       </div>
     </div>
     `,
-    "summary-card summary-execs"
-  ));
+      "summary-card summary-execs"
+    )
+  );
 
-  summary.appendChild(createCard(
-    "Músicas diferentes",
-    `
+  summary.appendChild(
+    createCard(
+      "Músicas diferentes",
+      `
     <div class="summary-metric">
       <div class="summary-icon summary-icon-blue">📚</div>
       <div>
@@ -451,12 +496,14 @@ function renderBandSection(events) {
       </div>
     </div>
     `,
-    "summary-card summary-musics"
-  ));
+      "summary-card summary-musics"
+    )
+  );
 
-  summary.appendChild(createCard(
-    "Artistas diferentes",
-    `
+  summary.appendChild(
+    createCard(
+      "Artistas diferentes",
+      `
     <div class="summary-metric">
       <div class="summary-icon summary-icon-pink">👥</div>
       <div>
@@ -468,8 +515,9 @@ function renderBandSection(events) {
       </div>
     </div>
     `,
-    "summary-card summary-artists"
-  ));
+      "summary-card summary-artists"
+    )
+  );
 
   root.appendChild(summary);
 
@@ -477,19 +525,27 @@ function renderBandSection(events) {
   const featuredTracks = insights.topMusics.slice(0, 3);
   const restTracks = insights.topMusics.slice(3);
 
-  const featuredTracksHtml = featuredTracks.map((m, idx) => {
-    const banBadge = m.musica && m.musica.ban ? '<span class="badge badge-ban">BANIDA</span>' : "";
-    const thumb = m.musica ? `<a href="https://www.youtube.com/watch?v=${m.musica.referLink}" target="_blank">
+  const featuredTracksHtml = featuredTracks
+    .map((m, idx) => {
+      const banBadge =
+        m.musica && m.musica.ban
+          ? '<span class="badge badge-ban">BANIDA</span>'
+          : "";
+      const thumb = m.musica
+        ? `<a href="https://www.youtube.com/watch?v=${m.musica.referLink}" target="_blank">
       <img class="thumb thumb-xl" src="https://img.youtube.com/vi/${m.musica.referLink}/0.jpg" alt="thumb">
-    </a>` : "";
-    return `
+    </a>`
+        : "";
+      return `
       <div class="track-feature-card">
         <div class="track-feature-left">
-          <div class="track-rank-badge">#${idx + 1}</div>
+          <div class="track-rank-badge rank-${idx + 1}">#${idx + 1}</div>
           ${thumb}
         </div>
         <div class="track-feature-info">
-          <div class="track-title">${m.musica ? m.musica.titulo : "ID " + m.id} ${banBadge}</div>
+          <div class="track-title">${
+            m.musica ? m.musica.titulo : "ID " + m.id
+          } ${banBadge}</div>
           <div class="track-artist">${m.musica ? m.musica.artista : ""}</div>
           <div class="track-count-row">
             <span class="track-count">${m.count}× no período</span>
@@ -497,51 +553,70 @@ function renderBandSection(events) {
         </div>
       </div>
     `;
-  }).join("");
+    })
+    .join("");
 
-  const restTracksHtml = restTracks.map((m, idx) => {
-    const banBadge = m.musica && m.musica.ban ? '<span class="badge badge-ban">BANIDA</span>' : "";
-    const thumb = m.musica ? `<a href="https://www.youtube.com/watch?v=${m.musica.referLink}" target="_blank">
+  const restTracksHtml = restTracks
+    .map((m, idx) => {
+      const banBadge =
+        m.musica && m.musica.ban
+          ? '<span class="badge badge-ban">BANIDA</span>'
+          : "";
+      const thumb = m.musica
+        ? `<a href="https://www.youtube.com/watch?v=${m.musica.referLink}" target="_blank">
       <img class="thumb thumb-md" src="https://img.youtube.com/vi/${m.musica.referLink}/0.jpg" alt="thumb">
-    </a>` : "";
-    return `
+    </a>`
+        : "";
+      return `
       <li class="top-track-item">
         <div class="top-track-left">
           <span class="rank">#${idx + 4}</span>
           ${thumb}
           <div class="track-info">
-            <div class="track-title">${m.musica ? m.musica.titulo : "ID " + m.id} ${banBadge}</div>
+            <div class="track-title">${
+              m.musica ? m.musica.titulo : "ID " + m.id
+            } ${banBadge}</div>
             <div class="track-artist">${m.musica ? m.musica.artista : ""}</div>
           </div>
         </div>
         <span class="track-count">${m.count}×</span>
       </li>
     `;
-  }).join("");
+    })
+    .join("");
 
   const topMusicsCardHtml = `
     <div class="track-featured-row">
       ${featuredTracksHtml || "<p class='muted'>Nenhuma música no período.</p>"}
     </div>
-    ${restTracks.length ? `<ul class="list top-tracks">${restTracksHtml}</ul>` : ""}
+    ${
+      restTracks.length
+        ? `<ul class="list top-tracks">${restTracksHtml}</ul>`
+        : ""
+    }
   `;
   const topMusicsCard = createCard("Top músicas da banda", topMusicsCardHtml);
 
   const featuredRares = insights.raridades.slice(0, 3);
   const restRares = insights.raridades.slice(3);
 
-  const featuredRaresHtml = featuredRares.map((m, idx) => {
-    const thumb = m.musica ? `<a href="https://www.youtube.com/watch?v=${m.musica.referLink}" target="_blank">
+  const featuredRaresHtml = featuredRares
+    .map((m, idx) => {
+      const thumb = m.musica
+        ? `<a href="https://www.youtube.com/watch?v=${m.musica.referLink}" target="_blank">
       <img class="thumb thumb-xl" src="https://img.youtube.com/vi/${m.musica.referLink}/0.jpg" alt="thumb">
-    </a>` : "";
-    return `
+    </a>`
+        : "";
+      return `
       <div class="track-feature-card">
         <div class="track-feature-left">
-          <div class="track-rank-badge">#${idx + 1}</div>
+          <div class="track-rank-badge rank-${idx + 1}">#${idx + 1}</div>
           ${thumb}
         </div>
         <div class="track-feature-info">
-          <div class="track-title">${m.musica ? m.musica.titulo : "ID " + m.id}</div>
+          <div class="track-title">${
+            m.musica ? m.musica.titulo : "ID " + m.id
+          }</div>
           <div class="track-artist">${m.musica ? m.musica.artista : ""}</div>
           <div class="track-count-row">
             <span class="track-count">${m.count}× no período</span>
@@ -549,34 +624,51 @@ function renderBandSection(events) {
         </div>
       </div>
     `;
-  }).join("");
+    })
+    .join("");
 
-  const restRaresHtml = restRares.map((m, idx) => {
-    const thumb = m.musica ? `<a href="https://www.youtube.com/watch?v=${m.musica.referLink}" target="_blank">
+  const restRaresHtml = restRares
+    .map((m, idx) => {
+      const thumb = m.musica
+        ? `<a href="https://www.youtube.com/watch?v=${m.musica.referLink}" target="_blank">
       <img class="thumb thumb-md" src="https://img.youtube.com/vi/${m.musica.referLink}/0.jpg" alt="thumb">
-    </a>` : "";
-    return `
+    </a>`
+        : "";
+      return `
       <li class="top-track-item">
         <div class="top-track-left">
           <span class="rank">#${idx + 4}</span>
           ${thumb}
           <div class="track-info">
-            <div class="track-title">${m.musica ? m.musica.titulo : "ID " + m.id}</div>
+            <div class="track-title">${
+              m.musica ? m.musica.titulo : "ID " + m.id
+            }</div>
             <div class="track-artist">${m.musica ? m.musica.artista : ""}</div>
           </div>
         </div>
         <span class="track-count">${m.count}×</span>
       </li>
     `;
-  }).join("");
+    })
+    .join("");
 
   const raridadesCardHtml = `
     <div class="track-featured-row">
-      ${featuredRaresHtml || "<p class='muted'>Não há músicas raras no período.</p>"}
+      ${
+        featuredRaresHtml ||
+        "<p class='muted'>Não há músicas raras no período.</p>"
+      }
     </div>
-    ${restRares.length ? `<ul class="list top-tracks">${restRaresHtml}</ul>` : ""}
+    ${
+      restRares.length
+        ? `<ul class="list top-tracks">${restRaresHtml}</ul>`
+        : ""
+    }
   `;
-  const raridadesCard = createCard("Raridades do período (músicas menos tocadas)", raridadesCardHtml);
+  const raridadesCard = createCard(
+    "Raridades do período (músicas menos tocadas)",
+    raridadesCardHtml
+  );
 
   const rowTracks = document.createElement("div");
   rowTracks.className = "band-row";
@@ -588,13 +680,21 @@ function renderBandSection(events) {
   const featuredTopArtists = insights.topArtists.slice(0, 3);
   const restTopArtists = insights.topArtists.slice(3);
 
-  const featuredTopArtistsHtml = featuredTopArtists.map((a, idx) => {
-    const initials = a.name.split(" ").map(p => p[0]).join("").slice(0, 3).toUpperCase();
-    const imgSrc = artistImg(a.name);
-    return `
+  const featuredTopArtistsHtml = featuredTopArtists
+    .map((a, idx) => {
+      const initials = a.name
+        .split(" ")
+        .map((p) => p[0])
+        .join("")
+        .slice(0, 3)
+        .toUpperCase();
+      const imgSrc = artistImg(a.name);
+      return `
       <div class="artist-feature-card">
         <div class="artist-avatar">
-          <img src="${imgSrc}" alt="${a.name}" onerror="this.style.display='none';" />
+          <img src="${imgSrc}" alt="${
+        a.name
+      }" onerror="this.style.display='none';" />
           <div class="artist-avatar-inner">${initials}</div>
         </div>
         <div class="artist-meta">
@@ -603,17 +703,26 @@ function renderBandSection(events) {
         </div>
       </div>
     `;
-  }).join("");
+    })
+    .join("");
 
-  const restTopArtistsHtml = restTopArtists.map((a, idx) => {
-    const initials = a.name.split(" ").map(p => p[0]).join("").slice(0, 3).toUpperCase();
-    const imgSrc = artistImg(a.name);
-    return `
+  const restTopArtistsHtml = restTopArtists
+    .map((a, idx) => {
+      const initials = a.name
+        .split(" ")
+        .map((p) => p[0])
+        .join("")
+        .slice(0, 3)
+        .toUpperCase();
+      const imgSrc = artistImg(a.name);
+      return `
       <li class="artist-row">
         <div class="artist-row-main">
           <span class="rank">#${idx + 4}</span>
           <div class="artist-avatar artist-avatar-sm">
-            <img src="${imgSrc}" alt="${a.name}" onerror="this.style.display='none';" />
+            <img src="${imgSrc}" alt="${
+        a.name
+      }" onerror="this.style.display='none';" />
             <div class="artist-avatar-inner">${initials}</div>
           </div>
           <span class="artist-row-name">${a.name}</span>
@@ -621,13 +730,19 @@ function renderBandSection(events) {
         <span class="track-count">${a.count}×</span>
       </li>
     `;
-  }).join("");
+    })
+    .join("");
 
   const artistasCardHtml = `
     <div class="artist-featured-row">
-      ${featuredTopArtistsHtml || "<p class='muted'>Nenhum artista no período.</p>"}
+      ${
+        featuredTopArtistsHtml ||
+        "<p class='muted'>Nenhum artista no período.</p>"
+      }
     </div>
-    ${restTopArtists.length ? `<ul class="list">${restTopArtistsHtml}</ul>` : ""}
+    ${
+      restTopArtists.length ? `<ul class="list">${restTopArtistsHtml}</ul>` : ""
+    }
   `;
   const artistasCard = createCard("Artistas mais tocados", artistasCardHtml);
 
@@ -635,13 +750,21 @@ function renderBandSection(events) {
   const leastFeatured = leastArtists.slice(0, 3);
   const leastRest = leastArtists.slice(3);
 
-  const leastFeaturedHtml = leastFeatured.map((a, idx) => {
-    const initials = a.name.split(" ").map(p => p[0]).join("").slice(0, 3).toUpperCase();
-    const imgSrc = artistImg(a.name);
-    return `
+  const leastFeaturedHtml = leastFeatured
+    .map((a, idx) => {
+      const initials = a.name
+        .split(" ")
+        .map((p) => p[0])
+        .join("")
+        .slice(0, 3)
+        .toUpperCase();
+      const imgSrc = artistImg(a.name);
+      return `
       <div class="artist-feature-card">
         <div class="artist-avatar">
-          <img src="${imgSrc}" alt="${a.name}" onerror="this.style.display='none';" />
+          <img src="${imgSrc}" alt="${
+        a.name
+      }" onerror="this.style.display='none';" />
           <div class="artist-avatar-inner">${initials}</div>
         </div>
         <div class="artist-meta">
@@ -650,17 +773,26 @@ function renderBandSection(events) {
         </div>
       </div>
     `;
-  }).join("");
+    })
+    .join("");
 
-  const leastRestHtml = leastRest.map((a, idx) => {
-    const initials = a.name.split(" ").map(p => p[0]).join("").slice(0, 3).toUpperCase();
-    const imgSrc = artistImg(a.name);
-    return `
+  const leastRestHtml = leastRest
+    .map((a, idx) => {
+      const initials = a.name
+        .split(" ")
+        .map((p) => p[0])
+        .join("")
+        .slice(0, 3)
+        .toUpperCase();
+      const imgSrc = artistImg(a.name);
+      return `
       <li class="artist-row">
         <div class="artist-row-main">
           <span class="rank">#${idx + 4}</span>
           <div class="artist-avatar artist-avatar-sm">
-            <img src="${imgSrc}" alt="${a.name}" onerror="this.style.display='none';" />
+            <img src="${imgSrc}" alt="${
+        a.name
+      }" onerror="this.style.display='none';" />
             <div class="artist-avatar-inner">${initials}</div>
           </div>
           <span class="artist-row-name">${a.name}</span>
@@ -668,7 +800,8 @@ function renderBandSection(events) {
         <span class="track-count">${a.count}×</span>
       </li>
     `;
-  }).join("");
+    })
+    .join("");
 
   const leastArtistsHtml = `
     <div class="artist-featured-row">
@@ -676,7 +809,10 @@ function renderBandSection(events) {
     </div>
     ${leastRest.length ? `<ul class="list">${leastRestHtml}</ul>` : ""}
   `;
-  const leastArtistsCard = createCard("Artistas menos tocados", leastArtistsHtml);
+  const leastArtistsCard = createCard(
+    "Artistas menos tocados",
+    leastArtistsHtml
+  );
 
   const rowArtists = document.createElement("div");
   rowArtists.className = "band-row band-row-bottom";
@@ -698,13 +834,15 @@ function renderMemberSection(events) {
   root.innerHTML = "";
 
   if (isNaN(memberId)) {
-    root.innerHTML = "<p class='muted'>Selecione um integrante acima para ver o perfil detalhado.</p>";
+    root.innerHTML =
+      "<p class='muted'>Selecione um integrante acima para ver o perfil detalhado.</p>";
     return;
   }
 
   const insights = computeMemberInsights(events, memberId);
   if (!insights) {
-    root.innerHTML = "<p class='muted'>Não foi possível calcular os dados desse integrante.</p>";
+    root.innerHTML =
+      "<p class='muted'>Não foi possível calcular os dados desse integrante.</p>";
     return;
   }
 
@@ -735,42 +873,56 @@ function renderMemberSection(events) {
       return `<p class="muted">${emptyMsg}</p>`;
     }
     const [feat, ...rest] = musics;
-    const featThumb = feat.musica ? `<a href="https://www.youtube.com/watch?v=${feat.musica.referLink}" target="_blank">
+    const featThumb = feat.musica
+      ? `<a href="https://www.youtube.com/watch?v=${feat.musica.referLink}" target="_blank">
       <img class="thumb thumb-xl" src="https://img.youtube.com/vi/${feat.musica.referLink}/0.jpg" alt="thumb">
-    </a>` : "";
+    </a>`
+      : "";
     const featHtml = `
       <div class="track-feature-card">
         <div class="track-feature-left">
-          <div class="track-rank-badge">#1</div>
+          <div class="track-rank-badge rank-1">#1</div>
           ${featThumb}
         </div>
         <div class="track-feature-info">
-          <div class="track-title">${feat.musica ? feat.musica.titulo : "ID " + feat.id}</div>
-          <div class="track-artist">${feat.musica ? feat.musica.artista : ""}</div>
+          <div class="track-title">${
+            feat.musica ? feat.musica.titulo : "ID " + feat.id
+          }</div>
+          <div class="track-artist">${
+            feat.musica ? feat.musica.artista : ""
+          }</div>
           <div class="track-count-row">
             <span class="track-count">${countLabelFn(feat, 1)}</span>
           </div>
         </div>
       </div>
     `;
-    const restHtml = rest.map((m, idx) => {
-      const thumb = m.musica ? `<a href="https://www.youtube.com/watch?v=${m.musica.referLink}" target="_blank">
+    const restHtml = rest
+      .map((m, idx) => {
+        const thumb = m.musica
+          ? `<a href="https://www.youtube.com/watch?v=${m.musica.referLink}" target="_blank">
         <img class="thumb thumb-md" src="https://img.youtube.com/vi/${m.musica.referLink}/0.jpg" alt="thumb">
-      </a>` : "";
-      return `
+      </a>`
+          : "";
+        return `
         <li class="top-track-item">
           <div class="top-track-left">
             <span class="rank">#${idx + 2}</span>
             ${thumb}
             <div class="track-info">
-              <div class="track-title">${m.musica ? m.musica.titulo : "ID " + m.id}</div>
-              <div class="track-artist">${m.musica ? m.musica.artista : ""}</div>
+              <div class="track-title">${
+                m.musica ? m.musica.titulo : "ID " + m.id
+              }</div>
+              <div class="track-artist">${
+                m.musica ? m.musica.artista : ""
+              }</div>
             </div>
           </div>
           <span class="track-count">${countLabelFn(m, idx + 2)}</span>
         </li>
       `;
-    }).join("");
+      })
+      .join("");
     return `
       <div class="track-featured-row">
         ${featHtml}
@@ -784,7 +936,12 @@ function renderMemberSection(events) {
       return `<p class="muted">${emptyMsg}</p>`;
     }
     const [feat, ...rest] = artists;
-    const initialsFeat = feat.name.split(" ").map(p => p[0]).join("").slice(0, 3).toUpperCase();
+    const initialsFeat = feat.name
+      .split(" ")
+      .map((p) => p[0])
+      .join("")
+      .slice(0, 3)
+      .toUpperCase();
     const imgSrcFeat = artistImg(feat.name);
     const featHtml = `
       <div class="artist-feature-card">
@@ -798,15 +955,23 @@ function renderMemberSection(events) {
         </div>
       </div>
     `;
-    const restHtml = rest.map((a, idx) => {
-      const initials = a.name.split(" ").map(p => p[0]).join("").slice(0, 3).toUpperCase();
-      const imgSrcA = artistImg(a.name);
-      return `
+    const restHtml = rest
+      .map((a, idx) => {
+        const initials = a.name
+          .split(" ")
+          .map((p) => p[0])
+          .join("")
+          .slice(0, 3)
+          .toUpperCase();
+        const imgSrcA = artistImg(a.name);
+        return `
         <li class="artist-row">
           <div class="artist-row-main">
             <span class="rank">#${idx + 2}</span>
             <div class="artist-avatar artist-avatar-sm">
-              <img src="${imgSrcA}" alt="${a.name}" onerror="this.style.display='none';" />
+              <img src="${imgSrcA}" alt="${
+          a.name
+        }" onerror="this.style.display='none';" />
               <div class="artist-avatar-inner">${initials}</div>
             </div>
             <span class="artist-row-name">${a.name}</span>
@@ -814,7 +979,8 @@ function renderMemberSection(events) {
           <span class="track-count">${a.count}×</span>
         </li>
       `;
-    }).join("");
+      })
+      .join("");
     return `
       <div class="artist-featured-row">
         ${featHtml}
@@ -832,18 +998,23 @@ function renderMemberSection(events) {
     const featHtml = `
       <div class="pair-feature-card">
         <div class="avatar avatar-lg">
-          <img src="${imgFeat}" alt="${feat.member ? feat.member.nome : ""}" onerror="this.style.visibility='hidden';" />
+          <img src="${imgFeat}" alt="${
+      feat.member ? feat.member.nome : ""
+    }" onerror="this.style.visibility='hidden';" />
         </div>
         <div class="pair-info">
-          <div class="pair-names">${feat.member ? feat.member.nome : "Integrante"}</div>
+          <div class="pair-names">${
+            feat.member ? feat.member.nome : "Integrante"
+          }</div>
           <div class="pair-count">${feat.count} cultos juntos</div>
         </div>
       </div>
     `;
-    const restHtml = rest.map((p) => {
-      if (!p.member) return "";
-      const imgP = integranteImg(p.member);
-      return `
+    const restHtml = rest
+      .map((p) => {
+        if (!p.member) return "";
+        const imgP = integranteImg(p.member);
+        return `
         <li class="member-item">
           <div class="member-main">
             <div class="avatar avatar-sm">
@@ -856,7 +1027,8 @@ function renderMemberSection(events) {
           <span class="track-count">${p.count} cultos juntos</span>
         </li>
       `;
-    }).join("");
+      })
+      .join("");
     return `
       ${featHtml}
       ${rest.length ? `<ul class="list">${restHtml}</ul>` : ""}
@@ -877,10 +1049,12 @@ function renderMemberSection(events) {
     "Nenhuma informação de escolha.",
     (m) => `${m.count}×`
   );
-  grid.appendChild(createCard(
-    "Músicas que mais escolheu",
-    `<p class="muted">Considerando cultos em que esteve no header.</p>${escolhidasHtmlInner}`
-  ));
+  grid.appendChild(
+    createCard(
+      "Músicas que mais escolheu",
+      `<p class="muted">Considerando cultos em que esteve no header.</p>${escolhidasHtmlInner}`
+    )
+  );
 
   // Artistas que mais tocou
   const artistasTocHtml = buildArtistBlock(
@@ -906,16 +1080,19 @@ function renderMemberSection(events) {
     "Nenhuma música se destacou como assinatura.",
     (a) => `${a.withCount} / ${a.total} (${Math.round(a.ratio * 100)}%)`
   );
-  grid.appendChild(createCard(
-    "Músicas assinatura",
-    `<p class="muted">Músicas em que essa pessoa está na maior parte das execuções.</p>${assinaturaHtml}`
-  ));
+  grid.appendChild(
+    createCard(
+      "Músicas assinatura",
+      `<p class="muted">Músicas em que essa pessoa está na maior parte das execuções.</p>${assinaturaHtml}`
+    )
+  );
 
   // Desafios do período
   let diffHtml = "";
   if (insights.primaryInstrument) {
     const dc = insights.difficultyCounts;
-    const totalDiff = (dc.easy || 0) + (dc.medium || 0) + (dc.hard || 0) + (dc.unknown || 0);
+    const totalDiff =
+      (dc.easy || 0) + (dc.medium || 0) + (dc.hard || 0) + (dc.unknown || 0);
     function pct(v) {
       if (!totalDiff) return 0;
       return Math.round((v / totalDiff) * 100);
@@ -927,7 +1104,7 @@ function renderMemberSection(events) {
       { key: "easy", label: "🎧 Easy", class: "difficulty-easy" },
       { key: "medium", label: "🥁 Medium", class: "difficulty-medium" },
       { key: "hard", label: "🔥 Hard", class: "difficulty-hard" },
-      { key: "unknown", label: "❓ Sem info", class: "difficulty-unknown" }
+      { key: "unknown", label: "❓ Sem info", class: "difficulty-unknown" },
     ];
 
     for (const lvl of levels) {
@@ -947,7 +1124,8 @@ function renderMemberSection(events) {
     }
     diffHtml += `</div>`;
   } else {
-    diffHtml += "<p class='muted'>Não foi possível determinar um instrumento principal para esse integrante.</p>";
+    diffHtml +=
+      "<p class='muted'>Não foi possível determinar um instrumento principal para esse integrante.</p>";
   }
   grid.appendChild(createCard("Desafios do período", diffHtml));
 
@@ -960,7 +1138,7 @@ function renderMemberSection(events) {
 
 function setActiveView(view) {
   const tabs = document.querySelectorAll(".view-tab");
-  tabs.forEach(btn => {
+  tabs.forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.view === view);
   });
   const inner = document.querySelector(".views-inner");
@@ -973,7 +1151,9 @@ function setActiveView(view) {
 function populateMemberFilter() {
   const select = document.getElementById("memberFilter");
   select.innerHTML = '<option value="">Selecione um integrante</option>';
-  const sorted = [...INTEGRANTES_RAW].sort((a, b) => a.nome.localeCompare(b.nome));
+  const sorted = [...INTEGRANTES_RAW].sort((a, b) =>
+    a.nome.localeCompare(b.nome)
+  );
   for (const m of sorted) {
     const opt = document.createElement("option");
     opt.value = m.id;
@@ -999,7 +1179,10 @@ function initDateRangeFromHistorico() {
   const max = sorted[sorted.length - 1].dateObj;
   const startInput = document.getElementById("startDate");
   const endInput = document.getElementById("endDate");
-  const toInput = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  const toInput = (d) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+      d.getDate()
+    ).padStart(2, "0")}`;
   startInput.value = toInput(min);
   endInput.value = toInput(max);
 }
@@ -1007,13 +1190,11 @@ function initDateRangeFromHistorico() {
 document.addEventListener("DOMContentLoaded", () => {
   const startInput = document.getElementById("startDate");
   const endInput = document.getElementById("endDate");
-  const memberSelect = document.getElementById("memberFilter");
 
   startInput.addEventListener("change", applyFiltersAndRender);
   endInput.addEventListener("change", applyFiltersAndRender);
-  memberSelect.addEventListener("change", applyFiltersAndRender);
 
-  document.querySelectorAll(".view-tab").forEach(btn => {
+  document.querySelectorAll(".view-tab").forEach((btn) => {
     btn.addEventListener("click", () => setActiveView(btn.dataset.view));
   });
 
@@ -1021,14 +1202,33 @@ document.addEventListener("DOMContentLoaded", () => {
     .then(() => {
       populateMemberFilter();
       initDateRangeFromHistorico();
+
+      const savedMember = localStorage.getItem("selectedMember");
+      if (savedMember) {
+        const select = document.getElementById("memberFilter");
+        select.value = savedMember;
+      }
+
       applyFiltersAndRender();
       setActiveView("band");
     })
-    .catch(err => {
+    .catch((err) => {
       console.error("Erro carregando dados:", err);
       const bandSection = document.getElementById("bandSection");
       if (bandSection) {
-        bandSection.innerHTML = "<p class='muted'>Erro ao carregar dados. Verifique os arquivos JSON.</p>";
+        bandSection.innerHTML =
+          "<p class='muted'>Erro ao carregar dados. Verifique os arquivos JSON.</p>";
       }
     });
+});
+
+document.getElementById("memberFilter").addEventListener("change", (e) => {
+  localStorage.setItem("selectedMember", e.target.value);
+  populateMemberFilter();
+  const savedMember = localStorage.getItem("selectedMember");
+  if (savedMember) {
+    const select = document.getElementById("memberFilter");
+    select.value = savedMember;
+  }
+  applyFiltersAndRender();
 });
