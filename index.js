@@ -1,1079 +1,746 @@
-let TOCADA_NOS_ULTIMOS_X_DIAS = 56;
-let TOCADA_NOS_PROXIMOS_X_DIAS = 56;
+// Janela de recência / futuro para ordenação do repertório
+const TOCADA_NOS_ULTIMOS_X_DIAS = 56;
+const TOCADA_NOS_PROXIMOS_X_DIAS = 56;
 
-// Variáveis globais para controle do filtro
+// Estado global
 let activeCategories = new Set();
 let repertorioMusicas = [];
 let historicoEscalas = [];
-let musicasTocadas = new Set();
+let integrantesData = [];
 
-// Função para carregar e preencher os membros da banda
-function carregarIntegrantes() {
-  fetch("historico.json")
-    .then((response) => response.json())
-    .then((escalas) => {
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0); // Remove horas para evitar problemas de comparação
-
-      const parseData = (dataStr) => {
-        const [dia, mes, ano] = dataStr.split("/").map(Number);
-        return new Date(ano, mes - 1, dia); // Ajuste do mês (base 0)
-      };
-
-      const proximaEscala = escalas
-        .map((escala) => ({ ...escala, data: parseData(escala.data) })) // Converte datas corretamente
-        .filter((escala) => escala.data >= hoje) // Filtra apenas datas futuras
-        .sort((a, b) => a.data - b.data) // Ordena da mais próxima para a mais distante
-        .shift(); // Pega a mais próxima
-
-      if (!proximaEscala) {
-        console.warn("Nenhuma escala futura encontrada.");
-        return;
-      }
-
-      fetch("integrantes/integrantes.json")
-        .then((response) => response.json())
-        .then((data) => {
-          const container = document.querySelector(".integrantes");
-          container.innerHTML = ""; // Limpa antes de adicionar
-
-          proximaEscala.integrantes.forEach((integranteEscala) => {
-            const integrante = data.find((i) => i.id === integranteEscala);
-            if (integrante) {
-              const col = document.createElement("div");
-              col.classList.add("col-lg-1", "col-sm-6", "col-4", "mb-4");
-              col.style.paddingLeft = "5px";
-              col.style.paddingRight = "5px";
-              col.style.marginBottom = "5px";
-
-              const memberDiv = document.createElement("div");
-              memberDiv.classList.add("band-member", "text-center");
-              memberDiv.style.position = "relative";
-
-              const img = document.createElement("img");
-              img.src =
-                "integrantes/" + integrante.nome.toLowerCase() + ".jpeg";
-              img.alt = integrante.nome;
-              img.classList.add("img-fluid", "rounded");
-
-              // 🔥 Verifica se esse integrante está em header
-              if (proximaEscala.header?.includes(integranteEscala)) {
-                img.classList.add("integrante-header");
-
-                const crown = document.createElement("div");
-                crown.textContent = "👑";
-                crown.classList.add("crown-icon");
-                memberDiv.appendChild(crown);
-              }
-
-              const icon = document.createElement("i");
-              icon.classList.add(...integrante.icon.split(" "));
-              icon.style.display = "block";
-              icon.style.marginTop = "4px";
-
-              const p = document.createElement("p");
-              p.style.marginBottom = "0px";
-              // Caso você tenha uma propriedade função no integrante, pode ativar:
-              // p.textContent = integrante.funcao || "";
-
-              memberDiv.appendChild(img);
-              memberDiv.appendChild(icon);
-              memberDiv.appendChild(p);
-
-              col.appendChild(memberDiv);
-              container.appendChild(col);
-            }
-          });
-        })
-        .catch((err) => console.error("Erro ao carregar os integrantes:", err));
-    })
-    .catch((err) => console.error("Erro ao carregar o histórico:", err));
+// Utilitário: data BR -> Date
+function parseDataBR(dataStr) {
+  const [dia, mes, ano] = dataStr.split("/").map(Number);
+  return new Date(ano, mes - 1, dia);
 }
 
-function carregarMusicas() {
-  fetch("historico.json")
-    .then((response) => response.json())
-    .then((escalas) => {
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0); // Remove horas para evitar problemas de comparação
-
-      const parseData = (dataStr) => {
-        const [dia, mes, ano] = dataStr.split("/").map(Number);
-        return new Date(ano, mes - 1, dia); // Ajuste do mês (base 0)
-      };
-
-      const proximaEscala = escalas
-        .map((escala) => ({ ...escala, data: parseData(escala.data) })) // Converte datas corretamente
-        .filter((escala) => escala.data >= hoje) // Filtra apenas datas futuras
-        .sort((a, b) => a.data - b.data) // Ordena da mais próxima para a mais distante
-        .shift(); // Pega a mais próxima
-
-      if (!proximaEscala) {
-        console.warn("Nenhuma escala futura encontrada.");
-        return;
-      }
-
-      fetch("musicas.json")
-        .then((response) => response.json())
-        .then((musicas) => {
-          const content = document.querySelector(".musicas");
-          content.innerHTML = ""; // Limpa antes de adicionar
-
-          // Calcula resumo de categorias e níveis
-          const resumoCategorias = {};
-          const resumoLevels = {};
-
-          proximaEscala.musicas.forEach((id) => {
-            const musica = musicas.find((m) => m.id === id);
-            if (musica) {
-              // Categorias
-              if (musica.categorias) {
-                const categorias = musica.categorias
-                  .split(";")
-                  .map((c) => c.trim());
-                categorias.forEach((cat) => {
-                  resumoCategorias[cat] = (resumoCategorias[cat] || 0) + 1;
-                });
-              }
-
-              // Levels
-              if (musica.level && typeof musica.level === "object") {
-                Object.entries(musica.level).forEach(
-                  ([instrumento, dificuldade]) => {
-                    if (!resumoLevels[instrumento]) {
-                      resumoLevels[instrumento] = {
-                        easy: 0,
-                        medium: 0,
-                        hard: 0,
-                      };
-                    }
-                    if (["easy", "medium", "hard"].includes(dificuldade)) {
-                      resumoLevels[instrumento][dificuldade]++;
-                    }
-                  }
-                );
-              }
-            }
-          });
-
-          //**
-          // Adiciona o painel de resumo antes da lista de músicas
-          content.innerHTML = ""; // Limpa a lista
-
-          const resumoDiv = document.createElement("div");
-          resumoDiv.classList.add("mb-4", "text-white");
-          // resumoDiv.style.padding = "0px!important";
-          resumoDiv.style["padding"] = "0px!important";
-
-          // Container dos badges
-          const badgeContainer = document.createElement("div");
-          badgeContainer.style.display = "flex";
-          badgeContainer.style.flexWrap = "wrap";
-          // badgeContainer.style.gap = "6px";
-
-          // === BADGES DE CATEGORIAS ===
-          const totalMusicas = proximaEscala.musicas.length;
-
-          const sortedCategories = Object.entries(resumoCategorias).sort(
-            (a, b) => b[1] - a[1]
-          );
-
-          sortedCategories.forEach(([categoria, count]) => {
-            const porcentagem = (count / totalMusicas) * 100;
-            let level;
-
-            if (count === 1) {
-              level = "hard";
-            } else if (porcentagem > 50) {
-              level = "easy";
-            } else {
-              level = "medium";
-            }
-
-            let colorClass, textColor;
-            switch (level) {
-              case "hard":
-                colorClass = "bg-danger";
-                textColor = "text-white";
-                break;
-              case "medium":
-                colorClass = "bg-warning";
-                textColor = "text-dark";
-                break;
-              case "easy":
-                colorClass = "bg-success";
-                textColor = "text-white";
-                break;
-            }
-
-            if (level == "easy") {
-              const badge = document.createElement("span");
-              badge.textContent = categoria;
-              badge.classList.add("badge", colorClass, textColor);
-              badge.style.fontSize = "0.7rem";
-              badge.style.margin = "2px";
-              badgeContainer.appendChild(badge);
-            }
-          });
-
-          // === BADGES DE LEVELS POR INSTRUMENTO ===
-          const levelPoints = { easy: 1, medium: 3, hard: 5 };
-          const levelTotals = {};
-
-          proximaEscala.musicas.forEach((id) => {
-            const musica = musicas.find((m) => m.id === id);
-            if (musica?.level && typeof musica.level === "object") {
-              Object.entries(musica.level).forEach(
-                ([instrumento, dificuldade]) => {
-                  if (!dificuldade || !levelPoints[dificuldade]) return;
-                  if (!levelTotals[instrumento]) levelTotals[instrumento] = 0;
-                  levelTotals[instrumento] += levelPoints[dificuldade];
-                }
-              );
-            }
-          });
-
-          Object.entries(levelTotals).forEach(([instrumento, totalPontos]) => {
-            let levelDoDia;
-            if (totalPontos >= 10) {
-              levelDoDia = "hard";
-            } else if (totalPontos >= 6) {
-              levelDoDia = "medium";
-            } else {
-              levelDoDia = "easy";
-            }
-
-            let colorClass, textColor;
-            switch (levelDoDia) {
-              case "hard":
-                colorClass = "bg-danger";
-                textColor = "text-white";
-                break;
-              case "medium":
-                colorClass = "bg-warning";
-                textColor = "text-dark";
-                break;
-              case "easy":
-                colorClass = "bg-success";
-                textColor = "text-white";
-                break;
-            }
-
-            const formattedInstrument =
-              instrumento.charAt(0).toUpperCase() + instrumento.slice(1);
-
-            const badge = document.createElement("span");
-            badge.textContent = formattedInstrument;
-            badge.classList.add("badge", colorClass, textColor);
-            badge.style.fontSize = "0.7rem";
-            badge.style.margin = "2px";
-            badgeContainer.appendChild(badge);
-          });
-
-          // Adiciona tudo no DOM
-          resumoDiv.appendChild(badgeContainer);
-          content.appendChild(resumoDiv);
-
-          //** */
-
-          proximaEscala.musicas.forEach((musicaEscala) => {
-            const musica = musicas.find((m) => m.id === musicaEscala);
-            if (musica) {
-              const col = document.createElement("div");
-              col.classList.add("col-lg-3", "col-sm-6", "col-6", "mb-4");
-              col.style["padding-left"] = "5px";
-              col.style["padding-right"] = "5px";
-              col.style["margin-bottom"] = "0px!important";
-
-              const card = document.createElement("div");
-              card.classList.add("card");
-
-              const link = document.createElement("a");
-              link.href = "https://www.youtube.com/watch?v=" + musica.referLink;
-              link.target = "_blank";
-
-              const img = document.createElement("img");
-              img.src =
-                "https://img.youtube.com/vi/" + musica.referLink + "/0.jpg";
-              img.alt = `Thumbnail de ${musica.titulo}`;
-
-              const h3 = document.createElement("h3");
-              h3.textContent = musica.titulo;
-              h3.style["font-size"] = "1rem";
-              // h3.style["padding-bottom"] = "1px";
-              h3.style["font-weight"] = "bold";
-              h3.style["color"] = "white";
-              h3.style["padding-bottom"] = "0px";
-
-              const h32 = document.createElement("h3");
-              h32.textContent = musica.artista;
-              h32.style["font-size"] = "1rem";
-              h32.style["padding-top"] = "0px";
-              h32.style["color"] = "white";
-              h32.style["padding-bottom"] = "0px";
-
-              const categoriesSet = new Set();
-              musicas.forEach((musica) => {
-                if (musica.categorias) {
-                  const cats = musica.categorias
-                    .split(";")
-                    .map((c) => c.trim());
-                  cats.forEach((c) => categoriesSet.add(c));
-                  musica.categories = cats;
-                } else {
-                  musica.categories = [];
-                }
-              });
-
-              // Criar container para categorias
-              const categoriasContainer = document.createElement("div");
-              categoriasContainer.style.margin = "5px";
-
-              musica.categories.forEach((categoria) => {
-                const badge = document.createElement("span");
-                badge.textContent = categoria;
-                badge.classList.add("badge", "bg-light", "text-dark", "me-1");
-                badge.style.margin = "1px";
-                badge.style.fontSize = "0.6rem";
-                categoriasContainer.appendChild(badge);
-              });
-
-              if (musica.level && typeof musica.level === "object") {
-                Object.entries(musica.level).forEach(([key, value]) => {
-                  if (!value) return; // Se o valor for undefined/null, ignora
-
-                  let colorClass, textColor;
-                  switch (value) {
-                    case "hard":
-                      colorClass = "bg-danger"; // Vermelho
-                      textColor = "text-white"; // Texto branco
-                      break;
-                    case "medium":
-                      colorClass = "bg-warning"; // Amarelo
-                      textColor = "text-dark"; // Texto preto
-                      break;
-                    case "easy":
-                      colorClass = "bg-success"; // Verde
-                      textColor = "text-white"; // Texto branco
-                      break;
-                    default:
-                      colorClass = "bg-secondary"; // Cinza (caso tenha valores inesperados)
-                      textColor = "text-dark"; // Texto preto por padrão
-                  }
-
-                  // Cria o badge
-                  const badge = document.createElement("span");
-                  badge.textContent = `${
-                    key.charAt(0).toUpperCase() + key.slice(1)
-                  }`;
-                  badge.classList.add("badge", colorClass, textColor, "me-1");
-                  badge.style.margin = "1px";
-                  badge.style.fontSize = "0.6rem";
-
-                  // Adiciona ao container
-                  categoriasContainer.appendChild(badge);
-                });
-              } else {
-                console.warn(
-                  "musica.level não está definido ou não é um objeto."
-                );
-              }
-
-              link.appendChild(img);
-              card.appendChild(link);
-              card.appendChild(h3);
-              card.appendChild(h32);
-              card.appendChild(categoriasContainer);
-              col.appendChild(card);
-
-              content.appendChild(col);
-            }
-          });
-        })
-        .catch((err) => console.error("Erro ao carregar as músicas:", err));
-    })
-    .catch((err) => console.error("Erro ao carregar o histórico:", err));
-}
-
-function carregarEscalasFuturas() {
-  Promise.all([
-    fetch("historico.json").then((res) => res.json()),
-    fetch("integrantes/integrantes.json").then((res) => res.json()),
-    fetch("musicas.json").then((res) => res.json()),
-  ])
-    .then(([escalas, integrantesData, musicasData]) => {
-      const content = document.querySelector(".escala");
-      content.innerHTML = ""; // Limpa o conteúdo antes de carregar
-
-      const hoje = new Date();
-      const parseData = (dataStr) => {
-        const [dia, mes, ano] = dataStr.split("/").map(Number);
-        return new Date(ano, mes - 1, dia); // Mês no JS começa do zero (Janeiro = 0)
-      };
-
-      // Filtrar apenas datas futuras e ordenar por proximidade
-      const escalasFuturas = escalas
-        .map((escala) => ({ ...escala, data: parseData(escala.data) })) // Converter string para Date
-        .filter((escala) => escala.data >= hoje)
-        .sort((a, b) => a.data - b.data);
-
-      escalasFuturas.forEach((escala) => {
-        const col = document.createElement("div");
-        col.classList.add("col-lg-4", "col-sm-6", "mb-4");
-
-        const card = document.createElement("div");
-        card.classList.add("card", "p-3", "bg-dark", "text-white");
-
-        // Título da escala
-        const h3 = document.createElement("h3");
-
-        const data = new Date(escala.data);
-
-        const diaSemana = data.toLocaleDateString("pt-BR", { weekday: "long" });
-        const dia = String(data.getDate()).padStart(2, "0");
-        const mes = String(data.getMonth() + 1).padStart(2, "0");
-        const ano = data.getFullYear();
-
-        h3.textContent = `📅 ${
-          diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)
-        } - ${dia}/${mes}/${ano}`;
-        h3.style["font-size"] = "1.3rem";
-        h3.style["font-weight"] = "bold";
-        h3.style["margin-top"] = "2px";
-        h3.style["margin-bottom"] = "5px";
-        h3.style["padding"] = "0px";
-
-        // Container para os integrantes
-        const integrantesDiv = document.createElement("div");
-        integrantesDiv.classList.add("row", "g-3");
-        integrantesDiv.style["margin-top"] = "2px";
-
-        let integrantesTexto = `🧑‍🤝‍🧑 ** Integrantes:**\n`;
-
-        if (escala.integrantes.length > 0) {
-          const integrantesTitulo = document.createElement("h4");
-          integrantesTitulo.textContent = "🧑‍🤝‍🧑 Integrantes";
-          integrantesTitulo.style["margin-top"] = "5px";
-          integrantesTitulo.style["font-size"] = "1rem";
-          integrantesTitulo.style["font-weight"] = "bold";
-          integrantesDiv.appendChild(integrantesTitulo);
-
-          escala.integrantes.forEach((id) => {
-            const integrante = integrantesData.find((p) => p.id === id);
-            if (integrante) {
-              const col = document.createElement("div");
-              col.classList.add("col-3");
-              col.style["margin-bottom"] = "13px";
-
-              const imgWrapper = document.createElement("div");
-              imgWrapper.style.position = "relative"; // para posicionar a coroa
-              imgWrapper.style.display = "inline-block";
-
-              const img = document.createElement("img");
-              img.src = `integrantes/${integrante.nome.toLowerCase()}.jpeg`;
-              img.alt = integrante.nome;
-              img.classList.add("img-fluid", "rounded");
-
-              // 👉 Se for header, adiciona borda e coroa
-              if (escala.header?.includes(id)) {
-                img.style.border = "3px solid gold"; // borda amarela
-                img.style.boxShadow = "0 0 10px gold";
-
-                // Adiciona um símbolo de coroa (pode ser substituído por <img>)
-                const crown = document.createElement("div");
-                crown.textContent = "👑";
-                crown.style.position = "absolute";
-                crown.style.top = "-25px";
-                crown.style.right = "-8px";
-                crown.style.fontSize = "15px";
-                crown.style.textShadow = "0 0 3px black";
-
-                imgWrapper.appendChild(crown);
-              }
-
-              imgWrapper.appendChild(img);
-              col.appendChild(imgWrapper);
-              integrantesDiv.appendChild(col);
-
-              // Adiciona ao texto
-              integrantesTexto += `- ${integrante.nome}`;
-              if (escala.header?.includes(id)) {
-                integrantesTexto += " 👑";
-              }
-              integrantesTexto += "\n";
-            }
-          });
-        } else {
-          integrantesDiv.innerHTML = "<p>Nenhum integrante cadastrado.</p>";
-          integrantesTexto += "Nenhum integrante cadastrado.\n";
-        }
-
-        // Container para músicas
-        const musicasDiv = document.createElement("div");
-        musicasDiv.classList.add("row", "g-3");
-        musicasDiv.style["margin-top"] = "2px";
-
-        let musicasTexto = "**Músicas:**\n";
-
-        if (escala.musicas.length > 0) {
-          const musicasTitulo = document.createElement("h4");
-          musicasTitulo.textContent = "🎶 Músicas";
-          musicasTitulo.style["margin-top"] = "5px";
-          musicasTitulo.style["font-size"] = "1rem";
-          musicasTitulo.style["font-weight"] = "bold";
-          musicasDiv.appendChild(musicasTitulo);
-
-          escala.musicas.forEach((id) => {
-            const musica = musicasData.find((m) => m.id === id);
-            if (musica) {
-              const col = document.createElement("div");
-              col.classList.add("col-4");
-
-              const link = document.createElement("a");
-              link.href = `https://www.youtube.com/watch?v=${musica.referLink}`;
-              link.target = "_blank";
-
-              const img = document.createElement("img");
-              img.src = `https://img.youtube.com/vi/${musica.referLink}/0.jpg`;
-              img.alt = `Thumbnail de ${musica.titulo}`;
-              img.classList.add("img-fluid", "rounded");
-
-              link.appendChild(img);
-              col.appendChild(link);
-              musicasDiv.appendChild(col);
-
-              // Adiciona ao texto
-              musicasTexto +=
-                `🎵 ${musica.titulo || ""} ${
-                  musica.artista ? "- " + musica.artista : ""
-                }\n` +
-                (musica.referLink
-                  ? `🔗 Link: https://www.youtube.com/watch?v=${musica.referLink}\n`
-                  : "") +
-                (musica.categorias
-                  ? `📌 Categoria: ${musica.categorias}\n`
-                  : "") +
-                (musica.versiculos
-                  ? `📖 Versículo: ${musica.versiculos}\n`
-                  : "") +
-                "\n";
-            }
-          });
-
-          const categoriasTitulo = document.createElement("h4");
-          categoriasTitulo.textContent = "📌 Categorias";
-          categoriasTitulo.style["margin-top"] = "10px";
-          categoriasTitulo.style["font-size"] = "1rem";
-          categoriasTitulo.style["font-weight"] = "bold";
-          musicasDiv.appendChild(categoriasTitulo);
-
-          const categoryCount = {};
-          const totalMusicas = escala.musicas.length;
-
-          // Conta quantas vezes cada categoria aparece
-          escala.musicas.forEach((id) => {
-            const musica = musicasData.find((m) => m.id === id);
-            if (musica?.categorias) {
-              let cats = musica.categorias.split(";");
-
-              cats.forEach((categoria) => {
-                const trimmedCategoria = categoria.trim();
-                if (trimmedCategoria) {
-                  categoryCount[trimmedCategoria] =
-                    (categoryCount[trimmedCategoria] || 0) + 1;
-                }
-              });
-            }
-          });
-
-          // Ordena as categorias da mais comum pra menos comum
-          const sortedCategories = Object.entries(categoryCount)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 3);
-
-          // Cria os badges com cor baseada na "afinidade"
-          sortedCategories.forEach(([categoria, count]) => {
-            const porcentagem = (count / totalMusicas) * 100;
-            let level;
-
-            if (count === 1) {
-              level = "hard";
-            } else if (porcentagem > 50) {
-              level = "easy";
-            } else {
-              level = "medium";
-            }
-
-            // Define a cor do badge
-            let colorClass, textColor;
-            switch (level) {
-              case "hard":
-                colorClass = "bg-danger";
-                textColor = "text-white";
-                break;
-              case "medium":
-                colorClass = "bg-warning";
-                textColor = "text-dark";
-                break;
-              case "easy":
-                colorClass = "bg-success";
-                textColor = "text-white";
-                break;
-            }
-
-            // if (level == "easy") {
-            const badge = document.createElement("span");
-            badge.textContent = `${categoria}`;
-            badge.classList.add("badge", colorClass, textColor, "me-1", "col");
-            badge.style.margin = "1px";
-            badge.style.fontSize = "0.6rem";
-
-            musicasDiv.appendChild(badge);
-            // }
-          });
-
-          const levelsTitulo = document.createElement("h4");
-          levelsTitulo.textContent = "🏷️Levels";
-          levelsTitulo.style["margin-top"] = "10px";
-          levelsTitulo.style["font-size"] = "1rem";
-          levelsTitulo.style["font-weight"] = "bold";
-          musicasDiv.appendChild(levelsTitulo);
-
-          const levelPoints = { easy: 1, medium: 3, hard: 5 }; // Pontuação
-
-          const levelTotals = {}; // Acumulador por instrumento
-
-          // Itera sobre todas as músicas do repertório
-          escala.musicas.forEach((id) => {
-            const musica = musicasData.find((m) => m.id === id);
-            if (musica?.level && typeof musica.level === "object") {
-              Object.entries(musica.level).forEach(
-                ([instrumento, dificuldade]) => {
-                  if (!dificuldade || !levelPoints[dificuldade]) return;
-
-                  // Acumula os pontos de dificuldade por instrumento
-                  if (!levelTotals[instrumento]) {
-                    levelTotals[instrumento] = 0;
-                  }
-                  levelTotals[instrumento] += levelPoints[dificuldade];
-                }
-              );
-            }
-          });
-
-          // Agora percorremos os totais para determinar o "level do dia"
-          Object.entries(levelTotals).forEach(([instrumento, totalPontos]) => {
-            let levelDoDia;
-            if (totalPontos >= 10) {
-              levelDoDia = "hard";
-            } else if (totalPontos >= 6) {
-              levelDoDia = "medium";
-            } else {
-              levelDoDia = "easy";
-            }
-
-            let colorClass, textColor;
-            switch (levelDoDia) {
-              case "hard":
-                colorClass = "bg-danger";
-                textColor = "text-white";
-                break;
-              case "medium":
-                colorClass = "bg-warning";
-                textColor = "text-dark";
-                break;
-              case "easy":
-                colorClass = "bg-success";
-                textColor = "text-white";
-                break;
-            }
-
-            // Formata o nome do instrumento
-            const formattedInstrument =
-              instrumento.charAt(0).toUpperCase() + instrumento.slice(1);
-
-            // Cria o badge
-            const badge = document.createElement("span");
-            badge.textContent = `${formattedInstrument}`;
-            badge.classList.add("badge", "col", colorClass, textColor, "me-1");
-            badge.style.margin = "1px";
-            badge.style.fontSize = "0.6rem";
-
-            musicasDiv.appendChild(badge);
-          });
-        } else {
-          musicasDiv.innerHTML = "<p>Nenhuma música cadastrada.</p>";
-          musicasTexto += "Nenhuma música cadastrada.\n";
-        }
-
-        // Criar botão de copiar
-        const btnCopiar = document.createElement("button");
-        btnCopiar.textContent = "Copiar escala";
-        btnCopiar.classList.add("btn", "btn-primary", "mt-3");
-        btnCopiar.style.width = "100%";
-
-        btnCopiar.onclick = () => {
-          const textoParaCopiar = `📅 *Escala: ${h3.textContent}*\n\n${integrantesTexto}\n${musicasTexto}`;
-
-          navigator.clipboard
-            .writeText(textoParaCopiar)
-            .then(() => {
-              alert("Escala copiada para a área de transferência!");
-            })
-            .catch((err) => {
-              console.error("Erro ao copiar:", err);
-            });
-        };
-
-        // Monta o card
-        card.appendChild(h3);
-        card.appendChild(integrantesDiv);
-        card.appendChild(musicasDiv);
-        card.appendChild(btnCopiar);
-        col.appendChild(card);
-        content.appendChild(col);
-      });
-    })
-    .catch((err) => console.error("Erro ao carregar as escalas:", err));
-}
-
-// Cria os botões de categorias (singleton) e os insere acima do repertório
-function setupCategoriasButtons(musicas) {
-  const categoriesSet = new Set();
+function normalizarHoje() {
   const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0); // Remove horas para evitar problemas de comparação
+  hoje.setHours(0, 0, 0, 0);
+  return hoje;
+}
 
-  const musicasTocadas = new Set();
-  historicoEscalas.forEach((escala) => {
-    const dataEscala = new Date(escala.data.split("/").reverse().join("-"));
-    const diffDias = (dataEscala - hoje) / (1000 * 60 * 60 * 24);
-    if (
-      Math.abs(diffDias) <= TOCADA_NOS_ULTIMOS_X_DIAS ||
-      (diffDias >= 0 && diffDias <= TOCADA_NOS_PROXIMOS_X_DIAS)
-    ) {
-      escala.musicas.forEach((id) => musicasTocadas.add(id));
-    }
+// ---- TABs ----
+function setupTabs() {
+  const buttons = document.querySelectorAll(".tab-button");
+  const panels = document.querySelectorAll(".view-panel");
+
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const view = btn.dataset.view;
+      buttons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      panels.forEach((p) => {
+        p.classList.toggle("active", p.id === `view-${view}`);
+      });
+    });
   });
+}
 
-  // Filtra músicas que não foram tocadas
-  musicas = musicas.filter((musica) => !musicasTocadas.has(musica.id));
+// ---- ESCALA ATUAL ----
 
-  musicas.forEach((musica) => {
+function encontrarProximaEscala() {
+  const hoje = normalizarHoje();
+  const escalasFuturas = historicoEscalas
+    .map((escala) => ({
+      ...escala,
+      _dataObj: parseDataBR(escala.data),
+    }))
+    .filter((escala) => escala._dataObj >= hoje)
+    .sort((a, b) => a._dataObj - b._dataObj);
+
+  return escalasFuturas[0] || null;
+}
+
+function nivelPorPontuacao(totalPontos) {
+  if (totalPontos >= 10) return "hard";
+  if (totalPontos >= 6) return "medium";
+  return "easy";
+}
+
+function classeNivel(nivel) {
+  if (nivel === "hard") return "level-hard";
+  if (nivel === "medium") return "level-medium";
+  return "level-easy";
+}
+
+// Resumo de categorias e níveis de uma escala
+function montarResumoEscala(escala) {
+  const categoriasCount = {};
+  const levelPoints = { easy: 1, medium: 3, hard: 5 };
+  const levelTotalsPorInstrumento = {};
+  const totalMusicas = escala.musicas.length;
+
+  escala.musicas.forEach((id) => {
+    const musica = repertorioMusicas.find((m) => m.id === id);
+    if (!musica) return;
+
     if (musica.categorias) {
-      const cats = musica.categorias.split(";").map((c) => c.trim());
-      cats.forEach((c) => categoriesSet.add(c));
-      musica.categories = cats;
-    } else {
-      musica.categories = [];
+      const categorias = musica.categorias.split(";").map((c) => c.trim());
+      categorias.forEach((cat) => {
+        if (!cat) return;
+        categoriasCount[cat] = (categoriasCount[cat] || 0) + 1;
+      });
+    }
+
+    if (musica.level && typeof musica.level === "object") {
+      Object.entries(musica.level).forEach(([instrumento, dificuldade]) => {
+        if (!dificuldade || !levelPoints[dificuldade]) return;
+        if (!levelTotalsPorInstrumento[instrumento]) {
+          levelTotalsPorInstrumento[instrumento] = 0;
+        }
+        levelTotalsPorInstrumento[instrumento] +=
+          levelPoints[dificuldade] || 0;
+      });
     }
   });
 
-  // Cria um objeto com a quantidade de músicas disponíveis para cada categoria
-  const musicasDisponiveis = {};
-  categoriesSet.forEach((cat) => {
-    musicasDisponiveis[cat] = musicas.filter(
-      (musica) =>
-        musica.categories.includes(cat) &&
-        !musicasTocadas.has(musica.id) &&
-        !musica.ban
-    ).length;
-  });
+  // categorias mais presentes
+  const categoriasOrdenadas = Object.entries(categoriasCount)
+    .sort((a, b) => b[1] - a[1])
+    .map(([categoria, count]) => {
+      const porcentagem = (count / totalMusicas) * 100;
+      let level;
+      if (count === 1) level = "hard";
+      else if (porcentagem > 50) level = "easy";
+      else level = "medium";
+      return { categoria, count, porcentagem, level };
+    });
 
-  // Ordena as categorias pela quantidade, em ordem decrescente
-  const sortedCategories = Object.keys(musicasDisponiveis).sort(
-    (a, b) => musicasDisponiveis[b] - musicasDisponiveis[a]
+  // instrumentos por dificuldade agregada
+  const instrumentos = Object.entries(levelTotalsPorInstrumento).map(
+    ([instrumento, pontos]) => ({
+      instrumento,
+      pontos,
+      level: nivelPorPontuacao(pontos),
+    })
   );
 
-  let container = document.querySelector(".categorias-container");
-  if (!container) {
-    container = document.createElement("div");
-    container.classList.add("categorias-container", "mb-3");
-    const repContainer = document.querySelector(".repertorio");
-    repContainer.parentNode.insertBefore(container, repContainer);
-  } else {
-    container.innerHTML = "";
+  return { categoriasOrdenadas, instrumentos };
+}
+
+function renderEscalaAtual() {
+  const escala = encontrarProximaEscala();
+  const dataEl = document.getElementById("escalaAtualData");
+  const resumoEl = document.getElementById("escalaAtualResumo");
+  const integrantesEl = document.getElementById("escalaAtualIntegrantes");
+  const musicasEl = document.getElementById("escalaAtualMusicas");
+
+  if (!escala) {
+    if (dataEl)
+      dataEl.textContent = "Nenhuma escala futura encontrada no histórico.";
+    if (resumoEl) resumoEl.innerHTML = "";
+    if (integrantesEl)
+      integrantesEl.innerHTML = `<div class="placeholder-text">Nenhum integrante encontrado.</div>`;
+    if (musicasEl)
+      musicasEl.innerHTML = `<div class="placeholder-text">Nenhuma música encontrada.</div>`;
+    return;
   }
 
-  sortedCategories.forEach((cat) => {
-    if (musicasDisponiveis[cat] > 0) {
-      const button = document.createElement("button");
-      button.innerHTML = `${cat} <span class="badge bg-light text-dark">${musicasDisponiveis[cat]}</span>`;
-      button.classList.add("btn", "btn-sm", "btn-outline-light", "me-2");
-      button.style.margin = "2px";
+  const dataObj = parseDataBR(escala.data);
+  const semana = dataObj.toLocaleDateString("pt-BR", { weekday: "long" });
+  const dia = String(dataObj.getDate()).padStart(2, "0");
+  const mes = String(dataObj.getMonth() + 1).padStart(2, "0");
+  const ano = dataObj.getFullYear();
 
-      button.addEventListener("click", function () {
-        if (activeCategories.has(cat)) {
-          activeCategories.delete(cat);
-          button.classList.remove("active");
-        } else {
-          activeCategories.add(cat);
-          button.classList.add("active");
-        }
-        renderRepertorio();
-      });
+  if (dataEl)
+    dataEl.textContent = `${semana}, ${dia}/${mes}/${ano} · ${
+      escala.tema || "sem tema definido"
+    }`;
 
-      container.appendChild(button);
+  // Resumo
+  const resumo = montarResumoEscala(escala);
+  resumoEl.innerHTML = "";
+
+  resumo.categoriasOrdenadas.forEach((cat) => {
+    // Mesmo critério antigo: mostrar apenas "easy" no resumo visual
+    if (cat.level !== "easy") return;
+    const chip = document.createElement("div");
+    chip.className = `resumo-chip ${classeNivel(cat.level)}`;
+    chip.innerHTML = `<span class="label">Categoria</span><span>${cat.categoria}</span>`;
+    resumoEl.appendChild(chip);
+  });
+
+  resumo.instrumentos.forEach((inst) => {
+    const chip = document.createElement("div");
+    chip.className = `resumo-chip ${classeNivel(inst.level)}`;
+    const nomeInst =
+      inst.instrumento.charAt(0).toUpperCase() + inst.instrumento.slice(1);
+    chip.innerHTML = `<span class="label">${nomeInst}</span><span>${
+      inst.level === "easy"
+        ? "Tranquilo"
+        : inst.level === "medium"
+        ? "Equilibrado"
+        : "Puxado"
+    }</span>`;
+    resumoEl.appendChild(chip);
+  });
+
+  // Integrantes
+  integrantesEl.innerHTML = "";
+  (escala.integrantes || []).forEach((integranteEscala) => {
+    const integrante = integrantesData.find((i) => i.id === integranteEscala);
+    if (!integrante) return;
+
+    const card = document.createElement("article");
+    card.classList.add("member-card");
+    const isHeader =
+      Array.isArray(escala.header) &&
+      escala.header.includes(integranteEscala);
+    if (isHeader) card.classList.add("member-card-header");
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "member-avatar-wrapper";
+
+    const img = document.createElement("img");
+    img.src = `integrantes/${integrante.nome.toLowerCase()}.jpeg`;
+    img.alt = integrante.nome;
+    img.className = "member-avatar";
+
+    wrapper.appendChild(img);
+
+    if (isHeader) {
+      const crown = document.createElement("div");
+      crown.className = "member-crown";
+      crown.textContent = "👑";
+      wrapper.appendChild(crown);
     }
+
+    const nameEl = document.createElement("div");
+    nameEl.className = "member-name";
+    nameEl.textContent = integrante.nome;
+
+    const roleEl = document.createElement("div");
+    roleEl.className = "member-role";
+    roleEl.textContent = integrante.funcao || "";
+
+    card.appendChild(wrapper);
+    card.appendChild(nameEl);
+    card.appendChild(roleEl);
+
+    integrantesEl.appendChild(card);
+  });
+
+  if (!escala.integrantes || escala.integrantes.length === 0) {
+    integrantesEl.innerHTML =
+      '<div class="placeholder-text">Nenhum integrante cadastrado para esta escala.</div>';
+  }
+
+  // Músicas da escala
+  musicasEl.innerHTML = "";
+  (escala.musicas || []).forEach((id) => {
+    const musica = repertorioMusicas.find((m) => m.id === id);
+    if (!musica) return;
+
+    const card = criarCardMusica(musica, {
+      marcarRecenciaEFuturo: false,
+      destacarCategoriasSelecionadas: false,
+    });
+    musicasEl.appendChild(card);
+  });
+
+  if (!escala.musicas || escala.musicas.length === 0) {
+    musicasEl.innerHTML =
+      '<div class="placeholder-text">Nenhuma música cadastrada para esta escala.</div>';
+  }
+}
+
+// ---- ESCALAS FUTURAS ----
+
+function montarTextoEscalaParaCopiar(titulo, integrantesTexto, musicasTexto) {
+  return `📅 *Escala: ${titulo}*\n\n${integrantesTexto}\n${musicasTexto}`;
+}
+
+function renderEscalasFuturas() {
+  const container = document.getElementById("escalasFuturasContainer");
+  container.innerHTML = "";
+
+  const hoje = normalizarHoje();
+
+  const escalasFuturas = historicoEscalas
+    .map((escala) => ({
+      ...escala,
+      _dataObj: parseDataBR(escala.data),
+    }))
+    .filter((escala) => escala._dataObj >= hoje)
+    .sort((a, b) => a._dataObj - b._dataObj);
+
+  if (escalasFuturas.length === 0) {
+    container.innerHTML =
+      '<div class="placeholder-text">Nenhuma escala futura encontrada.</div>';
+    return;
+  }
+
+  escalasFuturas.forEach((escala) => {
+    const card = document.createElement("article");
+    card.className = "escala-card";
+
+    const dataObj = escala._dataObj;
+    const semana = dataObj.toLocaleDateString("pt-BR", { weekday: "long" });
+    const dia = String(dataObj.getDate()).padStart(2, "0");
+    const mes = String(dataObj.getMonth() + 1).padStart(2, "0");
+    const ano = dataObj.getFullYear();
+
+    const header = document.createElement("div");
+    header.className = "escala-header";
+
+    const title = document.createElement("div");
+    title.className = "escala-title";
+    title.textContent = `${dia}/${mes}/${ano}`;
+
+    const subtitle = document.createElement("div");
+    subtitle.className = "escala-date-sub";
+    subtitle.textContent = `${semana}${
+      escala.tema ? ` · ${escala.tema}` : ""
+    }`;
+
+    header.appendChild(title);
+    header.appendChild(subtitle);
+
+    // Integrantes
+    const integrantesDiv = document.createElement("div");
+    integrantesDiv.className = "escala-integrantes";
+    let integrantesTexto = "🧑‍🤝‍🧑 **Integrantes:**\n";
+
+    if (Array.isArray(escala.integrantes) && escala.integrantes.length > 0) {
+      escala.integrantes.forEach((id) => {
+        const integrante = integrantesData.find((p) => p.id === id);
+        if (!integrante) return;
+        const chip = document.createElement("span");
+        chip.className = "escala-chip";
+        const isHeader =
+          Array.isArray(escala.header) && escala.header.includes(id);
+        chip.textContent = `${integrante.nome}${isHeader ? " 👑" : ""}`;
+        integrantesDiv.appendChild(chip);
+
+        integrantesTexto += `- ${integrante.nome}${isHeader ? " 👑" : ""}\n`;
+      });
+    } else {
+      integrantesDiv.innerHTML =
+        '<span class="escala-chip">Nenhum integrante</span>';
+      integrantesTexto += "Nenhum integrante cadastrado.\n";
+    }
+
+    // Músicas
+    const musicasDiv = document.createElement("div");
+    musicasDiv.className = "escala-musicas";
+    let musicasTexto = "**Músicas:**\n";
+
+    const tituloMusicas = document.createElement("div");
+    tituloMusicas.className = "escala-date-sub";
+    tituloMusicas.textContent = "Repertório do dia:";
+    musicasDiv.appendChild(tituloMusicas);
+
+    const ul = document.createElement("ul");
+
+    if (Array.isArray(escala.musicas) && escala.musicas.length > 0) {
+      escala.musicas.forEach((id) => {
+        const musica = repertorioMusicas.find((m) => m.id === id);
+        if (!musica) return;
+
+        const li = document.createElement("li");
+        li.textContent = `${musica.titulo} - ${musica.artista}`;
+        ul.appendChild(li);
+
+        musicasTexto +=
+          `🎵 ${musica.titulo || ""} ${
+            musica.artista ? "- " + musica.artista : ""
+          }\n` +
+          (musica.referLink
+            ? `🔗 Link: https://www.youtube.com/watch?v=${musica.referLink}\n`
+            : "") +
+          (musica.categorias
+            ? `📌 Categoria: ${musica.categorias}\n`
+            : "") +
+          (musica.versiculos ? `📖 Versículo: ${musica.versiculos}\n` : "") +
+          "\n";
+      });
+    } else {
+      const li = document.createElement("li");
+      li.textContent = "Nenhuma música cadastrada.";
+      ul.appendChild(li);
+      musicasTexto += "Nenhuma música cadastrada.\n";
+    }
+
+    musicasDiv.appendChild(ul);
+
+    // Botão copiar
+    const actions = document.createElement("div");
+    actions.className = "escala-actions";
+
+    const btnCopiar = document.createElement("button");
+    btnCopiar.className = "btn btn-primary";
+    btnCopiar.textContent = "Copiar escala";
+
+    btnCopiar.addEventListener("click", () => {
+      const texto = montarTextoEscalaParaCopiar(
+        `${dia}/${mes}/${ano}`,
+        integrantesTexto,
+        musicasTexto
+      );
+      navigator.clipboard
+        .writeText(texto)
+        .then(() => {
+          alert("Escala copiada para a área de transferência!");
+        })
+        .catch((err) => console.error("Erro ao copiar:", err));
+    });
+
+    actions.appendChild(btnCopiar);
+
+    // Monta card
+    card.appendChild(header);
+    card.appendChild(integrantesDiv);
+    card.appendChild(musicasDiv);
+    card.appendChild(actions);
+
+    container.appendChild(card);
   });
 }
 
-// Função para renderizar as músicas do repertório com base no filtro
+// ---- REPERTÓRIO ----
+
+// Botões de categorias (com regras especiais de "disponíveis")
+function setupCategoriasButtons() {
+  const hoje = normalizarHoje();
+
+  const musicasTocadasJanela = new Set();
+
+  historicoEscalas.forEach((escala) => {
+    const dataEscala = parseDataBR(escala.data);
+    const diffDias = (dataEscala - hoje) / (1000 * 60 * 60 * 24);
+    const dentroDaJanela =
+      Math.abs(diffDias) <= TOCADA_NOS_ULTIMOS_X_DIAS ||
+      (diffDias >= 0 && diffDias <= TOCADA_NOS_PROXIMOS_X_DIAS);
+
+    if (dentroDaJanela) {
+      (escala.musicas || []).forEach((id) => {
+        musicasTocadasJanela.add(String(id));
+      });
+    }
+  });
+
+  // Considera disponíveis = não tocadas dentro da janela e não banidas
+  const disponiveis = repertorioMusicas.filter(
+    (m) => !musicasTocadasJanela.has(String(m.id)) && !m.ban
+  );
+
+  const categoriesSet = new Set();
+  disponiveis.forEach((musica) => {
+    if (musica.categorias) {
+      musica.categorias
+        .split(";")
+        .map((c) => c.trim())
+        .filter(Boolean)
+        .forEach((c) => categoriesSet.add(c));
+    }
+  });
+
+  const musicasDisponiveisPorCategoria = {};
+  categoriesSet.forEach((cat) => {
+    musicasDisponiveisPorCategoria[cat] = disponiveis.filter((m) => {
+      const cats = m.categorias
+        ? m.categorias.split(";").map((c) => c.trim())
+        : [];
+      return cats.includes(cat);
+    }).length;
+  });
+
+  const sortedCategories = Object.keys(musicasDisponiveisPorCategoria).sort(
+    (a, b) => musicasDisponiveisPorCategoria[b] - musicasDisponiveisPorCategoria[a]
+  );
+
+  const container = document.getElementById("categoriasContainer");
+  container.innerHTML = "";
+
+  sortedCategories.forEach((cat) => {
+    if (musicasDisponiveisPorCategoria[cat] <= 0) return;
+
+    const btn = document.createElement("button");
+    btn.className = "category-button";
+    btn.innerHTML = `
+      <span>${cat}</span>
+      <span class="category-count">${musicasDisponiveisPorCategoria[cat]}</span>
+    `;
+
+    btn.addEventListener("click", () => {
+      if (activeCategories.has(cat)) {
+        activeCategories.delete(cat);
+        btn.classList.remove("active");
+      } else {
+        activeCategories.add(cat);
+        btn.classList.add("active");
+      }
+      renderRepertorio();
+    });
+
+    container.appendChild(btn);
+  });
+}
+
+// Card de música (usado em escala atual e repertório)
+function criarCardMusica(
+  musica,
+  {
+    isRecent = false,
+    isFuture = false,
+    isBanned = false,
+    matchCategoria = false,
+    marcarRecenciaEFuturo = true,
+    destacarCategoriasSelecionadas = true,
+  } = {}
+) {
+  const card = document.createElement("article");
+  card.className = "song-card";
+
+  if (marcarRecenciaEFuturo) {
+    if (isRecent) card.classList.add("recent");
+    if (isFuture) card.classList.add("future");
+    if (isBanned) card.classList.add("banned");
+  }
+  if (destacarCategoriasSelecionadas && matchCategoria) {
+    card.classList.add("category-match");
+  }
+
+  const thumbWrapper = document.createElement("div");
+  thumbWrapper.className = "song-thumb-wrapper";
+
+  const link = document.createElement("a");
+  link.href = `https://www.youtube.com/watch?v=${musica.referLink}`;
+  link.target = "_blank";
+
+  const img = document.createElement("img");
+  img.className = "song-thumb";
+  img.src = `https://img.youtube.com/vi/${musica.referLink}/0.jpg`;
+  img.alt = `Thumbnail de ${musica.titulo}`;
+
+  link.appendChild(img);
+  thumbWrapper.appendChild(link);
+
+  const main = document.createElement("div");
+  main.className = "song-main";
+
+  const title = document.createElement("p");
+  title.className = "song-title";
+  title.textContent = musica.titulo;
+
+  const artist = document.createElement("p");
+  artist.className = "song-artist";
+  artist.textContent = musica.artista;
+
+  const metaRow = document.createElement("div");
+  metaRow.className = "song-meta-row";
+
+  if (musica.categorias) {
+    const pill = document.createElement("span");
+    pill.className = "song-pill";
+    pill.textContent = musica.categorias
+      .split(";")
+      .map((c) => c.trim())
+      .filter(Boolean)
+      .join(" · ");
+    metaRow.appendChild(pill);
+  }
+
+  if (musica.ban) {
+    const banPill = document.createElement("span");
+    banPill.className = "song-pill";
+    banPill.textContent = "Banida";
+    metaRow.appendChild(banPill);
+  }
+
+  const tags = document.createElement("div");
+  tags.className = "song-tags";
+
+  // categorias individuais
+  if (musica.categorias) {
+    musica.categorias
+      .split(";")
+      .map((c) => c.trim())
+      .filter(Boolean)
+      .forEach((categoria) => {
+        const tag = document.createElement("span");
+        tag.className = "tag";
+        tag.textContent = categoria;
+        tags.appendChild(tag);
+      });
+  }
+
+  // levels por instrumento
+  if (musica.level && typeof musica.level === "object") {
+    Object.entries(musica.level).forEach(([instrumento, dificuldade]) => {
+      if (!dificuldade) return;
+      const tag = document.createElement("span");
+      tag.className = "tag";
+      tag.textContent =
+        instrumento.charAt(0).toUpperCase() + instrumento.slice(1);
+
+      if (dificuldade === "hard") {
+        tag.style.borderColor = "#ef4444";
+        tag.style.color = "#fecaca";
+      } else if (dificuldade === "medium") {
+        tag.style.borderColor = "#eab308";
+        tag.style.color = "#fef3c7";
+      } else if (dificuldade === "easy") {
+        tag.style.borderColor = "#22c55e";
+        tag.style.color = "#bbf7d0";
+      }
+
+      tags.appendChild(tag);
+    });
+  }
+
+  main.appendChild(title);
+  main.appendChild(artist);
+  main.appendChild(metaRow);
+
+  card.appendChild(thumbWrapper);
+  card.appendChild(main);
+  card.appendChild(tags);
+
+  return card;
+}
+
+// Render do repertório com todas as regras de ordenação
 function renderRepertorio() {
-  const activeArr = Array.from(activeCategories);
-  const hoje = new Date();
+  const container = document.getElementById("repertorioGrid");
+  container.innerHTML = "";
 
-  // --- Contagem de execuções (normalizando ID como string)
+  const hoje = normalizarHoje();
+
+  // Contagem de execuções, sets de recentes / futuras
   const contagemMusicas = new Map();
+  const musicasRecentes = new Set();
+  const musicasFuturas = new Set();
 
-  // Também montamos o set de "tocadas" dentro da janela, se ainda precisar dele para outras regras
-  const musicasTocadas = new Set();
+  historicoEscalas.forEach((escala) => {
+    const dataEscala = parseDataBR(escala.data);
+    const diffDias = (dataEscala - hoje) / (1000 * 60 * 60 * 24);
 
-  // --- marcar futuras e recentes separadamente ---
-const musicasRecentes = new Set();
-const musicasFuturas = new Set();
+    const dentroDaJanela =
+      Math.abs(diffDias) <= TOCADA_NOS_ULTIMOS_X_DIAS ||
+      (diffDias >= 0 && diffDias <= TOCADA_NOS_PROXIMOS_X_DIAS);
 
-// Identificação das tocadas recentes/futuras
-historicoEscalas.forEach((escala) => {
-  const [dia, mes, ano] = escala.data.split("/");
-  const dataEscala = new Date(`${ano}-${mes}-${dia}T00:00:00`);
-  const diffDias = (dataEscala - hoje) / (1000 * 60 * 60 * 24);
+    if (!dentroDaJanela) return;
 
-  const dentroDaJanela =
-    Math.abs(diffDias) <= TOCADA_NOS_ULTIMOS_X_DIAS ||
-    (diffDias >= 0 && diffDias <= TOCADA_NOS_PROXIMOS_X_DIAS);
-
-  if (dentroDaJanela) {
-    escala.musicas.forEach((rawId) => {
+    (escala.musicas || []).forEach((rawId) => {
       const id = String(rawId);
 
-      // separa recentes e futuras
       if (diffDias < 0) musicasRecentes.add(id);
       else musicasFuturas.add(id);
 
-      musicasTocadas.add(id);
-      contagemMusicas.set(
-        id,
-        (contagemMusicas.get(id) || 0) + 1
-      );
+      contagemMusicas.set(id, (contagemMusicas.get(id) || 0) + 1);
     });
-  }
-});
+  });
 
+  const activeArr = Array.from(activeCategories);
 
-// -------- ORDENADOR PRINCIPAL REESCRITO --------
-const sortedMusicas = repertorioMusicas.slice().sort((a, b) => {
-  const idA = String(a.id);
-  const idB = String(b.id);
+  const sortedMusicas = repertorioMusicas.slice().sort((a, b) => {
+    const idA = String(a.id);
+    const idB = String(b.id);
 
-  // 1) Banidas sempre absolutamente por último
-  const aBan = !!a.ban;
-  const bBan = !!b.ban;
-  if (aBan !== bBan) return aBan ? 1 : -1;
+    const aBan = !!a.ban;
+    const bBan = !!b.ban;
+    if (aBan !== bBan) return aBan ? 1 : -1;
 
-  // 2) Futuras antes das banidas, mas depois de todas as normais
-  const aFut = musicasFuturas.has(idA);
-  const bFut = musicasFuturas.has(idB);
-  if (aFut !== bFut) return aFut ? 1 : -1;
+    const aFut = musicasFuturas.has(idA);
+    const bFut = musicasFuturas.has(idB);
+    if (aFut !== bFut) return aFut ? 1 : -1;
 
-  // 3) Recentes depois das futuras
-  const aRec = musicasRecentes.has(idA);
-  const bRec = musicasRecentes.has(idB);
-  if (aRec !== bRec) return aRec ? 1 : -1;
+    const aRec = musicasRecentes.has(idA);
+    const bRec = musicasRecentes.has(idB);
+    if (aRec !== bRec) return aRec ? 1 : -1;
 
-  // Daqui pra frente estamos lidando APENAS com músicas normais
+    // Se houver filtros de categorias
+    if (activeCategories.size > 0) {
+      const catsA = (a.categorias || "")
+        .split(";")
+        .map((c) => c.trim())
+        .filter(Boolean);
+      const catsB = (b.categorias || "")
+        .split(";")
+        .map((c) => c.trim())
+        .filter(Boolean);
 
-  // 4) Se houver filtros, match exato primeiro, depois mais matches
-  if (activeCategories.size > 0) {
-    const aExact =
-      a.categories.length === activeCategories.size &&
-      activeArr.every((c) => a.categories.includes(c));
+      const aExact =
+        catsA.length === activeCategories.size &&
+        activeArr.every((c) => catsA.includes(c));
+      const bExact =
+        catsB.length === activeCategories.size &&
+        activeArr.every((c) => catsB.includes(c));
+      if (aExact !== bExact) return aExact ? -1 : 1;
 
-    const bExact =
-      b.categories.length === activeCategories.size &&
-      activeArr.every((c) => b.categories.includes(c));
+      const aMatchCount = catsA.filter((c) => activeCategories.has(c)).length;
+      const bMatchCount = catsB.filter((c) => activeCategories.has(c)).length;
+      if (aMatchCount !== bMatchCount) return bMatchCount - aMatchCount;
+    }
 
-    if (aExact !== bExact) return aExact ? -1 : 1;
+    // Menos tocada vem antes
+    const aCount = contagemMusicas.get(idA) || 0;
+    const bCount = contagemMusicas.get(idB) || 0;
+    if (aCount !== bCount) return aCount - bCount;
 
-    const aMatchCount = a.categories.filter((c) =>
-      activeCategories.has(c)
-    ).length;
-
-    const bMatchCount = b.categories.filter((c) =>
-      activeCategories.has(c)
-    ).length;
-
-    if (aMatchCount !== bMatchCount) return bMatchCount - aMatchCount;
-  }
-
-  // 5) Entre músicas equivalentes, menos tocada vem antes
-  const aCount = contagemMusicas.get(idA) || 0;
-  const bCount = contagemMusicas.get(idB) || 0;
-  if (aCount !== bCount) return aCount - bCount;
-
-  // 6) Empate final → ordem alfabética
-  return a.titulo.localeCompare(b.titulo);
-});
-
-
-  // --- Debug opcional para validar resultado final
-  console.table(
-    sortedMusicas.map((m) => ({
-      titulo: m.titulo,
-      tocadas: contagemMusicas.get(String(m.id)) || 0,
-    }))
-  );
-
-  const content = document.querySelector(".repertorio");
-  content.innerHTML = "";
+    // Empate → ordem alfabética
+    return a.titulo.localeCompare(b.titulo);
+  });
 
   sortedMusicas.forEach((musica) => {
-    const col = document.createElement("div");
-    col.classList.add("col-lg-3", "col-sm-6", "col-6", "mb-4");
-    col.style.paddingLeft = "5px";
-    col.style.paddingRight = "5px";
-    col.style.marginBottom = "0px!important";
+    const idStr = String(musica.id);
+    const isRecent = musicasRecentes.has(idStr);
+    const isFuture = musicasFuturas.has(idStr);
+    const isBanned = musica.ban === true;
 
-    const card = document.createElement("div");
-    card.classList.add("card");
+    const cats = (musica.categorias || "")
+      .split(";")
+      .map((c) => c.trim())
+      .filter(Boolean);
 
-    const link = document.createElement("a");
-    link.href = "https://www.youtube.com/watch?v=" + musica.referLink;
-    link.target = "_blank";
+    const matchCategoria =
+      activeCategories.size > 0 &&
+      cats.some((c) => activeCategories.has(c));
 
-    const img = document.createElement("img");
-    img.src = "https://img.youtube.com/vi/" + musica.referLink + "/0.jpg";
-    img.alt = `Thumbnail de ${musica.titulo}`;
-    img.classList.add("img-fluid", "rounded");
-
-    const h3 = document.createElement("h3");
-    h3.textContent = musica.titulo;
-    h3.style.fontSize = "1rem";
-    h3.style.paddingTop = "10px";
-    h3.style.paddingBottom = "1px";
-    h3.style.fontWeight = "bold";
-    h3.style.color = "white";
-
-    const h32 = document.createElement("h3");
-    h32.textContent = musica.artista;
-    h32.style.fontSize = "1rem";
-    h32.style.paddingTop = "0px";
-    h32.style.paddingBottom = "1px";
-    h32.style.color = "white";
-
-const isRecent = musicasRecentes.has(String(musica.id));
-const isFuture = musicasFuturas.has(String(musica.id));
-const isBanned = musica.ban === true;
-
-if (isRecent || isFuture || isBanned) {
-  img.style.filter = "grayscale(100%)";
-  h3.style.textDecoration = "line-through";
-  h32.style.textDecoration = "line-through";
-}
-
-    if (musica.categories.some((c) => activeCategories.has(c))) {
-      card.style.border = "2px solid white";
-    }
-
-    // Criar container para categorias
-    const categoriasContainer = document.createElement("div");
-    categoriasContainer.style.margin = "5px";
-
-    musica.categories.forEach((categoria) => {
-      const badge = document.createElement("span");
-      badge.textContent = categoria;
-      badge.classList.add("badge", "bg-light", "text-dark", "me-1");
-      badge.style.margin = "1px";
-      badge.style.fontSize = "0.6rem";
-      categoriasContainer.appendChild(badge);
+    const card = criarCardMusica(musica, {
+      isRecent,
+      isFuture,
+      isBanned,
+      matchCategoria,
     });
 
-    if (musica.level && typeof musica.level === "object") {
-      Object.entries(musica.level).forEach(([key, value]) => {
-        if (!value) return; // Se o valor for undefined/null, ignora
-
-        let colorClass, textColor;
-        switch (value) {
-          case "hard":
-            colorClass = "bg-danger"; // Vermelho
-            textColor = "text-white"; // Texto branco
-            break;
-          case "medium":
-            colorClass = "bg-warning"; // Amarelo
-            textColor = "text-dark"; // Texto preto
-            break;
-          case "easy":
-            colorClass = "bg-success"; // Verde
-            textColor = "text-white"; // Texto branco
-            break;
-          default:
-            colorClass = "bg-secondary"; // Cinza (caso tenha valores inesperados)
-            textColor = "text-dark"; // Texto preto por padrão
-        }
-
-        // Cria o badge
-        const badge = document.createElement("span");
-        badge.textContent = `${key.charAt(0).toUpperCase() + key.slice(1)}`;
-        badge.classList.add("badge", colorClass, textColor, "me-1");
-        badge.style.margin = "1px";
-        badge.style.fontSize = "0.6rem";
-
-        // Adiciona ao container
-        categoriasContainer.appendChild(badge);
-      });
-    } else {
-      console.warn("musica.level não está definido ou não é um objeto.");
-    }
-
-    link.appendChild(img);
-    card.appendChild(link);
-    card.appendChild(h3);
-    card.appendChild(h32);
-    card.appendChild(categoriasContainer);
-    col.appendChild(card);
-    content.appendChild(col);
+    container.appendChild(card);
   });
-}
 
-// Função para carregar o repertório e configurar os filtros de categoria
-function carregarRepertorio() {
-  fetch("musicas.json")
-    .then((res) => res.json())
-    .then((data) => {
-      repertorioMusicas = data.slice(); // Armazena uma cópia das músicas
-
-      // Preprocessa para extrair as categorias, se houver
-      repertorioMusicas.forEach((musica) => {
-        if (musica.categorias) {
-          musica.categories = musica.categorias.split(";").map((c) => c.trim());
-        } else {
-          musica.categories = [];
-        }
-      });
-
-      activeCategories = new Set(); // Reinicia os filtros
-      setupCategoriasButtons(repertorioMusicas);
-      renderRepertorio();
-    })
-    .catch((err) => console.error("Erro ao carregar as músicas:", err));
-}
-
-async function carregarHistorico() {
-  try {
-    const response = await fetch("historico.json");
-    if (!response.ok) throw new Error("Erro ao carregar o histórico");
-    historicoEscalas = await response.json();
-    renderRepertorio();
-  } catch (error) {
-    console.error("Erro ao carregar o histórico:", error);
+  if (sortedMusicas.length === 0) {
+    container.innerHTML =
+      '<div class="placeholder-text">Nenhuma música encontrada no repertório.</div>';
   }
 }
 
-// Chamadas para carregar os dados ao carregar a página
-window.onload = async function () {
-  await carregarIntegrantes();
-  await carregarMusicas();
-  await carregarHistorico();
-  // renderRepertorio();
-  await carregarRepertorio();
-  await carregarEscalasFuturas();
-};
+// ---- CARREGAMENTO INICIAL ----
+
+async function carregarDados() {
+  const [escalas, integrantes, musicas] = await Promise.all([
+    fetch("historico.json").then((r) => r.json()),
+    fetch("integrantes/integrantes.json").then((r) => r.json()),
+    fetch("musicas.json").then((r) => r.json()),
+  ]);
+
+  historicoEscalas = escalas;
+  integrantesData = integrantes;
+
+  repertorioMusicas = musicas.map((m) => ({
+    ...m,
+  }));
+}
+
+async function init() {
+  setupTabs();
+  await carregarDados();
+
+  renderEscalaAtual();
+  renderEscalasFuturas();
+  setupCategoriasButtons();
+  renderRepertorio();
+}
+
+window.addEventListener("DOMContentLoaded", init);
