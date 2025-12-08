@@ -89,7 +89,7 @@ body {
   border-color: var(--accent);
 }
 
-/* Toggle de visão (tabs/carrossel) */
+/* Toggle de visão (tabs) */
 
 .view-toggle {
   display: inline-flex;
@@ -128,7 +128,7 @@ body {
   color: #e5e7eb;
 }
 
-/* Carrossel das visões */
+/* Seções / painéis */
 
 .sections {
   display: flex;
@@ -142,28 +142,27 @@ body {
 }
 
 .views-inner {
-  display: flex;
-  transition: transform 0.6s ease-out; /* opção B: mais lenta, estilo stories */
+  position: relative;
 }
 
 .view-panel {
-
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
   flex: 0 0 100%;
   max-width: 100%;
-
   padding-top: 6px;
   padding-left: 6px;
   padding-right: 6px;
   padding-bottom: 6px;
-
 }
 
-.view-panel[data-view="member"] .section-title {
-  margin-bottom: 18px; /* espaçamento real abaixo do título */
-}
-
-.view-panel[data-view="member"] .section-subtitle {
-  margin-bottom: 22px;
+.view-panel.active {
+  opacity: 1;
+  pointer-events: auto;
+  position: relative;
 }
 
 .section-title {
@@ -184,6 +183,14 @@ body {
   margin-bottom: 16px;
 }
 
+.view-panel[data-view="member"] .section-title {
+  margin-bottom: 18px;
+}
+
+.view-panel[data-view="member"] .section-subtitle {
+  margin-bottom: 22px;
+}
+
 /* Layout de cartões */
 
 .card-grid {
@@ -191,6 +198,10 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 16px;
   margin-bottom: 24px;
+}
+
+#memberSection .card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
 .card {
@@ -229,7 +240,12 @@ body {
 /* Summary cards */
 
 .summary-grid {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
+  height: 132px;
+}
+
+.summary-card{
+  height: 132px;
 }
 
 .summary-card .card-title {
@@ -277,13 +293,13 @@ body {
   background: radial-gradient(circle at 30% 0, #ec4899, #7c2d12);
 }
 
-/* Linhas de 2 colunas no topo da visão da banda */
+/* Linhas de 2 colunas na visão da banda */
 
 .band-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 24px;
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 
 .band-row-bottom {
@@ -309,6 +325,54 @@ body {
   font-size: 13px;
 }
 
+/* Ranks */
+
+.rank {
+  font-size: 13px;
+  color: var(--muted);
+  min-width: 24px;
+}
+
+.rank-label {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+/* ouro, prata, bronze */
+
+.track-rank-badge.rank-1 {
+  background: linear-gradient(135deg, #facc15, #eab308);
+  color: #000;
+  border: none;
+}
+
+.track-rank-badge.rank-2 {
+  background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+  color: #000;
+  border: none;
+}
+
+.track-rank-badge.rank-3 {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #000;
+  border: none;
+}
+
+.rank-label.rank-1,
+.rank.rank-1 {
+  color: #facc15;
+}
+
+.rank-label.rank-2,
+.rank.rank-2 {
+  color: #e5e7eb;
+}
+
+.rank-label.rank-3,
+.rank.rank-3 {
+  color: #f97316;
+}
+
 /* Top tracks (músicas) */
 
 .top-tracks li {
@@ -323,12 +387,6 @@ body {
   align-items: center;
   gap: 10px;
   min-width: 0;
-}
-
-.rank {
-  font-size: 13px;
-  color: var(--muted);
-  min-width: 24px;
 }
 
 .track-info {
@@ -402,24 +460,6 @@ body {
   color: var(--muted);
 }
 
-.track-rank-badge.rank-1 {
-  background: linear-gradient(135deg, #facc15, #eab308); /* OURO */
-  color: #000;
-  border: none;
-}
-
-.track-rank-badge.rank-2 {
-  background: linear-gradient(135deg, #e5e7eb, #d1d5db); /* PRATA */
-  color: #000;
-  border: none;
-}
-
-.track-rank-badge.rank-3 {
-  background: linear-gradient(135deg, #d97706, #b45309); /* BRONZE */
-  color: #000;
-  border: none;
-}
-
 .track-feature-info {
   display: flex;
   flex-direction: column;
@@ -470,8 +510,8 @@ body {
 }
 
 .avatar-lg {
-  width: 72px;
-  height: 72px;
+  width: 100px;
+  height: 100px;
 }
 
 .avatar-sm {
@@ -629,8 +669,12 @@ body {
 
 /* Perfil do integrante */
 
+.member-header{
+  margin-bottom: 16px;
+}
+
 .member-header h2 {
-  margin: 0 0 6px 0;
+  margin: 0 0 4px 0;
   font-size: 20px;
 }
 
@@ -642,10 +686,53 @@ body {
 .member-header-main {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
-/* Desafios do período - layout novo */
+.member-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.member-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.member-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.member-badge-icon {
+  font-size: 14px;
+}
+
+.member-badge-cultos {
+  background: rgba(168, 85, 247, 0.18);
+  border-color: rgba(168, 85, 247, 0.5);
+}
+
+.member-badge-execs {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: rgba(56, 189, 248, 0.5);
+}
+
+.member-badge-funcao {
+  background: rgba(34, 197, 94, 0.18);
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+/* Desafios do período */
 
 .difficulty-grid {
   display: grid;
@@ -743,11 +830,10 @@ body {
   .track-featured-row {
     flex-direction: column;
   }
+  .member-header-main {
+    align-items: flex-start;
+  }
+  .member-badges {
+    gap: 6px;
+  }
 }
-
-#memberSection .card-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(280px, 1fr));
-  gap: 16px;
-}
-
