@@ -30,44 +30,45 @@
       <main class="views">
         <!-- ====================== ESCALA ATUAL ====================== -->
         <section id="view-escala" class="view-panel active">
-          <!-- Card principal / resumo -->
-          <section class="card escala-atual-card">
-            <header class="card-header">
-              <div>
-                <h2 class="card-title">📅 Próximo culto</h2>
-                <p id="escalaAtualData" class="card-subtitle">
-                  Carregando...
-                </p>
-              </div>
-              <div id="escalaAtualCountTag" class="escala-count-tag"></div>
-            </header>
-            <div id="escalaAtualResumo" class="escala-resumo"></div>
-          </section>
-
-          <!-- Linha flex com Integrantes / Repertório -->
           <div class="escala-main-row">
-            <!-- Integrantes -->
-            <section
-              class="card escala-main-col escala-main-col-integrantes"
-            >
+            <!-- Col-4: card principal -->
+            <section class="card escala-atual-card escala-card-col-left">
               <header class="card-header">
-                <h3 class="card-title">🎤 Integrantes da escala</h3>
+                <div>
+                  <h2 class="card-title">📅 Próximo culto</h2>
+                  <p id="escalaAtualData" class="card-subtitle">
+                    Carregando...
+                  </p>
+                </div>
+                <div
+                  id="escalaAtualCountTag"
+                  class="escala-count-tag"
+                ></div>
               </header>
-              <div
-                id="escalaAtualIntegrantes"
-                class="integrantes-grid"
-              ></div>
+              <div id="escalaAtualResumo" class="escala-resumo"></div>
             </section>
 
-            <!-- Repertório do dia -->
-            <section
-              class="card escala-main-col escala-main-col-repertorio"
-            >
-              <header class="card-header">
-                <h3 class="card-title">🎵 Repertório do dia</h3>
-              </header>
-              <div id="escalaAtualMusicas" class="musicas-list"></div>
-            </section>
+            <!-- Col-8: integrantes + repertório -->
+            <div class="escala-card-col-right">
+              <!-- Integrantes -->
+              <section class="card">
+                <header class="card-header">
+                  <h3 class="card-title">🎤 Integrantes da escala</h3>
+                </header>
+                <div
+                  id="escalaAtualIntegrantes"
+                  class="integrantes-grid"
+                ></div>
+              </section>
+
+              <!-- Repertório do dia -->
+              <section class="card">
+                <header class="card-header">
+                  <h3 class="card-title">🎵 Repertório do dia</h3>
+                </header>
+                <div id="escalaAtualMusicas" class="musicas-list"></div>
+              </section>
+            </div>
           </div>
         </section>
 

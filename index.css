@@ -23,7 +23,6 @@ body {
    ========================== */
 
 .app {
-  /* max-width removido conforme pedido */
   margin: 0 auto;
   padding: 16px;
 }
@@ -179,19 +178,16 @@ body {
   font-size: 0.75rem;
 }
 
-/* bloco logo abaixo da data, antes das dificuldades por instrumento */
-.escala-resumo-info {
-  margin-top: 4px;
-  font-size: 0.8rem;
-  color: #e5e7eb;
+/* linha de badges: categoria dominante + dificuldade geral */
+
+.resumo-badges-row {
+  margin-top: 6px;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.escala-resumo-info strong {
-  font-weight: 600;
-}
+/* bloco extra de dificuldades/categorias */
 
 .escala-resumo-extra {
   margin-top: 8px;
@@ -245,7 +241,7 @@ body {
 }
 
 /* ==========================
-   ESCALA ATUAL - FLEX MAIN
+   ESCALA ATUAL - LAYOUT 4/8
    ========================== */
 
 .escala-main-row {
@@ -254,19 +250,17 @@ body {
   align-items: flex-start;
 }
 
-.escala-main-col {
-  min-width: 0;
+.escala-card-col-left {
+  flex: 0 0 33.333%;
+  max-width: 33.333%;
 }
 
-/* 3/9 layout */
-.escala-main-col-integrantes {
-  flex: 0 0 25%;
-  max-width: 25%;
-}
-
-.escala-main-col-repertorio {
-  flex: 0 0 75%;
-  max-width: 75%;
+.escala-card-col-right {
+  flex: 0 0 66.667%;
+  max-width: 66.667%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 /* ==========================
@@ -365,13 +359,15 @@ body {
   background: rgba(15, 23, 42, 0.98);
   border: 2px solid rgba(148, 163, 184, 0.35);
   overflow: hidden;
+  cursor: pointer;
 }
 
-/* THUMB FULL-WIDTH, QUADRADA */
+/* THUMB FULL-WIDTH, QUADRADA, COM ZOOM */
 
 .song-thumb-wrapper {
   position: relative;
   width: 100%;
+  overflow: hidden;
 }
 
 .song-thumb {
@@ -379,6 +375,8 @@ body {
   aspect-ratio: 1 / 1; /* quadrada */
   object-fit: cover;
   display: block;
+  transform: scale(1.35);
+  transform-origin: center;
 }
 
 /* conteúdo textual abaixo do thumb */
@@ -473,6 +471,17 @@ body {
   border: 1px solid rgba(148, 163, 184, 0.4);
 }
 
+/* músicas não disponíveis (recent/future/banned) */
+
+.song-unavailable .song-thumb {
+  filter: grayscale(1) brightness(0.6);
+}
+
+.song-unavailable .song-title {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
 /* ==========================
    RIBBON DE STATUS (REPERTÓRIO)
    ========================== */
@@ -529,8 +538,10 @@ body {
   border-color: rgba(239, 68, 68, 0.7);
 }
 
+/* destaque por filtro de categoria (agora branco) */
+
 .song-card.category-match {
-  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.8);
+  box-shadow: 0 0 0 1px #ffffff;
 }
 
 /* ==========================
@@ -539,7 +550,7 @@ body {
 
 .escalas-futuras-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -616,7 +627,7 @@ body {
   gap: 6px;
 }
 
-/* seção de músicas nas escalas futuras usa o mesmo card de música */
+/* seção de músicas nas escalas futuras em 3 colunas */
 
 .escala-musicas {
   display: flex;
@@ -630,8 +641,8 @@ body {
 }
 
 .escala-musicas-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -737,15 +748,25 @@ body {
    RESPONSIVO
    ========================== */
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .escala-main-row {
     flex-direction: column;
   }
 
-  .escala-main-col-integrantes,
-  .escala-main-col-repertorio {
+  .escala-card-col-left,
+  .escala-card-col-right {
     flex: 1 1 100%;
     max-width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .escalas-futuras-list {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+
+  .escala-musicas-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -760,5 +781,9 @@ body {
 
   .escala-resumo-extra {
     grid-template-columns: 1fr;
+  }
+
+  .escala-musicas-list {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
   }
 }

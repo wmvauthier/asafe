@@ -419,7 +419,6 @@ function carregarEscalaAtual() {
   const countInt = (escalaAtual.integrantes || []).length;
 
   if (countTagEl) {
-    // agora SOMENTE músicas + integrantes aqui
     countTagEl.textContent = `${countMusicas} músicas · ${countInt} integrantes`;
   }
 
@@ -434,10 +433,8 @@ function renderEscalaAtualResumo(escala) {
   container.innerHTML = "";
 
   const stats = calcularEstatisticasRepertorio(escala);
-  const categoriaDominante = stats.categoriasDominantes[0] || "—";
-  const nivelGeral = stats.dificuldadeMediaNivel
-    ? nivelLabel(stats.dificuldadeMediaNivel)
-    : "—";
+  const categoriaDominante = stats.categoriasDominantes[0] || null;
+  const dificuldadeNivel = stats.dificuldadeMediaNivel;
 
   // Linha de contagem básica
   const row = document.createElement("div");
@@ -465,18 +462,40 @@ function renderEscalaAtualResumo(escala) {
 
   container.appendChild(row);
 
-  // Bloco logo abaixo da data: categoria + dificuldade geral
-  const infoSec = document.createElement("div");
-  infoSec.className = "escala-resumo-info";
+  // Badges: categoria dominante + dificuldade geral
+  const badgesRow = document.createElement("div");
+  badgesRow.className = "resumo-badges-row";
 
-  const catLine = document.createElement("div");
-  catLine.innerHTML = `<strong>Categoria dominante:</strong> ${categoriaDominante}`;
+  if (categoriaDominante) {
+    const catTag = document.createElement("span");
+    catTag.className = "tag";
+    catTag.textContent = categoriaDominante;
+    badgesRow.appendChild(catTag);
+  }
 
-  const difLine = document.createElement("div");
-  difLine.innerHTML = `<strong>Dificuldade geral:</strong> ${nivelGeral}`;
+  if (dificuldadeNivel) {
+    const diffTag = document.createElement("span");
+    diffTag.className = "tag tag-diff";
 
-  infoSec.append(catLine, difLine);
-  container.appendChild(infoSec);
+    const dot = document.createElement("span");
+    dot.className = "tag-diff-dot";
+    if (dificuldadeNivel === "easy")
+      dot.classList.add("tag-diff-dot-easy");
+    else if (dificuldadeNivel === "medium")
+      dot.classList.add("tag-diff-dot-medium");
+    else if (dificuldadeNivel === "hard")
+      dot.classList.add("tag-diff-dot-hard");
+
+    const label = document.createElement("span");
+    label.textContent = nivelLabel(dificuldadeNivel);
+
+    diffTag.append(dot, label);
+    badgesRow.appendChild(diffTag);
+  }
+
+  if (badgesRow.childElementCount) {
+    container.appendChild(badgesRow);
+  }
 
   // Se não tem músicas, não mostra detalhes extras
   if (!stats.totalMusicas) return;
@@ -502,7 +521,9 @@ function renderEscalaAtualResumo(escala) {
       dot.className = "dificuldade-dot";
 
       const text = document.createElement("span");
-      text.textContent = `${formatInstrumentName(inst)}`;
+      text.textContent = `${formatInstrumentName(inst)} · ${nivelLabel(
+        nivel
+      )}`;
 
       chip.append(dot, text);
       difList.appendChild(chip);
@@ -594,10 +615,10 @@ function renderEscalaAtualIntegrantes(escala) {
     const img = document.createElement("img");
     img.className = "member-avatar";
     const slug = slugify(membro.nome || "");
-    img.src = `integrantes/${slug}.jpeg`;
+    img.src = `integrantes/${slug}.jpg`;
     img.onerror = function () {
       this.onerror = null;
-      this.src = "integrantes/default.jpeg";
+      this.src = "integrantes/default.jpg";
     };
 
     avatarWrapper.appendChild(img);
@@ -641,6 +662,14 @@ function renderEscalaAtualIntegrantes(escala) {
     info.append(nome, papel, expertiseDiv);
     card.append(avatarWrapper, info);
     container.appendChild(card);
+  });
+}
+
+function attachYoutubeClick(card, musica) {
+  if (!musica || !musica.referLink) return;
+  const url = `https://www.youtube.com/watch?v=${musica.referLink}`;
+  card.addEventListener("click", () => {
+    window.open(url, "_blank");
   });
 }
 
@@ -720,6 +749,8 @@ function renderEscalaAtualMusicas(escala) {
 
     card.append(thumbWrapper, main);
 
+    attachYoutubeClick(card, musica);
+
     container.appendChild(card);
   });
 }
@@ -785,10 +816,10 @@ function renderEscalasFuturas(lista) {
       const avatar = document.createElement("img");
       avatar.className = "escala-integrante-avatar";
       const slug = slugify(membro.nome || "");
-      avatar.src = `integrantes/${slug}.jpeg`;
+      avatar.src = `integrantes/${slug}.jpg`;
       avatar.onerror = function () {
         this.onerror = null;
-        this.src = "integrantes/default.jpeg";
+        this.src = "integrantes/default.jpg";
       };
 
       const nome = document.createElement("span");
@@ -820,7 +851,9 @@ function renderEscalasFuturas(lista) {
         dot.className = "dificuldade-dot";
 
         const text = document.createElement("span");
-        text.textContent = `${formatInstrumentName(inst)}`;
+        text.textContent = `${formatInstrumentName(inst)} · ${nivelLabel(
+          nivel
+        )}`;
 
         chip.append(dot, text);
         difList.appendChild(chip);
@@ -912,6 +945,8 @@ function renderEscalasFuturas(lista) {
 
       songCard.append(thumbWrapper, main);
 
+      attachYoutubeClick(songCard, musica);
+
       list.appendChild(songCard);
     });
 
@@ -925,7 +960,10 @@ function renderEscalasFuturas(lista) {
     btn.type = "button";
     btn.textContent = "Copiar escala";
 
-    btn.addEventListener("click", () => copiarEscala(escala));
+    btn.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      copiarEscala(escala);
+    });
 
     actions.appendChild(btn);
 
@@ -1132,6 +1170,10 @@ function criarCardMusicaRepertorio(musica, status, matchScore) {
   if (status === "future") card.classList.add("future");
   if (status === "banned") card.classList.add("banned");
 
+  if (status !== "available") {
+    card.classList.add("song-unavailable");
+  }
+
   if (matchScore && matchScore > 0) {
     card.classList.add("category-match");
   }
@@ -1225,6 +1267,8 @@ function criarCardMusicaRepertorio(musica, status, matchScore) {
 
   card.appendChild(ribbon);
 
+  attachYoutubeClick(card, musica);
+
   return card;
 }
 
@@ -1269,7 +1313,6 @@ function calcularDiasParaLiberar(idMusica) {
   let referencia = null;
 
   if (futuraData) {
-    // Se está escalada no futuro: libera X dias depois de TOCADA
     referencia = new Date(futuraData.getTime());
     referencia.setDate(
       referencia.getDate() + TOCADA_NOS_ULTIMOS_X_DIAS
