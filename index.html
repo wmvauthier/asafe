@@ -2,41 +2,24 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <title>Projeto Asafe - Painel Wrapped</title>
+    <title>Projeto Asafe - Wrapped</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-
     <link rel="stylesheet" href="index.css" />
-    <script defer src="index.js"></script>
   </head>
-
   <body>
     <div class="app">
-      <!-- HEADER -->
       <header class="app-header">
-        <div class="app-header-main">
-          <div class="app-logo">AS</div>
-          <div>
-            <h1>Projeto Asafe</h1>
-            <p>Escala, futuras e repertório em uma visão estilo Wrapped.</p>
-          </div>
-        </div>
-        <div class="app-header-meta">
-          <span class="pill pill-soft">Gestão de louvor</span>
-          <span class="pill pill-accent">UI Wrapped</span>
+        <div class="app-title-group">
+          <h1 class="app-title">Projeto Asafe</h1>
+          <span class="app-subtitle">Painel estilo Spotify Wrapped</span>
         </div>
       </header>
 
-      <!-- TABS -->
-      <nav class="tab-bar">
-        <button class="tab-button active" data-view="escala-atual">
-          Escala atual
+      <nav class="tabs">
+        <button class="tab-button active" data-view="escala">
+          Próximo culto
         </button>
-        <button class="tab-button" data-view="futuras">
+        <button class="tab-button" data-view="escalas-futuras">
           Escalas futuras
         </button>
         <button class="tab-button" data-view="repertorio">
@@ -44,135 +27,110 @@
         </button>
       </nav>
 
-      <!-- VIEWS -->
       <main class="views">
-        <!-- ESCALA ATUAL -->
-        <section id="view-escala-atual" class="view-panel active">
-          <div class="panel-grid">
-            <!-- Resumo -->
-            <section class="panel panel-wide">
-              <div class="panel-header next-service-header">
-                <div>
-                  <h2>Próximo culto</h2>
-                  <p id="escalaAtualData" class="panel-subtitle next-service-meta">
-                    Carregando próxima escala...
-                  </p>
-                </div>
-                <div class="panel-header-right next-service-tags">
-                  <span class="badge-soft">Resumo do dia</span>
-                  <span id="escalaAtualCountTag" class="badge-soft badge-soft-muted"></span>
-                </div>
+        <!-- ====================== ESCALA ATUAL ====================== -->
+        <section id="view-escala" class="view-panel active">
+          <!-- Card principal / resumo -->
+          <section class="card escala-atual-card">
+            <header class="card-header">
+              <div>
+                <h2 class="card-title">📅 Próximo culto</h2>
+                <p id="escalaAtualData" class="card-subtitle">
+                  Carregando...
+                </p>
               </div>
-              <div id="escalaAtualResumo" class="resumo-grid"></div>
-            </section>
+              <div id="escalaAtualCountTag" class="escala-count-tag"></div>
+            </header>
+            <div id="escalaAtualResumo" class="escala-resumo"></div>
+          </section>
 
+          <!-- Linha flex com Integrantes / Repertório -->
+          <div class="escala-main-row">
             <!-- Integrantes -->
-            <section class="panel">
-              <div class="panel-header">
-                <div>
-                  <h2>Integrantes na escala</h2>
-                  <p class="panel-subtitle">
-                    Quem sobe no palco e o papel de cada um.
-                  </p>
-                </div>
-              </div>
-              <div id="escalaAtualIntegrantes" class="grid-integrantes">
-                <div class="placeholder-text">
-                  Carregando integrantes da próxima escala...
-                </div>
-              </div>
+            <section
+              class="card escala-main-col escala-main-col-integrantes"
+            >
+              <header class="card-header">
+                <h3 class="card-title">🎤 Integrantes da escala</h3>
+              </header>
+              <div
+                id="escalaAtualIntegrantes"
+                class="integrantes-grid"
+              ></div>
             </section>
 
-            <!-- Músicas da escala -->
-            <section class="panel">
-              <div class="panel-header">
-                <div>
-                  <h2>Repertório do dia</h2>
-                  <p class="panel-subtitle">
-                    Músicas, artistas, categorias e níveis por instrumento.
-                  </p>
-                </div>
-              </div>
-              <div id="escalaAtualMusicas" class="grid-musicas">
-                <div class="placeholder-text">
-                  Carregando músicas da próxima escala...
-                </div>
-              </div>
+            <!-- Repertório do dia -->
+            <section
+              class="card escala-main-col escala-main-col-repertorio"
+            >
+              <header class="card-header">
+                <h3 class="card-title">🎵 Repertório do dia</h3>
+              </header>
+              <div id="escalaAtualMusicas" class="musicas-list"></div>
             </section>
           </div>
         </section>
 
-        <!-- ESCALAS FUTURAS -->
-        <section id="view-futuras" class="view-panel">
-          <section class="panel">
-            <div class="panel-header">
-              <div>
-                <h2>Escalas futuras</h2>
-                <p class="panel-subtitle">
-                  Próximos cultos, equipes e repertórios.
-                </p>
-              </div>
-              <div class="panel-header-right">
-                <span class="badge-soft">Copie a escala em 1 clique</span>
-              </div>
-            </div>
-            <div id="escalasFuturasContainer" class="grid-escalas">
-              <div class="placeholder-text">
-                Carregando escalas futuras...
-              </div>
-            </div>
+        <!-- ====================== ESCALAS FUTURAS =================== -->
+        <section id="view-escalas-futuras" class="view-panel">
+          <section class="card">
+            <header class="card-header">
+              <h2 class="card-title">📆 Escalas futuras</h2>
+            </header>
+            <div
+              id="escalasFuturasContainer"
+              class="escalas-futuras-list"
+            ></div>
           </section>
         </section>
 
-        <!-- REPERTÓRIO -->
+        <!-- ====================== REPERTÓRIO ======================== -->
         <section id="view-repertorio" class="view-panel">
-          <section class="panel">
-            <div class="panel-header">
+          <section class="card">
+            <header class="card-header card-header--repertorio">
               <div>
-                <h2>Repertório</h2>
-                <p class="panel-subtitle">
-                  Todas as músicas cadastradas, ordenadas pelas regras de
-                  uso/recência.
+                <h2 class="card-title">📚 Repertório</h2>
+                <p class="card-subtitle">
+                  Visualize o status de cada música e filtre por categorias
                 </p>
               </div>
-              <div class="panel-header-right legend">
-                <span class="legend-pill legend-available">
-                  Disponível (<span id="legendDisponivelCount">0</span>)
+
+              <div class="legend">
+                <span class="legend-item legend-disponivel">
+                  Disponíveis
+                  (<span id="legendDisponivelCount">0</span>)
                 </span>
-                <span class="legend-pill legend-recent">
-                  Tocada recente (<span id="legendRecenteCount">0</span>)
+                <span class="legend-item legend-recente">
+                  Recentes
+                  (<span id="legendRecenteCount">0</span>)
                 </span>
-                <span class="legend-pill legend-future">
-                  Escalada futura (<span id="legendFuturaCount">0</span>)
+                <span class="legend-item legend-futura">
+                  Futuras
+                  (<span id="legendFuturaCount">0</span>)
                 </span>
-                <span class="legend-pill legend-banned">
-                  Banida (<span id="legendBanidaCount">0</span>)
+                <span class="legend-item legend-banida">
+                  Banidas
+                  (<span id="legendBanidaCount">0</span>)
                 </span>
               </div>
+            </header>
+
+            <div class="categorias-filter">
+              <span class="categorias-label">
+                Filtro por categorias (até 2):
+              </span>
+              <div
+                id="categoriasContainer"
+                class="categorias-buttons"
+              ></div>
             </div>
 
-            <div class="repertorio-toolbar">
-              <div class="toolbar-section">
-                <h3>Categorias disponíveis</h3>
-                <p class="toolbar-subtitle">
-                  Clique para filtrar. No máximo duas categorias por vez.
-                </p>
-              </div>
-              <div id="categoriasContainer" class="categorias-container"></div>
-            </div>
-
-            <div id="repertorioGrid" class="grid-musicas">
-              <div class="placeholder-text">
-                Carregando repertório completo...
-              </div>
-            </div>
+            <div id="repertorioGrid" class="repertorio-grid"></div>
           </section>
         </section>
       </main>
-
-      <footer class="app-footer">
-        <span>Projeto Asafe · painel wrapped-style</span>
-      </footer>
     </div>
+
+    <script src="index.js"></script>
   </body>
 </html>

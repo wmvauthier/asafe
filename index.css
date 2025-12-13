@@ -1,22 +1,6 @@
-:root {
-  --bg: #020617;
-  --bg-soft: #020617;
-  --bg-panel: #020617;
-  --bg-card: #020617;
-  --accent: #22c55e;
-  --accent-alt: #38bdf8;
-  --danger: #ef4444;
-  --warning: #eab308;
-  --muted: #9ca3af;
-  --text: #e5e7eb;
-  --border-soft: rgba(148, 163, 184, 0.35);
-  --radius-panel: 24px;
-  --radius-card: 18px;
-  --shadow-strong: 0 18px 45px rgba(0, 0, 0, 0.55);
-  --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.7);
-}
-
-/* RESET BÁSICO */
+/* ==========================
+   RESET BÁSICO
+   ========================== */
 
 *,
 *::before,
@@ -28,369 +12,324 @@ html,
 body {
   margin: 0;
   padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: radial-gradient(circle at top left, #111827, #020617 55%);
+  color: #e5e7eb;
 }
 
-/* LAYOUT GLOBAL */
-
-body {
-  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
-  background:
-    radial-gradient(circle at top left, #22c55e33 0, transparent 55%),
-    radial-gradient(circle at top right, #38bdf833 0, transparent 60%),
-    radial-gradient(circle at bottom, #a855f733 0, transparent 55%),
-    #020617;
-  color: var(--text);
-  min-height: 100vh;
-}
+/* ==========================
+   LAYOUT GERAL
+   ========================== */
 
 .app {
-  max-width: 1200px;
+  /* max-width removido conforme pedido */
   margin: 0 auto;
-  padding: 24px 16px 40px 16px;
+  padding: 16px;
 }
-
-/* HEADER */
 
 .app-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 18px;
-  gap: 16px;
+  align-items: flex-end;
+  padding: 16px 0 8px;
 }
 
-.app-header-main {
+.app-title-group {
   display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.app-logo {
-  width: 40px;
-  height: 40px;
-  border-radius: 14px;
-  background: radial-gradient(circle at top left, #22c55e, #0f172a);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 14px;
-  letter-spacing: 0.15em;
-  color: #e5e7eb;
-  text-transform: uppercase;
-  box-shadow: var(--shadow-soft);
-}
-
-.app-header h1 {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.app-header p {
-  margin: 2px 0 0 0;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.app-header-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-/* PILLS / BADGES */
-
-.pill {
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 11px;
-  border: 1px solid transparent;
-}
-
-.pill-soft {
-  border-color: rgba(148, 163, 184, 0.6);
-  background: rgba(15, 23, 42, 0.9);
-  color: var(--muted);
-}
-
-.pill-accent {
-  background: linear-gradient(120deg, #22c55e, #38bdf8);
-  color: #020617;
-  font-weight: 600;
-  box-shadow: 0 12px 22px rgba(34, 197, 94, 0.4);
-}
-
-/* TABS */
-
-.tab-bar {
-  display: inline-flex;
-  padding: 4px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  box-shadow: var(--shadow-soft);
-  margin-bottom: 16px;
+  flex-direction: column;
   gap: 4px;
 }
 
+.app-title {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.app-subtitle {
+  font-size: 0.9rem;
+  color: #9ca3af;
+}
+
+/* ==========================
+   TABS
+   ========================== */
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
 .tab-button {
-  border-radius: 999px;
   border: none;
   background: transparent;
-  color: var(--muted);
-  font-size: 13px;
-  padding: 6px 14px;
+  color: #9ca3af;
+  font-size: 0.95rem;
+  padding: 8px 14px;
+  border-radius: 999px;
   cursor: pointer;
-  transition: background 0.16s ease, color 0.16s ease, transform 0.12s ease;
+  transition: all 0.15s ease;
 }
 
 .tab-button:hover {
-  color: var(--text);
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(148, 163, 184, 0.1);
+  color: #e5e7eb;
 }
 
 .tab-button.active {
-  background: radial-gradient(circle at top left, #22c55e, #0f172a);
-  color: #e5e7eb;
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #22c55e, #14b8a6);
+  color: #020617;
+  font-weight: 600;
 }
 
-/* VIEWS */
+/* ==========================
+   VIEWS
+   ========================== */
 
 .views {
-  margin-top: 12px;
+  padding-top: 12px;
 }
 
 .view-panel {
   display: none;
-  animation: fadeIn 0.19s ease-out;
+  gap: 16px;
+  flex-direction: column;
 }
 
 .view-panel.active {
-  display: block;
+  display: flex;
 }
 
-/* PANELS */
+/* ==========================
+   CARDS
+   ========================== */
 
-.panel {
-  background:
-    radial-gradient(circle at top left, rgba(34, 197, 94, 0.24), transparent 60%),
-    radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.18), transparent 60%),
-    rgba(15, 23, 42, 0.96);
-  border-radius: var(--radius-panel);
-  border: 1px solid var(--border-soft);
-  box-shadow: var(--shadow-strong);
-  padding: 16px 18px 18px 18px;
-  margin-bottom: 18px;
+.card {
+  background: radial-gradient(circle at top left, #111827, #020617 55%);
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.18);
 }
 
-.panel-wide {
-  grid-column: 1 / -1;
-}
-
-.panel-header {
+.card-header {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
   align-items: flex-start;
   margin-bottom: 12px;
-}
-
-.panel-header h2 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.panel-subtitle {
-  margin: 4px 0 0 0;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.panel-header-right {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.badge-soft {
-  font-size: 11px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.55);
-}
-
-.badge-soft-muted {
-  opacity: 0.8;
-}
-
-/* GRID PRINCIPAL DA ESCALA ATUAL */
-
-.panel-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  grid-auto-rows: auto;
-  gap: 16px;
-}
-
-/* Próximo culto meta */
-
-.next-service-header h2 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.next-service-header h2::before {
-  content: "📅";
-  font-size: 18px;
-}
-
-.next-service-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: center;
-}
-
-.next-service-meta span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* RESUMO ESCALA ATUAL */
-
-.resumo-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.resumo-chip {
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 11px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(15, 23, 42, 0.88);
-  border: 1px solid rgba(148, 163, 184, 0.6);
-}
-
-.resumo-chip span.label {
-  color: var(--muted);
-}
-
-.level-easy {
-  background: rgba(34, 197, 94, 0.15);
-  border-color: rgba(34, 197, 94, 0.6);
-  color: #bbf7d0;
-}
-
-.level-medium {
-  background: rgba(234, 179, 8, 0.12);
-  border-color: rgba(234, 179, 8, 0.7);
-  color: #fef3c7;
-}
-
-.level-hard {
-  background: rgba(239, 68, 68, 0.16);
-  border-color: rgba(239, 68, 68, 0.7);
-  color: #fee2e2;
-}
-
-/* PLACEHOLDER */
-
-.placeholder-text {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-/* INTEGRANTES */
-
-.grid-integrantes {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: 12px;
 }
 
-.member-card {
-  background: radial-gradient(circle at top, rgba(15, 23, 42, 0.9), #020617);
-  border-radius: var(--radius-card);
-  padding: 10px 8px 9px 8px;
-  text-align: center;
-  border: 1px solid rgba(148, 163, 184, 0.45);
-  position: relative;
-  overflow: hidden;
+.card-header--repertorio {
+  align-items: center;
 }
 
-.member-card-header {
-  box-shadow: 0 0 18px rgba(250, 204, 21, 0.75);
-  border-color: rgba(250, 204, 21, 0.95);
-}
-
-.member-avatar-wrapper {
-  position: relative;
-  display: inline-block;
-  margin-bottom: 6px;
-}
-
-.member-avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 999px;
-  object-fit: cover;
-  border: 2px solid rgba(148, 163, 184, 0.7);
-  background: radial-gradient(circle at top left, #22c55e, #020617);
-}
-
-.member-crown {
-  position: absolute;
-  top: -8px;
-  right: -4px;
-  font-size: 18px;
-  text-shadow: 0 0 4px #000;
-}
-
-.member-name {
-  font-size: 13px;
+.card-title {
+  margin: 0;
+  font-size: 1.1rem;
   font-weight: 600;
 }
 
-.member-role {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 1px;
+.card-subtitle {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: #9ca3af;
 }
 
-.member-expertise {
+.escala-count-tag {
+  font-size: 0.8rem;
+  color: #e5e7eb;
+  background: rgba(37, 99, 235, 0.15);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+/* ==========================
+   ESCALA ATUAL - RESUMO
+   ========================== */
+
+.escala-resumo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.resumo-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.resumo-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  font-size: 0.8rem;
+}
+
+.resumo-chip .label {
+  color: #9ca3af;
+  font-size: 0.75rem;
+}
+
+/* bloco logo abaixo da data, antes das dificuldades por instrumento */
+.escala-resumo-info {
   margin-top: 4px;
+  font-size: 0.8rem;
+  color: #e5e7eb;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.member-expertise-line {
+.escala-resumo-info strong {
+  font-weight: 600;
+}
+
+.escala-resumo-extra {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 12px;
+}
+
+.escala-resumo-section-title {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-bottom: 6px;
+}
+
+.escala-resumo-dif-list,
+.escala-resumo-cat-list {
   display: flex;
-  justify-content: center;
-  gap: 4px;
-  font-size: 10px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* dificuldades chips (resumo) */
+
+.dificuldade-chip {
+  display: inline-flex;
   align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.dificuldade-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+}
+
+.dificuldade-easy .dificuldade-dot {
+  background: #22c55e;
+}
+
+.dificuldade-medium .dificuldade-dot {
+  background: #eab308;
+}
+
+.dificuldade-hard .dificuldade-dot {
+  background: #ef4444;
+}
+
+/* ==========================
+   ESCALA ATUAL - FLEX MAIN
+   ========================== */
+
+.escala-main-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.escala-main-col {
+  min-width: 0;
+}
+
+/* 3/9 layout */
+.escala-main-col-integrantes {
+  flex: 0 0 25%;
+  max-width: 25%;
+}
+
+.escala-main-col-repertorio {
+  flex: 0 0 75%;
+  max-width: 75%;
+}
+
+/* ==========================
+   INTEGRANTES
+   ========================== */
+
+.integrantes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.member-card {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.member-avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.member-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid rgba(34, 197, 94, 0.7);
+}
+
+.member-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.member-role {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-bottom: 4px;
+}
+
+.member-expertise {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.member-expertise-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
 }
 
 .expertise-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 999px;
+  background: #6b7280;
 }
 
 .expertise-easy {
@@ -405,62 +344,151 @@ body {
   background: #ef4444;
 }
 
-/* MÚSICAS / REPERTÓRIO */
+/* ==========================
+   LISTA DE MÚSICAS (ESCALA E REPERTÓRIO)
+   ========================== */
 
-.grid-musicas {
+.musicas-list,
+.repertorio-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 12px;
 }
 
 .song-card {
-  background:
-    radial-gradient(circle at top left, rgba(34, 197, 94, 0.16), transparent 60%),
-    radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.18), transparent 60%),
-    #020617;
-  border-radius: var(--radius-card);
-  padding: 8px 8px 10px 8px;
-  border: 1px solid rgba(148, 163, 184, 0.45);
-  box-shadow: var(--shadow-soft);
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  position: relative;
+  gap: 0;
+  padding: 0;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.98);
+  border: 2px solid rgba(148, 163, 184, 0.35);
   overflow: hidden;
 }
 
-.song-card:hover {
-  border-color: rgba(248, 250, 252, 0.9);
-}
+/* THUMB FULL-WIDTH, QUADRADA */
 
 .song-thumb-wrapper {
   position: relative;
-  border-radius: 12px;
-  overflow: hidden;
+  width: 100%;
 }
 
 .song-thumb {
   width: 100%;
+  aspect-ratio: 1 / 1; /* quadrada */
+  object-fit: cover;
   display: block;
-  border-radius: 12px;
 }
 
-/* RIBBON STATUS */
+/* conteúdo textual abaixo do thumb */
+
+.song-main {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.song-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* artista em linha abaixo do título */
+
+.artist-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.artist-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.artist-name {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+/* categorias + dificuldades na mesma linha */
+
+.song-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.5);
+}
+
+/* badges de dificuldade (cor + instrumento) */
+
+.tag-diff {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tag-diff-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #6b7280;
+}
+
+.tag-diff-dot-easy {
+  background: #22c55e;
+}
+
+.tag-diff-dot-medium {
+  background: #eab308;
+}
+
+.tag-diff-dot-hard {
+  background: #ef4444;
+}
+
+/* info de liberação (repertório) */
+
+.song-release-info {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+/* ==========================
+   RIBBON DE STATUS (REPERTÓRIO)
+   ========================== */
 
 .song-ribbon {
   position: absolute;
-  top: 10px;
-  right: -40px;
-  transform: rotate(45deg);
-  width: 120px;
-  text-align: center;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  padding: 2px 0;
-  color: #020617;
+  top: 6px;
+  right: -32px;
+  transform: rotate(40deg);
+  padding: 2px 40px;
+  font-size: 0.7rem;
   font-weight: 600;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.7);
+  text-align: center;
+  color: #020617;
+  background: #6b7280;
+  opacity: 0.95;
 }
 
 .song-ribbon-available {
@@ -477,326 +505,201 @@ body {
 
 .song-ribbon-banned {
   background: #ef4444;
-  color: #fee2e2;
 }
 
-.song-ribbon-filtered.song-ribbon-available {
-  background: linear-gradient(120deg, #22c55e, #a7f3d0);
+.song-ribbon-filtered {
+  box-shadow: 0 0 0 1px #f97316;
 }
 
-.song-ribbon-filtered.song-ribbon-recent {
-  background: linear-gradient(120deg, #eab308, #facc15);
+/* cores de borda por status (repertório) */
+
+.song-card.available {
+  border-color: rgba(34, 197, 94, 0.7);
 }
 
-.song-ribbon-filtered.song-ribbon-future {
-  background: linear-gradient(120deg, #38bdf8, #7dd3fc);
+.song-card.recent {
+  border-color: rgba(234, 179, 8, 0.7);
 }
 
-.song-ribbon-filtered.song-ribbon-banned {
-  background: linear-gradient(120deg, #ef4444, #f97373);
+.song-card.future {
+  border-color: rgba(56, 189, 248, 0.7);
 }
 
-/* INFO LIBERA EM X DIAS */
-
-.song-release-info {
-  position: absolute;
-  bottom: 4px;
-  right: 6px;
-  font-size: 10px;
-  color: var(--muted);
-  background: rgba(15, 23, 42, 0.9);
-  border-radius: 999px;
-  padding: 2px 6px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.song-main {
-  margin-top: 6px;
-}
-
-.song-title {
-  font-size: 13px;
-  font-weight: 600;
-  margin: 0;
-}
-
-.song-artist {
-  font-size: 12px;
-  margin: 2px 0 0 0;
-  color: var(--muted);
-}
-
-.song-meta-row {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 4px;
-}
-
-.song-pill {
-  border-radius: 999px;
-  padding: 2px 6px;
-  font-size: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.65);
-  background: rgba(15, 23, 42, 0.9);
-  color: var(--muted);
-}
-
-/* Artista avatar */
-
-.artist-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 4px;
-}
-
-.artist-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 999px;
-  object-fit: cover;
-  border: 1px solid rgba(148, 163, 184, 0.7);
-  background: radial-gradient(circle at top left, #38bdf8, #020617);
-}
-
-.artist-name {
-  font-size: 11px;
-  color: var(--muted);
-}
-
-/* CATEGORIAS + LEVELS EMBAIXO */
-
-.song-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 6px;
-}
-
-.tag {
-  border-radius: 999px;
-  padding: 2px 6px;
-  font-size: 10px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.55);
-}
-
-/* STATUS DO REPERTÓRIO */
-
-.song-card.recent .song-thumb {
-  filter: grayscale(100%);
-  opacity: 0.7;
-}
-
-.song-card.future .song-thumb {
-  filter: grayscale(100%);
-  opacity: 0.7;
-}
-
-.song-card.banned .song-thumb {
-  filter: grayscale(100%);
-  opacity: 0.3;
-}
-
-.song-card.recent .song-title,
-.song-card.recent .song-artist,
-.song-card.future .song-title,
-.song-card.future .song-artist,
-.song-card.banned .song-title,
-.song-card.banned .song-artist {
-  text-decoration: line-through;
-  color: var(--muted);
+.song-card.banned {
+  border-color: rgba(239, 68, 68, 0.7);
 }
 
 .song-card.category-match {
-  border-color: #f9fafb;
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.8);
 }
 
-/* ESCALAS FUTURAS */
+/* ==========================
+   ESCALAS FUTURAS
+   ========================== */
 
-.grid-escalas {
+.escalas-futuras-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
 }
 
 .escala-card {
-  background:
-    radial-gradient(circle at top left, rgba(34, 197, 94, 0.18), transparent 60%),
-    radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.2), transparent 60%),
-    #020617;
-  border-radius: var(--radius-card);
-  padding: 10px 10px 12px 10px;
-  border: 1px solid rgba(148, 163, 184, 0.5);
-  box-shadow: var(--shadow-soft);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.25);
 }
 
 .escala-header {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  gap: 8px;
 }
 
 .escala-title {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .escala-date-sub {
-  font-size: 11px;
-  color: var(--muted);
+  font-size: 0.8rem;
+  color: #9ca3af;
 }
 
 .escala-integrantes {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 4px;
+  gap: 6px;
 }
 
 .escala-integrante-chip {
-  border-radius: 999px;
-  font-size: 10px;
-  padding: 2px 6px 2px 3px;
-  background: rgba(15, 23, 42, 0.95);
-  border: 1px solid rgba(148, 163, 184, 0.6);
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  font-size: 0.75rem;
 }
 
 .escala-integrante-avatar {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 999px;
   object-fit: cover;
-  border: 1px solid rgba(148, 163, 184, 0.7);
 }
 
 .escala-integrante-nome {
-  max-width: 80px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.escala-musicas {
+/* dificuldades em escalas futuras */
+
+.escala-dificuldades {
   margin-top: 4px;
+}
+
+.escala-dificuldades-title {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-bottom: 4px;
+}
+
+.escala-dificuldades-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* seção de músicas nas escalas futuras usa o mesmo card de música */
+
+.escala-musicas {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .escala-musicas-header {
-  font-size: 11px;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  font-size: 0.85rem;
+  color: #9ca3af;
 }
 
 .escala-musicas-list {
-  margin-top: 4px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-
-.escala-musica-row {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.escala-musica-thumb {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-.escala-musica-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.escala-musica-titulo {
-  font-size: 11px;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.escala-musica-artista {
-  font-size: 10px;
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.escala-musica-categorias {
-  margin-top: 2px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-}
-
-.escala-musica-tag {
-  font-size: 9px;
-  border-radius: 999px;
-  padding: 1px 5px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.5);
+  gap: 8px;
 }
 
 .escala-actions {
-  margin-top: 8px;
   display: flex;
   justify-content: flex-end;
 }
 
 .btn {
   border-radius: 999px;
-  font-size: 12px;
-  padding: 5px 10px;
-  border: 1px solid transparent;
+  border: none;
+  padding: 6px 14px;
+  font-size: 0.8rem;
   cursor: pointer;
 }
 
 .btn-primary {
-  background: linear-gradient(120deg, #22c55e, #38bdf8);
+  background: linear-gradient(135deg, #22c55e, #22c55e);
   color: #020617;
-  font-weight: 600;
-  box-shadow: 0 10px 20px rgba(34, 197, 94, 0.4);
 }
 
-/* REPERTÓRIO TOOLBAR / LEGEND */
+/* ==========================
+   LEGENDA / CATEGORIAS
+   ========================== */
 
-.repertorio-toolbar {
-  margin-bottom: 12px;
-  border-radius: 16px;
-  border: 1px dashed rgba(148, 163, 184, 0.5);
-  padding: 10px 10px;
-  background: rgba(15, 23, 42, 0.85);
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  font-size: 0.75rem;
 }
 
-.toolbar-section h3 {
-  margin: 0;
-  font-size: 13px;
+.legend-item {
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
 }
 
-.toolbar-subtitle {
-  margin: 2px 0 0 0;
-  font-size: 11px;
-  color: var(--muted);
+.legend-disponivel {
+  border-color: rgba(34, 197, 94, 0.6);
 }
 
-.categorias-container {
+.legend-recente {
+  border-color: rgba(234, 179, 8, 0.6);
+}
+
+.legend-futura {
+  border-color: rgba(56, 189, 248, 0.6);
+}
+
+.legend-banida {
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+.categorias-filter {
   margin-top: 8px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.categorias-label {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.categorias-buttons {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -804,114 +707,58 @@ body {
 
 .category-button {
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.7);
-  background: rgba(15, 23, 42, 0.95);
-  font-size: 11px;
-  padding: 4px 8px;
-  color: var(--muted);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: transparent;
+  color: #e5e7eb;
+  padding: 4px 10px;
+  font-size: 0.75rem;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
 }
 
-.category-button .category-count {
-  border-radius: 999px;
-  padding: 1px 5px;
-  background: #e5e7eb;
-  color: #020617;
-  font-size: 10px;
+.category-button:hover {
+  background: rgba(148, 163, 184, 0.15);
 }
 
 .category-button.active {
-  background: linear-gradient(120deg, #22c55e, #38bdf8);
-  border-color: transparent;
-  color: #020617;
+  background: rgba(249, 115, 22, 0.15);
+  border-color: rgba(249, 115, 22, 0.8);
 }
 
-/* LEGENDAS */
+/* ==========================
+   PLACEHOLDER
+   ========================== */
 
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: flex-end;
+.placeholder-text {
+  font-size: 0.85rem;
+  color: #9ca3af;
 }
 
-.legend-pill {
-  border-radius: 999px;
-  padding: 3px 8px;
-  font-size: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.7);
-}
-
-.legend-available {
-  background: rgba(15, 23, 42, 0.95);
-  color: #e5e7eb;
-}
-
-.legend-recent {
-  background: rgba(234, 179, 8, 0.14);
-  color: #facc15;
-}
-
-.legend-future {
-  background: rgba(56, 189, 248, 0.18);
-  color: #7dd3fc;
-}
-
-.legend-banned {
-  background: rgba(239, 68, 68, 0.2);
-  color: #fecaca;
-}
-
-/* FOOTER */
-
-.app-footer {
-  margin-top: 18px;
-  font-size: 11px;
-  color: var(--muted);
-  text-align: center;
-  opacity: 0.8;
-}
-
-/* ANIMAÇÃO */
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* RESPONSIVO */
+/* ==========================
+   RESPONSIVO
+   ========================== */
 
 @media (max-width: 900px) {
-  .panel-grid {
-    grid-template-columns: 1fr;
+  .escala-main-row {
+    flex-direction: column;
+  }
+
+  .escala-main-col-integrantes,
+  .escala-main-col-repertorio {
+    flex: 1 1 100%;
+    max-width: 100%;
   }
 }
 
-@media (max-width: 600px) {
-  .app-header {
-    flex-direction: column;
-    align-items: flex-start;
+@media (max-width: 768px) {
+  .app {
+    padding: 10px;
   }
 
-  .tab-bar {
-    width: 100%;
-    justify-content: space-between;
+  .card {
+    padding: 14px;
   }
 
-  .grid-musicas {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  }
-
-  .grid-escalas {
+  .escala-resumo-extra {
     grid-template-columns: 1fr;
   }
 }
