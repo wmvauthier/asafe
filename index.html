@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="index.css" />
   </head>
+
   <body>
     <div class="app">
       <header class="app-header">
@@ -15,6 +16,7 @@
         </div>
       </header>
 
+      <!-- Navegação -->
       <nav class="tabs">
         <button class="tab-button active" data-view="escala">
           Próximo culto
@@ -28,41 +30,45 @@
       </nav>
 
       <main class="views">
-        <!-- ====================== ESCALA ATUAL ====================== -->
+        <!-- =======================================================
+             PRÓXIMO CULTO (col-4 com card + integrantes)
+             ======================================================= -->
         <section id="view-escala" class="view-panel active">
           <div class="escala-main-row">
-            <!-- Col-4: card principal -->
-            <section class="card escala-atual-card escala-card-col-left">
-              <header class="card-header">
-                <div>
-                  <h2 class="card-title">📅 Próximo culto</h2>
-                  <p id="escalaAtualData" class="card-subtitle">
-                    Carregando...
-                  </p>
-                </div>
-                <div
-                  id="escalaAtualCountTag"
-                  class="escala-count-tag"
-                ></div>
-              </header>
-              <div id="escalaAtualResumo" class="escala-resumo"></div>
-            </section>
+            <!-- COLUNA ESQUERDA: CARD PRINCIPAL + INTEGRANTES -->
+            <div class="escala-col-4">
 
-            <!-- Col-8: integrantes + repertório -->
-            <div class="escala-card-col-right">
-              <!-- Integrantes -->
-              <section class="card">
+              <!-- -------- CARD PRINCIPAL -------- -->
+              <section class="card escala-atual-card">
+                <header class="card-header card-header--escala-atual">
+                  <div class="card-header-left">
+                    <h2 class="card-title">📅 Próximo culto</h2>
+                    <p id="escalaAtualData" class="card-subtitle">
+                      Carregando...
+                    </p>
+                  </div>
+
+                  <div class="card-header-right" id="escalaAtualBadges">
+                    <!-- badges (categoria + dificuldade geral) vão aqui -->
+                  </div>
+                </header>
+
+                <div id="escalaAtualResumo" class="escala-resumo"></div>
+              </section>
+
+              <!-- -------- INTEGRANTES -------- -->
+              <section class="card integrantes-card">
                 <header class="card-header">
                   <h3 class="card-title">🎤 Integrantes da escala</h3>
                 </header>
-                <div
-                  id="escalaAtualIntegrantes"
-                  class="integrantes-grid"
-                ></div>
+                <div id="escalaAtualIntegrantes" class="integrantes-grid"></div>
               </section>
 
-              <!-- Repertório do dia -->
-              <section class="card">
+            </div>
+
+            <!-- COLUNA DIREITA: REPERTÓRIO DO DIA -->
+            <div class="escala-col-8">
+              <section class="card repertorio-card">
                 <header class="card-header">
                   <h3 class="card-title">🎵 Repertório do dia</h3>
                 </header>
@@ -72,20 +78,22 @@
           </div>
         </section>
 
-        <!-- ====================== ESCALAS FUTURAS =================== -->
+        <!-- =======================================================
+             ESCALAS FUTURAS
+             ======================================================= -->
         <section id="view-escalas-futuras" class="view-panel">
           <section class="card">
             <header class="card-header">
               <h2 class="card-title">📆 Escalas futuras</h2>
             </header>
-            <div
-              id="escalasFuturasContainer"
-              class="escalas-futuras-list"
-            ></div>
+
+            <div id="escalasFuturasContainer" class="escalas-futuras-list"></div>
           </section>
         </section>
 
-        <!-- ====================== REPERTÓRIO ======================== -->
+        <!-- =======================================================
+             REPERTÓRIO
+             ======================================================= -->
         <section id="view-repertorio" class="view-panel">
           <section class="card">
             <header class="card-header card-header--repertorio">
@@ -96,36 +104,30 @@
                 </p>
               </div>
 
+              <!-- Legendas -->
               <div class="legend">
                 <span class="legend-item legend-disponivel">
-                  Disponíveis
-                  (<span id="legendDisponivelCount">0</span>)
+                  Disponíveis (<span id="legendDisponivelCount">0</span>)
                 </span>
                 <span class="legend-item legend-recente">
-                  Recentes
-                  (<span id="legendRecenteCount">0</span>)
+                  Recentes (<span id="legendRecenteCount">0</span>)
                 </span>
                 <span class="legend-item legend-futura">
-                  Futuras
-                  (<span id="legendFuturaCount">0</span>)
+                  Futuras (<span id="legendFuturaCount">0</span>)
                 </span>
                 <span class="legend-item legend-banida">
-                  Banidas
-                  (<span id="legendBanidaCount">0</span>)
+                  Banidas (<span id="legendBanidaCount">0</span>)
                 </span>
               </div>
             </header>
 
+            <!-- Filtro de categorias -->
             <div class="categorias-filter">
-              <span class="categorias-label">
-                Filtro por categorias (até 2):
-              </span>
-              <div
-                id="categoriasContainer"
-                class="categorias-buttons"
-              ></div>
+              <span class="categorias-label">Filtro por categorias (até 2):</span>
+              <div id="categoriasContainer" class="categorias-buttons"></div>
             </div>
 
+            <!-- Grid de músicas -->
             <div id="repertorioGrid" class="repertorio-grid"></div>
           </section>
         </section>

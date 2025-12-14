@@ -1,5 +1,5 @@
 /* ==========================
-   RESET BÁSICO
+   RESET GLOBAL
    ========================== */
 
 *,
@@ -19,7 +19,7 @@ body {
 }
 
 /* ==========================
-   LAYOUT GERAL
+   LAYOUT PRINCIPAL
    ========================== */
 
 .app {
@@ -85,7 +85,7 @@ body {
 }
 
 /* ==========================
-   VIEWS
+   VIEW PANELS
    ========================== */
 
 .views {
@@ -118,12 +118,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 12px;
   gap: 12px;
-}
-
-.card-header--repertorio {
-  align-items: center;
+  margin-bottom: 12px;
 }
 
 .card-title {
@@ -133,98 +129,109 @@ body {
 }
 
 .card-subtitle {
-  margin: 2px 0 0;
+  margin: 0;
+  margin-top: 2px;
   font-size: 0.85rem;
   color: #9ca3af;
 }
 
-.escala-count-tag {
-  font-size: 0.8rem;
-  color: #e5e7eb;
-  background: rgba(37, 99, 235, 0.15);
-  border-radius: 999px;
-  padding: 4px 10px;
+/* =========================================
+   CARD DO PRÓXIMO CULTO - HEADER ESPECIAL
+   ========================================= */
+
+.card-header--escala-atual {
+  position: relative;
+}
+
+.card-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-header-right {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+/* BADGES NO HEADER DO PRÓXIMO CULTO */
+.card-header-right .tag,
+.card-header-right .tag-diff {
+  transform: translateY(-4px);
 }
 
 /* ==========================
-   ESCALA ATUAL - RESUMO
+   GRID DO PRÓXIMO CULTO
+   ========================== */
+
+.escala-main-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.escala-col-4 {
+  flex: 0 0 33.333%;
+  max-width: 33.333%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.escala-col-8 {
+  flex: 0 0 66.666%;
+  max-width: 66.666%;
+}
+
+/* ==========================
+   RESUMO DO PRÓXIMO CULTO
    ========================== */
 
 .escala-resumo {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
-.resumo-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.resumo-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  font-size: 0.8rem;
-}
-
-.resumo-chip .label {
-  color: #9ca3af;
-  font-size: 0.75rem;
-}
-
-/* linha de badges: categoria dominante + dificuldade geral */
-
-.resumo-badges-row {
-  margin-top: 6px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-/* bloco extra de dificuldades/categorias */
-
+/* Dificuldade média por instrumento */
 .escala-resumo-extra {
   margin-top: 8px;
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
 .escala-resumo-section-title {
   font-size: 0.8rem;
   color: #9ca3af;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
-.escala-resumo-dif-list,
-.escala-resumo-cat-list {
+.escala-resumo-dif-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
-/* dificuldades chips (resumo) */
+/* BADGES DE DIFICULDADE — NOVO PADRÃO COM APENAS ÍCONE + INSTRUMENTO */
 
 .dificuldade-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 999px;
-  font-size: 0.75rem;
-  border: 1px solid rgba(148, 163, 184, 0.35);
   background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  font-size: 0.75rem;
 }
 
 .dificuldade-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 999px;
 }
 
@@ -241,35 +248,16 @@ body {
 }
 
 /* ==========================
-   ESCALA ATUAL - LAYOUT 4/8
-   ========================== */
-
-.escala-main-row {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.escala-card-col-left {
-  flex: 0 0 33.333%;
-  max-width: 33.333%;
-}
-
-.escala-card-col-right {
-  flex: 0 0 66.667%;
-  max-width: 66.667%;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* ==========================
    INTEGRANTES
    ========================== */
 
+.integrantes-card .card-title {
+  margin-bottom: 4px;
+}
+
 .integrantes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 10px;
 }
 
@@ -280,11 +268,6 @@ body {
   border-radius: 14px;
   background: rgba(15, 23, 42, 0.9);
   border: 1px solid rgba(148, 163, 184, 0.3);
-}
-
-.member-avatar-wrapper {
-  position: relative;
-  flex-shrink: 0;
 }
 
 .member-avatar {
@@ -309,14 +292,14 @@ body {
 .member-expertise {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 8px;
+  gap: 4px 10px;
 }
 
 .member-expertise-line {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
   font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .expertise-dot {
@@ -339,7 +322,7 @@ body {
 }
 
 /* ==========================
-   LISTA DE MÚSICAS (ESCALA E REPERTÓRIO)
+   MÚSICAS — CARDS GERAIS
    ========================== */
 
 .musicas-list,
@@ -360,10 +343,14 @@ body {
   border: 2px solid rgba(148, 163, 184, 0.35);
   overflow: hidden;
   cursor: pointer;
+  transition: transform 0.15s ease;
 }
 
-/* THUMB FULL-WIDTH, QUADRADA, COM ZOOM */
+.song-card:hover {
+  transform: translateY(-2px);
+}
 
+/* THUMB QUADRADA E SEM BORDA, COM ZOOM PARA REMOVER FAIXAS PRETAS */
 .song-thumb-wrapper {
   position: relative;
   width: 100%;
@@ -372,17 +359,16 @@ body {
 
 .song-thumb {
   width: 100%;
-  aspect-ratio: 1 / 1; /* quadrada */
+  aspect-ratio: 1 / 1;
   object-fit: cover;
   display: block;
   transform: scale(1.35);
   transform-origin: center;
 }
 
-/* conteúdo textual abaixo do thumb */
-
+/* CONTEÚDO DO CARD */
 .song-main {
-  padding: 10px 12px 12px;
+  padding: 10px 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -390,17 +376,15 @@ body {
 
 .song-title {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
+  letter-spacing: 0.3px;
 }
-
-/* artista em linha abaixo do título */
 
 .artist-row {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-top: 2px;
 }
 
 .artist-avatar {
@@ -411,12 +395,11 @@ body {
 }
 
 .artist-name {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #9ca3af;
 }
 
-/* categorias + dificuldades na mesma linha */
-
+/* TAGS (categorias + dificuldades) */
 .song-tags {
   display: flex;
   flex-wrap: wrap;
@@ -425,25 +408,24 @@ body {
 
 .tag {
   font-size: 0.75rem;
-  padding: 3px 8px;
+  padding: 4px 9px;
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(148, 163, 184, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  white-space: nowrap;
 }
 
-/* badges de dificuldade (cor + instrumento) */
-
+/* DIFICULDADES — NOVO PADRÃO (ÍCONE + INSTRUMENTO) */
 .tag-diff {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .tag-diff-dot {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: #6b7280;
 }
 
 .tag-diff-dot-easy {
@@ -458,45 +440,32 @@ body {
   background: #ef4444;
 }
 
-/* info de liberação (repertório) */
+/* ======================================================
+   MÚSICAS — STATUS DO REPERTÓRIO
+   ====================================================== */
 
-.song-release-info {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  font-size: 0.7rem;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.4);
-}
-
-/* músicas não disponíveis (recent/future/banned) */
-
+/* Grayscale + tachado */
 .song-unavailable .song-thumb {
   filter: grayscale(1) brightness(0.6);
 }
 
 .song-unavailable .song-title {
   text-decoration: line-through;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
-/* ==========================
-   RIBBON DE STATUS (REPERTÓRIO)
-   ========================== */
-
+/* Ribbons */
 .song-ribbon {
   position: absolute;
   top: 6px;
   right: -32px;
   transform: rotate(40deg);
-  padding: 2px 40px;
+  padding: 3px 40px;
   font-size: 0.7rem;
   font-weight: 600;
-  text-align: center;
-  color: #020617;
   background: #6b7280;
+  color: #020617;
+  border-radius: 2px;
   opacity: 0.95;
 }
 
@@ -516,12 +485,12 @@ body {
   background: #ef4444;
 }
 
-.song-ribbon-filtered {
-  box-shadow: 0 0 0 1px #f97316;
+/* Quando categorias estão filtradas */
+.song-card.category-match {
+  box-shadow: 0 0 0 1px #ffffff;
 }
 
-/* cores de borda por status (repertório) */
-
+/* Borda colorida por status */
 .song-card.available {
   border-color: rgba(34, 197, 94, 0.7);
 }
@@ -538,20 +507,26 @@ body {
   border-color: rgba(239, 68, 68, 0.7);
 }
 
-/* destaque por filtro de categoria (agora branco) */
-
-.song-card.category-match {
-  box-shadow: 0 0 0 1px #ffffff;
+/* Badge de liberação */
+.song-release-info {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.4);
 }
 
-/* ==========================
-   ESCALAS FUTURAS
-   ========================== */
+/* ======================================================
+   ESCALAS FUTURAS — ESTILO DE GRID
+   ====================================================== */
 
 .escalas-futuras-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
 }
 
 .escala-card {
@@ -564,11 +539,11 @@ body {
   border: 1px solid rgba(148, 163, 184, 0.25);
 }
 
+/* HEADER DAS ESCALAS FUTURAS (COM BADGE DE DIFICULDADE) */
 .escala-header {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
+  align-items: center;
 }
 
 .escala-title {
@@ -579,7 +554,41 @@ body {
 .escala-date-sub {
   font-size: 0.8rem;
   color: #9ca3af;
+  margin-top: 4px;
 }
+
+/* BADGE DE DIFICULDADE MÉDIA (SOMENTE ÍCONE) */
+.escala-dificuldade-geral {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 999px;
+  gap: 6px;
+}
+
+.escala-dificuldade-geral .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.dot-easy {
+  background: #22c55e;
+}
+
+.dot-medium {
+  background: #eab308;
+}
+
+.dot-hard {
+  background: #ef4444;
+}
+
+/* ======================================================
+   integradores EM ESCALAS FUTURAS
+   ====================================================== */
 
 .escala-integrantes {
   display: flex;
@@ -605,11 +614,9 @@ body {
   object-fit: cover;
 }
 
-.escala-integrante-nome {
-  white-space: nowrap;
-}
-
-/* dificuldades em escalas futuras */
+/* ======================================================
+   DIFICULDADES EM ESCALAS FUTURAS
+   ====================================================== */
 
 .escala-dificuldades {
   margin-top: 4px;
@@ -627,7 +634,10 @@ body {
   gap: 6px;
 }
 
-/* seção de músicas nas escalas futuras em 3 colunas */
+
+/* ==========================
+   MÚSICAS DENTRO DAS ESCALAS FUTURAS (3 por linha)
+   ========================== */
 
 .escala-musicas {
   display: flex;
@@ -646,6 +656,7 @@ body {
   gap: 8px;
 }
 
+/* Botões da escala (copiar) */
 .escala-actions {
   display: flex;
   justify-content: flex-end;
@@ -721,7 +732,7 @@ body {
   border: 1px solid rgba(148, 163, 184, 0.4);
   background: transparent;
   color: #e5e7eb;
-  padding: 4px 10px;
+  padding: 5px 10px;
   font-size: 0.75rem;
   cursor: pointer;
 }
@@ -742,10 +753,11 @@ body {
 .placeholder-text {
   font-size: 0.85rem;
   color: #9ca3af;
+  padding: 4px;
 }
 
 /* ==========================
-   RESPONSIVO
+   RESPONSIVIDADE
    ========================== */
 
 @media (max-width: 1100px) {
@@ -753,8 +765,8 @@ body {
     flex-direction: column;
   }
 
-  .escala-card-col-left,
-  .escala-card-col-right {
+  .escala-col-4,
+  .escala-col-8 {
     flex: 1 1 100%;
     max-width: 100%;
   }
@@ -780,7 +792,11 @@ body {
   }
 
   .escala-resumo-extra {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .song-main {
+    padding: 10px 10px 14px;
   }
 
   .escala-musicas-list {

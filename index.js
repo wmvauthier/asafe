@@ -20,7 +20,7 @@ const LEVEL_VALUE = {
 };
 
 // =========================================================
-// FUNÇÕES UTILITÁRIAS
+// FUNÇÕES UTILITÁRIAS GERAIS
 // =========================================================
 
 function slugify(str) {
@@ -124,6 +124,7 @@ async function init() {
     carregarEscalaAtual();
     carregarEscalasFuturas();
     renderRepertorio();
+
   } catch (e) {
     console.error("Erro ao carregar dados:", e);
   }
@@ -132,7 +133,7 @@ async function init() {
 window.addEventListener("DOMContentLoaded", init);
 
 // =========================================================
-// TABS
+// TABS DE NAVEGAÇÃO
 // =========================================================
 
 document.addEventListener("click", (ev) => {
@@ -148,6 +149,7 @@ document.addEventListener("click", (ev) => {
   document.querySelectorAll(".view-panel").forEach((panel) => {
     panel.classList.remove("active");
   });
+
   const target = document.querySelector(`#view-${view}`);
   if (target) target.classList.add("active");
 });
@@ -160,7 +162,7 @@ function normalizarMusicas() {
   musicas = musicas.map((m) => {
     const clone = { ...m };
 
-    // Categorias: string -> array
+    // Categorias: string => array
     if (typeof clone.categorias === "string") {
       clone.categorias = clone.categorias
         .split(";")
@@ -171,7 +173,7 @@ function normalizarMusicas() {
       clone.categorias = [];
     }
 
-    // Ban / banned / active
+    // Ban / banned
     const banido = clone.banned === true || clone.ban === true;
     if (banido) {
       clone.banned = true;
@@ -184,7 +186,7 @@ function normalizarMusicas() {
     const artistaSlug = slugify(clone.artista || "");
     clone._artistImage = `artistas/${artistaSlug}.jpg`;
 
-    // Thumb do YouTube da música
+    // Thumbnail da música (YouTube)
     if (clone.referLink) {
       clone._thumbUrl = `https://img.youtube.com/vi/${clone.referLink}/0.jpg`;
     } else {
@@ -196,7 +198,7 @@ function normalizarMusicas() {
 }
 
 // =========================================================
-// CATEGORIAS (REPERTÓRIO)
+// CATEGORIAS DO REPERTÓRIO
 // =========================================================
 
 function processarCategoriasUnicas() {
@@ -206,6 +208,7 @@ function processarCategoriasUnicas() {
       m.categorias.forEach((c) => set.add(c));
     }
   });
+
   categoriasUnicas = Array.from(set).sort();
   renderCategoriasFiltros();
 }
@@ -232,10 +235,7 @@ function renderCategoriasFiltros() {
         activeCategories = activeCategories.filter((c) => c !== cat);
         btn.classList.remove("active");
       } else {
-        if (activeCategories.length >= 2) {
-          // no máximo 2 categorias
-          return;
-        }
+        if (activeCategories.length >= 2) return; // máximo 2 filtros
         activeCategories.push(cat);
         btn.classList.add("active");
       }
@@ -249,16 +249,20 @@ function renderCategoriasFiltros() {
 
 function musicaMatchScoreCategorias(musica) {
   if (!activeCategories.length) return 0;
+
   const categorias = Array.isArray(musica.categorias) ? musica.categorias : [];
   let score = 0;
+
   activeCategories.forEach((c) => {
     if (categorias.includes(c)) score += 1;
   });
+
   return score;
 }
 
 // =========================================================
 // ESTATÍSTICAS DO REPERTÓRIO DE UMA ESCALA
+// (categoria dominante removida do layout, mas ainda útil)
 // =========================================================
 
 function calcularEstatisticasRepertorio(escala) {
@@ -266,7 +270,6 @@ function calcularEstatisticasRepertorio(escala) {
   const totalMusicas = ids.length;
 
   const instrumentosMap = {};
-  const categoriasMap = {};
 
   ids.forEach((id) => {
     const musica = musicas.find((m) => m.id === id);
@@ -278,6 +281,7 @@ function calcularEstatisticasRepertorio(escala) {
         if (!niv) return;
         const val = nivelToValor(niv);
         if (!val) return;
+
         if (!instrumentosMap[inst]) {
           instrumentosMap[inst] = { soma: 0, count: 0 };
         }
@@ -285,12 +289,6 @@ function calcularEstatisticasRepertorio(escala) {
         instrumentosMap[inst].count += 1;
       });
     }
-
-    // categorias
-    (musica.categorias || []).forEach((cat) => {
-      if (!categoriasMap[cat]) categoriasMap[cat] = 0;
-      categoriasMap[cat] += 1;
-    });
   });
 
   const dificuldades = {};
@@ -308,16 +306,6 @@ function calcularEstatisticasRepertorio(escala) {
     }
   });
 
-  const categoriasDominantes = [];
-  if (totalMusicas > 0) {
-    Object.entries(categoriasMap).forEach(([cat, qtd]) => {
-      const perc = qtd / totalMusicas;
-      if (perc >= 0.6) {
-        categoriasDominantes.push(cat);
-      }
-    });
-  }
-
   let dificuldadeMediaNivel = null;
   if (totalNivelCount > 0) {
     dificuldadeMediaNivel = valorToNivel(totalNivelSoma / totalNivelCount);
@@ -325,14 +313,13 @@ function calcularEstatisticasRepertorio(escala) {
 
   return {
     dificuldadesPorInstrumento: dificuldades,
-    categoriasDominantes,
-    totalMusicas,
     dificuldadeMediaNivel,
   };
 }
 
 // =========================================================
-// BADGES DE DIFICULDADE (POR MÚSICA)
+// BADGES DE DIFICULDADE (NOVO PADRÃO GLOBAL)
+// apenas ícone + nome do instrumento
 // =========================================================
 
 function criarBadgesDificuldadesMusica(musica) {
@@ -349,6 +336,7 @@ function criarBadgesDificuldadesMusica(musica) {
 
     const dot = document.createElement("span");
     dot.className = "tag-diff-dot";
+
     if (nivel === "easy") dot.classList.add("tag-diff-dot-easy");
     else if (nivel === "medium") dot.classList.add("tag-diff-dot-medium");
     else if (nivel === "hard") dot.classList.add("tag-diff-dot-hard");
@@ -364,7 +352,7 @@ function criarBadgesDificuldadesMusica(musica) {
 }
 
 // =========================================================
-// ESCALA ATUAL
+// ESCALA ATUAL — CARREGAMENTO
 // =========================================================
 
 function carregarEscalaAtual() {
@@ -377,14 +365,14 @@ function carregarEscalaAtual() {
     .sort((a, b) => a.dataObj - b.dataObj);
 
   const dataEl = document.getElementById("escalaAtualData");
-  const countTagEl = document.getElementById("escalaAtualCountTag");
+  const badgesHeader = document.getElementById("escalaAtualBadges");
 
   if (!futuras.length) {
     if (dataEl) {
       dataEl.textContent = "Nenhum culto futuro encontrado.";
     }
-    if (countTagEl) {
-      countTagEl.textContent = "";
+    if (badgesHeader) {
+      badgesHeader.innerHTML = "";
     }
     return;
   }
@@ -415,17 +403,68 @@ function carregarEscalaAtual() {
     musicas: Array.isArray(proxima.musicas) ? proxima.musicas.slice() : [],
   };
 
-  const countMusicas = (escalaAtual.musicas || []).length;
-  const countInt = (escalaAtual.integrantes || []).length;
-
-  if (countTagEl) {
-    countTagEl.textContent = `${countMusicas} músicas · ${countInt} integrantes`;
-  }
-
+  renderEscalaAtualHeaderBadges(escalaAtual);
   renderEscalaAtualResumo(escalaAtual);
   renderEscalaAtualIntegrantes(escalaAtual);
   renderEscalaAtualMusicas(escalaAtual);
 }
+
+// =========================================================
+// PRÓXIMO CULTO — BADGES DO HEADER (categoria + dificuldade geral)
+// =========================================================
+
+function renderEscalaAtualHeaderBadges(escala) {
+  const container = document.getElementById("escalaAtualBadges");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  const stats = calcularEstatisticasRepertorio(escala);
+
+  // Categoria dominante removida do cálculo (alternativa: usar primeira música)
+  const categoria = obterCategoriaPrincipal(escala);
+
+  if (categoria) {
+    const catTag = document.createElement("span");
+    catTag.className = "tag";
+    catTag.textContent = categoria;
+    container.appendChild(catTag);
+  }
+
+  // Dificuldade geral = badge com cor EXCLUSIVA (sem texto)
+  if (stats.dificuldadeMediaNivel) {
+    const diffTag = document.createElement("span");
+    diffTag.className = "tag-diff";
+
+    const dot = document.createElement("span");
+    dot.className = "tag-diff-dot";
+
+    if (stats.dificuldadeMediaNivel === "easy")
+      dot.classList.add("tag-diff-dot-easy");
+    else if (stats.dificuldadeMediaNivel === "medium")
+      dot.classList.add("tag-diff-dot-medium");
+    else if (stats.dificuldadeMediaNivel === "hard")
+      dot.classList.add("tag-diff-dot-hard");
+
+    const lbl = document.createElement("span");
+    lbl.textContent = ""; // sem texto — apenas o ícone
+
+    diffTag.append(dot, lbl);
+    container.appendChild(diffTag);
+  }
+}
+
+// Usa a primeira música da escala para determinar a "categoria principal"
+function obterCategoriaPrincipal(escala) {
+  if (!escala.musicas || !escala.musicas.length) return null;
+  const musica = musicas.find((m) => m.id === escala.musicas[0]);
+  if (!musica) return null;
+  return musica.categorias ? musica.categorias[0] : null;
+}
+
+// =========================================================
+// RESUMO DO PRÓXIMO CULTO
+// =========================================================
 
 function renderEscalaAtualResumo(escala) {
   const container = document.getElementById("escalaAtualResumo");
@@ -433,77 +472,11 @@ function renderEscalaAtualResumo(escala) {
   container.innerHTML = "";
 
   const stats = calcularEstatisticasRepertorio(escala);
-  const categoriaDominante = stats.categoriasDominantes[0] || null;
-  const dificuldadeNivel = stats.dificuldadeMediaNivel;
 
-  // Linha de contagem básica
-  const row = document.createElement("div");
-  row.className = "resumo-row";
-
-  const resumo = [
-    { label: "Músicas", value: (escala.musicas || []).length },
-    { label: "Integrantes", value: (escala.integrantes || []).length },
-  ];
-
-  resumo.forEach((r) => {
-    const chip = document.createElement("div");
-    chip.className = "resumo-chip";
-
-    const lbl = document.createElement("span");
-    lbl.className = "label";
-    lbl.textContent = r.label;
-
-    const v = document.createElement("span");
-    v.textContent = r.value;
-
-    chip.append(lbl, v);
-    row.appendChild(chip);
-  });
-
-  container.appendChild(row);
-
-  // Badges: categoria dominante + dificuldade geral
-  const badgesRow = document.createElement("div");
-  badgesRow.className = "resumo-badges-row";
-
-  if (categoriaDominante) {
-    const catTag = document.createElement("span");
-    catTag.className = "tag";
-    catTag.textContent = categoriaDominante;
-    badgesRow.appendChild(catTag);
-  }
-
-  if (dificuldadeNivel) {
-    const diffTag = document.createElement("span");
-    diffTag.className = "tag tag-diff";
-
-    const dot = document.createElement("span");
-    dot.className = "tag-diff-dot";
-    if (dificuldadeNivel === "easy")
-      dot.classList.add("tag-diff-dot-easy");
-    else if (dificuldadeNivel === "medium")
-      dot.classList.add("tag-diff-dot-medium");
-    else if (dificuldadeNivel === "hard")
-      dot.classList.add("tag-diff-dot-hard");
-
-    const label = document.createElement("span");
-    label.textContent = nivelLabel(dificuldadeNivel);
-
-    diffTag.append(dot, label);
-    badgesRow.appendChild(diffTag);
-  }
-
-  if (badgesRow.childElementCount) {
-    container.appendChild(badgesRow);
-  }
-
-  // Se não tem músicas, não mostra detalhes extras
-  if (!stats.totalMusicas) return;
-
+  // ======== DIFICULDADE POR INSTRUMENTO ========
   const extra = document.createElement("div");
   extra.className = "escala-resumo-extra";
 
-  // Dificuldades
   const difSec = document.createElement("div");
   const difTitle = document.createElement("div");
   difTitle.className = "escala-resumo-section-title";
@@ -521,9 +494,7 @@ function renderEscalaAtualResumo(escala) {
       dot.className = "dificuldade-dot";
 
       const text = document.createElement("span");
-      text.textContent = `${formatInstrumentName(inst)} · ${nivelLabel(
-        nivel
-      )}`;
+      text.textContent = formatInstrumentName(inst);
 
       chip.append(dot, text);
       difList.appendChild(chip);
@@ -534,41 +505,18 @@ function renderEscalaAtualResumo(escala) {
     const vazio = document.createElement("span");
     vazio.style.fontSize = "0.75rem";
     vazio.style.color = "#9ca3af";
-    vazio.textContent = "Sem dados de dificuldade para este repertório.";
+    vazio.textContent = "Sem dados suficientes.";
     difList.appendChild(vazio);
   }
 
   difSec.append(difTitle, difList);
-
-  // Categorias dominantes (chips)
-  const catSec = document.createElement("div");
-  const catTitle = document.createElement("div");
-  catTitle.className = "escala-resumo-section-title";
-  catTitle.textContent = "Categorias dominantes do dia (≥ 60%)";
-
-  const catList = document.createElement("div");
-  catList.className = "escala-resumo-cat-list";
-
-  if (stats.categoriasDominantes.length) {
-    stats.categoriasDominantes.forEach((cat) => {
-      const tag = document.createElement("span");
-      tag.className = "tag";
-      tag.textContent = cat;
-      catList.appendChild(tag);
-    });
-  } else {
-    const vazio = document.createElement("span");
-    vazio.style.fontSize = "0.75rem";
-    vazio.style.color = "#9ca3af";
-    vazio.textContent = "Nenhuma categoria atingiu 60% das músicas.";
-    catList.appendChild(vazio);
-  }
-
-  catSec.append(catTitle, catList);
-
-  extra.append(difSec, catSec);
+  extra.appendChild(difSec);
   container.appendChild(extra);
 }
+
+// =========================================================
+// INTEGRANTES — ESCALA ATUAL
+// =========================================================
 
 function extrairFuncaoPrincipal(membro) {
   if (!membro) return "";
@@ -609,19 +557,14 @@ function renderEscalaAtualIntegrantes(escala) {
     const card = document.createElement("div");
     card.className = "member-card";
 
-    const avatarWrapper = document.createElement("div");
-    avatarWrapper.className = "member-avatar-wrapper";
-
     const img = document.createElement("img");
     img.className = "member-avatar";
     const slug = slugify(membro.nome || "");
-    img.src = `integrantes/${slug}.jpg`;
+    img.src = `integrantes/${slug}.jpeg`;
     img.onerror = function () {
       this.onerror = null;
-      this.src = "integrantes/default.jpg";
+      this.src = "integrantes/default.jpeg";
     };
-
-    avatarWrapper.appendChild(img);
 
     const info = document.createElement("div");
 
@@ -647,12 +590,13 @@ function renderEscalaAtualIntegrantes(escala) {
 
         const dot = document.createElement("div");
         dot.className = "expertise-dot";
+
         if (nivel === "easy") dot.classList.add("expertise-easy");
         else if (nivel === "medium") dot.classList.add("expertise-medium");
         else if (nivel === "hard") dot.classList.add("expertise-hard");
 
         const lbl = document.createElement("span");
-        lbl.textContent = inst;
+        lbl.textContent = formatInstrumentName(inst);
 
         line.append(dot, lbl);
         expertiseDiv.appendChild(line);
@@ -660,18 +604,27 @@ function renderEscalaAtualIntegrantes(escala) {
     }
 
     info.append(nome, papel, expertiseDiv);
-    card.append(avatarWrapper, info);
+    card.append(img, info);
     container.appendChild(card);
   });
 }
 
+// =========================================================
+// CLICK PARA ABRIR YOUTUBE EM NOVA ABA
+// =========================================================
+
 function attachYoutubeClick(card, musica) {
   if (!musica || !musica.referLink) return;
   const url = `https://www.youtube.com/watch?v=${musica.referLink}`;
+
   card.addEventListener("click", () => {
     window.open(url, "_blank");
   });
 }
+
+// =========================================================
+// ESCALA ATUAL — LISTA DE MÚSICAS
+// =========================================================
 
 function renderEscalaAtualMusicas(escala) {
   const container = document.getElementById("escalaAtualMusicas");
@@ -694,6 +647,7 @@ function renderEscalaAtualMusicas(escala) {
     const card = document.createElement("div");
     card.className = "song-card";
 
+    // Thumbnail quadrada
     const thumbWrapper = document.createElement("div");
     thumbWrapper.className = "song-thumb-wrapper";
 
@@ -706,6 +660,7 @@ function renderEscalaAtualMusicas(escala) {
     };
     thumbWrapper.appendChild(img);
 
+    // Conteúdo textual
     const main = document.createElement("div");
     main.className = "song-main";
 
@@ -713,6 +668,7 @@ function renderEscalaAtualMusicas(escala) {
     titulo.className = "song-title";
     titulo.textContent = musica.titulo || musica.nome || "Música";
 
+    // Artista
     const artistRow = document.createElement("div");
     artistRow.className = "artist-row";
 
@@ -730,10 +686,10 @@ function renderEscalaAtualMusicas(escala) {
 
     artistRow.append(artistAvatar, artistName);
 
+    // Tags (categorias + dificuldades)
     const tags = document.createElement("div");
     tags.className = "song-tags";
 
-    // categorias
     (musica.categorias || []).forEach((c) => {
       const tag = document.createElement("span");
       tag.className = "tag";
@@ -741,7 +697,6 @@ function renderEscalaAtualMusicas(escala) {
       tags.appendChild(tag);
     });
 
-    // dificuldades (como badges em linha)
     const diffBadges = criarBadgesDificuldadesMusica(musica);
     diffBadges.forEach((badge) => tags.appendChild(badge));
 
@@ -756,7 +711,7 @@ function renderEscalaAtualMusicas(escala) {
 }
 
 // =========================================================
-// ESCALAS FUTURAS
+// ESCALAS FUTURAS — CARREGAMENTO
 // =========================================================
 
 function carregarEscalasFuturas() {
@@ -770,6 +725,10 @@ function carregarEscalasFuturas() {
 
   renderEscalasFuturas(futuras);
 }
+
+// =========================================================
+// ESCALAS FUTURAS — RENDERIZAÇÃO
+// =========================================================
 
 function renderEscalasFuturas(lista) {
   const container = document.getElementById("escalasFuturasContainer");
@@ -786,8 +745,14 @@ function renderEscalasFuturas(lista) {
     const card = document.createElement("div");
     card.className = "escala-card";
 
-    const head = document.createElement("div");
-    head.className = "escala-header";
+    // ------ HEADER (Título + Data + Badge de Dificuldade Geral) ------
+    const header = document.createElement("div");
+    header.className = "escala-header";
+
+    const left = document.createElement("div");
+    left.style.display = "flex";
+    left.style.flexDirection = "column";
+    left.style.gap = "4px";
 
     const title = document.createElement("div");
     title.className = "escala-title";
@@ -797,9 +762,34 @@ function renderEscalasFuturas(lista) {
     dateSub.className = "escala-date-sub";
     dateSub.textContent = formatarData(escala.dataObj);
 
-    head.append(title, dateSub);
+    left.append(title, dateSub);
 
-    // Integrantes
+    // Badge de dificuldade geral
+    const stats = calcularEstatisticasRepertorio(escala);
+    const badgeContainer = document.createElement("div");
+
+    if (stats.dificuldadeMediaNivel) {
+      const badge = document.createElement("span");
+      badge.className = "escala-dificuldade-geral";
+
+      const dot = document.createElement("span");
+      dot.className = "dot";
+
+      if (stats.dificuldadeMediaNivel === "easy")
+        dot.classList.add("dot-easy");
+      else if (stats.dificuldadeMediaNivel === "medium")
+        dot.classList.add("dot-medium");
+      else if (stats.dificuldadeMediaNivel === "hard")
+        dot.classList.add("dot-hard");
+
+      badge.append(dot);
+      badgeContainer.appendChild(badge);
+    }
+
+    header.append(left, badgeContainer);
+    card.appendChild(header);
+
+    // ------ INTEGRANTES ------
     const intContainer = document.createElement("div");
     intContainer.className = "escala-integrantes";
 
@@ -816,10 +806,10 @@ function renderEscalasFuturas(lista) {
       const avatar = document.createElement("img");
       avatar.className = "escala-integrante-avatar";
       const slug = slugify(membro.nome || "");
-      avatar.src = `integrantes/${slug}.jpg`;
+      avatar.src = `integrantes/${slug}.jpeg`;
       avatar.onerror = function () {
         this.onerror = null;
-        this.src = "integrantes/default.jpg";
+        this.src = "integrantes/default.jpeg";
       };
 
       const nome = document.createElement("span");
@@ -830,14 +820,15 @@ function renderEscalasFuturas(lista) {
       intContainer.appendChild(chip);
     });
 
-    // Dificuldade média do repertório
-    const stats = calcularEstatisticasRepertorio(escala);
+    card.appendChild(intContainer);
+
+    // ------ DIFICULDADES POR INSTRUMENTO ------
     const difSec = document.createElement("div");
     difSec.className = "escala-dificuldades";
 
     const difTitle = document.createElement("div");
     difTitle.className = "escala-dificuldades-title";
-    difTitle.textContent = "Dificuldade média do repertório";
+    difTitle.textContent = "Dificuldade média por instrumento";
 
     const difList = document.createElement("div");
     difList.className = "escala-dificuldades-list";
@@ -851,9 +842,7 @@ function renderEscalasFuturas(lista) {
         dot.className = "dificuldade-dot";
 
         const text = document.createElement("span");
-        text.textContent = `${formatInstrumentName(inst)} · ${nivelLabel(
-          nivel
-        )}`;
+        text.textContent = formatInstrumentName(inst);
 
         chip.append(dot, text);
         difList.appendChild(chip);
@@ -864,13 +853,14 @@ function renderEscalasFuturas(lista) {
       const vazio = document.createElement("span");
       vazio.style.fontSize = "0.75rem";
       vazio.style.color = "#9ca3af";
-      vazio.textContent = "Sem dados de dificuldade para este repertório.";
+      vazio.textContent = "Sem dados suficientes.";
       difList.appendChild(vazio);
     }
 
     difSec.append(difTitle, difList);
+    card.appendChild(difSec);
 
-    // Músicas (usando o mesmo card visual)
+    // ------ MÚSICAS (3 por linha, estilo unificado dos cards) ------
     const musicSec = document.createElement("div");
     musicSec.className = "escala-musicas";
 
@@ -914,7 +904,7 @@ function renderEscalasFuturas(lista) {
 
       const artistAvatar = document.createElement("img");
       artistAvatar.className = "artist-avatar";
-      artistAvatar.src = musica._artistImage || "";
+      artistAvatar.src = musica._artistImage;
       artistAvatar.onerror = function () {
         this.onerror = null;
         this.src = "artistas/default.jpg";
@@ -929,7 +919,6 @@ function renderEscalasFuturas(lista) {
       const tags = document.createElement("div");
       tags.className = "song-tags";
 
-      // categorias
       (musica.categorias || []).forEach((c) => {
         const tag = document.createElement("span");
         tag.className = "tag";
@@ -937,12 +926,10 @@ function renderEscalasFuturas(lista) {
         tags.appendChild(tag);
       });
 
-      // dificuldades badges
       const diffBadges = criarBadgesDificuldadesMusica(musica);
       diffBadges.forEach((badge) => tags.appendChild(badge));
 
       main.append(titulo, artistRow, tags);
-
       songCard.append(thumbWrapper, main);
 
       attachYoutubeClick(songCard, musica);
@@ -951,7 +938,9 @@ function renderEscalasFuturas(lista) {
     });
 
     musicSec.append(musicHeader, list);
+    card.appendChild(musicSec);
 
+    // ------ AÇÕES ------
     const actions = document.createElement("div");
     actions.className = "escala-actions";
 
@@ -966,366 +955,223 @@ function renderEscalasFuturas(lista) {
     });
 
     actions.appendChild(btn);
+    card.appendChild(actions);
 
-    card.append(head, intContainer, difSec, musicSec, actions);
     container.appendChild(card);
   });
 }
 
 // =========================================================
-// COPIAR ESCALA
+// FUNÇÃO PARA COPIAR ESCALA FUTURA (texto formatado)
 // =========================================================
 
 function copiarEscala(escala) {
-  const dataObj = escala.dataObj || parseDate(escala.data);
-  let texto = `Escala do dia ${formatarData(dataObj)}\n\n`;
+  let texto = `📅 ${formatarData(escala.dataObj)}\n\n🎤 *Integrantes*\n`;
 
-  texto += "Integrantes:\n";
   const ids = Array.isArray(escala.integrantes) ? escala.integrantes : [];
-  if (!ids.length) {
-    texto += "- (nenhum integrante definido)\n";
-  } else {
-    ids.forEach((id) => {
-      const membro =
-        (typeof id === "object" ? id : integrantes.find((i) => i.id === id)) ||
-        null;
-      if (!membro) return;
+  ids.forEach((id) => {
+    const membro =
+      (typeof id === "object" ? id : integrantes.find((i) => i.id === id)) ||
+      null;
+    if (!membro) return;
 
-      const funcao =
-        membro.funcao || extrairFuncaoPrincipal(membro) || "função não definida";
-      texto += `- ${membro.nome} (${funcao})\n`;
-    });
-  }
+    const funcao = extrairFuncaoPrincipal(membro);
+    texto += `• ${membro.nome} – ${funcao}\n`;
+  });
 
-  texto += "\nMúsicas:\n";
+  texto += `\n🎵 *Repertório*\n`;
+
   const musicIds = Array.isArray(escala.musicas) ? escala.musicas : [];
-  if (!musicIds.length) {
-    texto += "- (nenhuma música definida)\n";
-  } else {
-    musicIds.forEach((id) => {
-      const musica = musicas.find((m) => m.id === id);
-      if (musica) {
-        texto += `- ${musica.titulo || musica.nome} (${
-          musica.artista || "Artista"
-        })\n`;
-      }
-    });
-  }
+  musicIds.forEach((id) => {
+    const musica = musicas.find((m) => m.id === id);
+    if (!musica) return;
 
-  navigator.clipboard
-    .writeText(texto)
-    .then(() => {
-      alert("Escala copiada para a área de transferência!");
-    })
-    .catch((e) => console.error("Erro ao copiar escala:", e));
+    texto += `• ${musica.titulo || musica.nome} – ${musica.artista}\n`;
+  });
+
+  navigator.clipboard.writeText(texto).then(() => {
+    alert("Escala copiada para a área de transferência!");
+  });
 }
 
 // =========================================================
-// REPERTÓRIO COMPLETO
+// REPERTÓRIO — RENDERIZAÇÃO COMPLETA
 // =========================================================
 
 function renderRepertorio() {
-  const container = document.getElementById("repertorioGrid");
-  if (!container) return;
-  container.innerHTML = "";
+  const grid = document.getElementById("repertorioGrid");
+  if (!grid) return;
 
   const hoje = new Date();
+  const historicoPassado = historico
+    .map((d) => ({ ...d, dataObj: parseDate(d.data) }))
+    .filter((d) => d.dataObj && d.dataObj < hoje)
+    .sort((a, b) => b.dataObj - a.dataObj);
 
-  const ultimaExecucaoPorMusica = {};
-  const proximaExecucaoPorMusica = {};
-  const execucoesCount = {};
+  const recentesDatas = historicoPassado.slice(0, 8); // últimas 8 escalas
 
-  historico.forEach((culto) => {
-    const d = parseDate(culto.data);
-    if (!d) return;
-    (culto.musicas || []).forEach((id) => {
-      execucoesCount[id] = (execucoesCount[id] || 0) + 1;
+  const usadasRecentemente = new Set();
+  const usadasFuturo = new Set();
 
-      if (!ultimaExecucaoPorMusica[id] || ultimaExecucaoPorMusica[id] < d) {
-        if (d <= hoje) {
-          ultimaExecucaoPorMusica[id] = d;
-        }
-      }
-      if (d > hoje) {
-        if (!proximaExecucaoPorMusica[id] || proximaExecucaoPorMusica[id] > d) {
-          proximaExecucaoPorMusica[id] = d;
-        }
-      }
-    });
+  historicoPassado.forEach((escala) => {
+    (escala.musicas || []).forEach((id) => usadasRecentemente.add(id));
   });
 
-  const blocks = {
-    available: [],
-    recent: [],
-    future: [],
-    banned: [],
-  };
+  historico
+    .map((d) => ({ ...d, dataObj: parseDate(d.data) }))
+    .filter((d) => d.dataObj && d.dataObj > hoje)
+    .forEach((escala) => {
+      (escala.musicas || []).forEach((id) => usadasFuturo.add(id));
+    });
+
+  const arr = [];
 
   musicas.forEach((m) => {
+    const clone = { ...m };
+    clone.scoreCat = musicaMatchScoreCategorias(m);
+
     const id = m.id;
-    const banido = m.banned === true || m.ban === true || m.active === false;
-    const ultima = ultimaExecucaoPorMusica[id] || null;
-    const proxima = proximaExecucaoPorMusica[id] || null;
 
-    let status = "available";
+    if (m.banned) clone._status = "banned";
+    else if (usadasFuturo.has(id)) clone._status = "future";
+    else if (usadasRecentemente.has(id)) clone._status = "recent";
+    else clone._status = "available";
 
-    if (banido) {
-      status = "banned";
-    } else if (proxima) {
-      status = "future";
-    } else if (ultima) {
-      const diffDias = Math.floor((hoje - ultima) / (1000 * 60 * 60 * 24));
-      if (diffDias <= TOCADA_NOS_ULTIMOS_X_DIAS) {
-        status = "recent";
-      } else {
-        status = "available";
-      }
-    } else {
-      status = "available";
-    }
-
-    blocks[status].push(m);
+    arr.push(clone);
   });
 
-  // Legenda
-  const disp = document.getElementById("legendDisponivelCount");
-  const rec = document.getElementById("legendRecenteCount");
-  const fut = document.getElementById("legendFuturaCount");
-  const ban = document.getElementById("legendBanidaCount");
-
-  if (disp) disp.textContent = blocks.available.length;
-  if (rec) rec.textContent = blocks.recent.length;
-  if (fut) fut.textContent = blocks.future.length;
-  if (ban) ban.textContent = blocks.banned.length;
-
-  function getExecCount(id) {
-    return execucoesCount[id] || 0;
-  }
-
-  const ordenaAvailable = blocks.available.slice().sort((a, b) => {
-    return getExecCount(a.id) - getExecCount(b.id);
-  });
-
-  const ordenaRecent = blocks.recent.slice().sort((a, b) => {
-    const la = ultimaExecucaoPorMusica[a.id] || new Date(0);
-    const lb = ultimaExecucaoPorMusica[b.id] || new Date(0);
-    return la - lb;
-  });
-
-  const ordenaFuture = blocks.future.slice().sort((a, b) => {
-    const da = proximaExecucaoPorMusica[a.id] || new Date(8640000000000000);
-    const db = proximaExecucaoPorMusica[b.id] || new Date(8640000000000000);
-    return da - db;
-  });
-
-  const ordenaBanned = blocks.banned.slice().sort((a, b) => {
-    return getExecCount(b.id) - getExecCount(a.id);
-  });
-
-  // Ordem: Disponíveis, Recentes, Futuras, Banidas
-  const finalList = [
-    { status: "available", arr: ordenaAvailable },
-    { status: "recent", arr: ordenaRecent },
-    { status: "future", arr: ordenaFuture },
-    { status: "banned", arr: ordenaBanned },
-  ];
-
-  finalList.forEach(({ status, arr }) => {
-    let lista = arr.slice();
-
-    if (activeCategories.length) {
-      lista = lista.filter((m) => musicaMatchScoreCategorias(m) > 0);
-    }
-
-    if (activeCategories.length) {
-      lista.sort((a, b) => {
-        const sa = musicaMatchScoreCategorias(a);
-        const sb = musicaMatchScoreCategorias(b);
-        if (sa !== sb) return sb - sa;
-        return 0;
-      });
-    }
-
-    lista.forEach((musica) => {
-      const card = criarCardMusicaRepertorio(
-        musica,
-        status,
-        musicaMatchScoreCategorias(musica)
-      );
-      container.appendChild(card);
-    });
-  });
-}
-
-// =========================================================
-// CARDS DO REPERTÓRIO
-// =========================================================
-
-function criarCardMusicaRepertorio(musica, status, matchScore) {
-  const card = document.createElement("div");
-  card.className = "song-card";
-
-  if (status === "available") card.classList.add("available");
-  if (status === "recent") card.classList.add("recent");
-  if (status === "future") card.classList.add("future");
-  if (status === "banned") card.classList.add("banned");
-
-  if (status !== "available") {
-    card.classList.add("song-unavailable");
-  }
-
-  if (matchScore && matchScore > 0) {
-    card.classList.add("category-match");
-  }
-
-  const wrapper = document.createElement("div");
-  wrapper.className = "song-thumb-wrapper";
-
-  const img = document.createElement("img");
-  img.className = "song-thumb";
-  img.src = musica._thumbUrl || "artistas/default.jpg";
-  img.onerror = function () {
-    this.onerror = null;
-    this.src = "artistas/default.jpg";
-  };
-  wrapper.appendChild(img);
-
-  // Info de liberação (recentes e futuras)
-  if (status === "future" || status === "recent") {
-    const libera = document.createElement("div");
-    libera.className = "song-release-info";
-    const dias = calcularDiasParaLiberar(musica.id);
-    libera.textContent = `🔓 em ${dias} dias`;
-    wrapper.appendChild(libera);
-  }
-
-  const main = document.createElement("div");
-  main.className = "song-main";
-
-  const title = document.createElement("p");
-  title.className = "song-title";
-  title.textContent = musica.titulo || musica.nome || "Música";
-
-  const artistRow = document.createElement("div");
-  artistRow.className = "artist-row";
-
-  const artistAvatar = document.createElement("img");
-  artistAvatar.className = "artist-avatar";
-  artistAvatar.src = musica._artistImage || "";
-  artistAvatar.onerror = function () {
-    this.onerror = null;
-    this.src = "artistas/default.jpg";
-  };
-
-  const artistName = document.createElement("span");
-  artistName.className = "artist-name";
-  artistName.textContent = musica.artista || "Artista";
-
-  artistRow.append(artistAvatar, artistName);
-
-  const tags = document.createElement("div");
-  tags.className = "song-tags";
-
-  // categorias
-  (musica.categorias || []).forEach((c) => {
-    const tag = document.createElement("span");
-    tag.className = "tag";
-    tag.textContent = c;
-    tags.appendChild(tag);
-  });
-
-  // dificuldades badges
-  const diffBadges = criarBadgesDificuldadesMusica(musica);
-  diffBadges.forEach((badge) => tags.appendChild(badge));
-
-  main.append(title, artistRow, tags);
-  card.append(wrapper, main);
-
-  // ribbon por status
-  const ribbon = document.createElement("div");
-  ribbon.className = "song-ribbon";
-  if (status === "available") {
-    ribbon.classList.add("song-ribbon-available");
-    ribbon.textContent = "Disponível";
-  }
-  if (status === "recent") {
-    ribbon.classList.add("song-ribbon-recent");
-    ribbon.textContent = "Tocada recente";
-  }
-  if (status === "future") {
-    ribbon.classList.add("song-ribbon-future");
-    ribbon.textContent = "Tocada futura";
-  }
-  if (status === "banned") {
-    ribbon.classList.add("song-ribbon-banned");
-    ribbon.textContent = "Banida";
-  }
-
-  if (matchScore && matchScore > 0) {
-    ribbon.classList.add("song-ribbon-filtered");
-  }
-
-  card.appendChild(ribbon);
-
-  attachYoutubeClick(card, musica);
-
-  return card;
-}
-
-// =========================================================
-// CÁLCULOS AUXILIARES DE LIBERAÇÃO
-// =========================================================
-
-function getUltimaDataTocada(idMusica) {
-  const hoje = new Date();
-  let ultima = null;
-  historico.forEach((culto) => {
-    const d = parseDate(culto.data);
-    if (!d || d > hoje) return;
-    if (Array.isArray(culto.musicas) && culto.musicas.includes(idMusica)) {
-      if (!ultima || d > ultima) {
-        ultima = d;
-      }
-    }
-  });
-  return ultima;
-}
-
-function getProximaDataEscalada(idMusica) {
-  const hoje = new Date();
-  let menor = null;
-  historico.forEach((culto) => {
-    const d = parseDate(culto.data);
-    if (!d || d <= hoje) return;
-    if (Array.isArray(culto.musicas) && culto.musicas.includes(idMusica)) {
-      if (!menor || d < menor) {
-        menor = d;
-      }
-    }
-  });
-  return menor;
-}
-
-function calcularDiasParaLiberar(idMusica) {
-  const futuraData = getProximaDataEscalada(idMusica);
-  const ultima = getUltimaDataTocada(idMusica);
-
-  let referencia = null;
-
-  if (futuraData) {
-    referencia = new Date(futuraData.getTime());
-    referencia.setDate(
-      referencia.getDate() + TOCADA_NOS_ULTIMOS_X_DIAS
+  arr.sort((a, b) => {
+    const prioA = ["available", "recent", "future", "banned"].indexOf(
+      a._status
     );
-  } else if (ultima) {
-    const limite = new Date(ultima.getTime());
-    limite.setDate(limite.getDate() + TOCADA_NOS_ULTIMOS_X_DIAS);
-    referencia = limite;
-  } else {
-    return 0;
-  }
+    const prioB = ["available", "recent", "future", "banned"].indexOf(
+      b._status
+    );
+    return prioA - prioB;
+  });
 
-  const hoje = new Date();
-  const diff = Math.ceil((referencia - hoje) / (1000 * 60 * 60 * 24));
-  return diff > 0 ? diff : 0;
+  const legendMap = {
+    available: "legendDisponivelCount",
+    recent: "legendRecenteCount",
+    future: "legendFuturaCount",
+    banned: "legendBanidaCount",
+  };
+
+  Object.values(legendMap).forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = "0";
+  });
+
+  const counts = { available: 0, recent: 0, future: 0, banned: 0 };
+
+  grid.innerHTML = "";
+
+  arr.forEach((musica) => {
+    counts[musica._status]++;
+
+    if (legendMap[musica._status]) {
+      const el = document.getElementById(legendMap[musica._status]);
+      if (el) el.textContent = counts[musica._status];
+    }
+
+    const card = document.createElement("div");
+    card.className = `song-card ${musica._status}`;
+
+    if (activeCategories.length > 0 && musica.scoreCat > 0) {
+      card.classList.add("category-match");
+    }
+
+    if (musica._status !== "available") {
+      card.classList.add("song-unavailable");
+    }
+
+    const thumbWrapper = document.createElement("div");
+    thumbWrapper.className = "song-thumb-wrapper";
+
+    const thumb = document.createElement("img");
+    thumb.className = "song-thumb";
+    thumb.src = musica._thumbUrl || "artistas/default.jpg";
+    thumb.onerror = function () {
+      this.onerror = null;
+      this.src = "artistas/default.jpg";
+    };
+    thumbWrapper.appendChild(thumb);
+
+    const main = document.createElement("div");
+    main.className = "song-main";
+
+    const titulo = document.createElement("p");
+    titulo.className = "song-title";
+    titulo.textContent = musica.titulo || musica.nome || "Música";
+
+    const artistRow = document.createElement("div");
+    artistRow.className = "artist-row";
+
+    const artistAvatar = document.createElement("img");
+    artistAvatar.className = "artist-avatar";
+    artistAvatar.src = musica._artistImage;
+    artistAvatar.onerror = function () {
+      this.onerror = null;
+      this.src = "artistas/default.jpg";
+    };
+
+    const artistName = document.createElement("span");
+    artistName.className = "artist-name";
+    artistName.textContent = musica.artista || "Artista";
+
+    artistRow.append(artistAvatar, artistName);
+
+    const tags = document.createElement("div");
+    tags.className = "song-tags";
+
+    (musica.categorias || []).forEach((c) => {
+      const tag = document.createElement("span");
+      tag.className = "tag";
+      tag.textContent = c;
+      tags.appendChild(tag);
+    });
+
+    const diffBadges = criarBadgesDificuldadesMusica(musica);
+    diffBadges.forEach((badge) => tags.appendChild(badge));
+
+    main.append(titulo, artistRow, tags);
+    card.append(thumbWrapper, main);
+
+    if (musica._status !== "available") {
+      const ribbon = document.createElement("div");
+      ribbon.className = "song-ribbon";
+
+      if (musica._status === "recent") ribbon.classList.add("song-ribbon-recent");
+      if (musica._status === "future") ribbon.classList.add("song-ribbon-future");
+      if (musica._status === "banned") ribbon.classList.add("song-ribbon-banned");
+
+      ribbon.textContent =
+        musica._status === "recent"
+          ? "RECENTE"
+          : musica._status === "future"
+          ? "FUTURA"
+          : "BANIDA";
+
+      card.appendChild(ribbon);
+    }
+
+    attachYoutubeClick(card, musica);
+
+    grid.appendChild(card);
+  });
 }
+
+// =========================================================
+// FILTRAGEM DE CATEGORIAS PARA O REPERTÓRIO
+// (já integrada ao renderRepertorio)
+// =========================================================
+
+// Nada adicional aqui — a lógica está toda no renderRepertorio()
+
+
+
+// =========================================================
+// FIM DO ARQUIVO
+// =========================================================
+
+console.log("Projeto Asafe carregado com sucesso!");
