@@ -746,6 +746,32 @@ body {
   border-color: rgba(249, 115, 22, 0.8);
 }
 
+.song-card {
+  max-width: 100%;
+}
+
+.escala-dificuldade-geral {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 999px;
+  gap: 6px;
+  font-size: 0.75rem;
+}
+
+.escala-dificuldade-geral .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.song-release-info {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
 /* ==========================
    PLACEHOLDER
    ========================== */
@@ -802,4 +828,11 @@ body {
   .escala-musicas-list {
     grid-template-columns: repeat(1, minmax(0, 1fr));
   }
+
+  .musicas-list,
+  .repertorio-grid,
+  .escala-musicas-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
 }

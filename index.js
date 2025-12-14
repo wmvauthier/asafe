@@ -124,7 +124,6 @@ async function init() {
     carregarEscalaAtual();
     carregarEscalasFuturas();
     renderRepertorio();
-
   } catch (e) {
     console.error("Erro ao carregar dados:", e);
   }
@@ -433,24 +432,25 @@ function renderEscalaAtualHeaderBadges(escala) {
 
   // Dificuldade geral = badge com cor EXCLUSIVA (sem texto)
   if (stats.dificuldadeMediaNivel) {
-    const diffTag = document.createElement("span");
-    diffTag.className = "tag-diff";
+const diffTag = document.createElement("span");
+diffTag.className = "escala-dificuldade-geral";
 
-    const dot = document.createElement("span");
-    dot.className = "tag-diff-dot";
+const dot = document.createElement("span");
+dot.className = "dot";
 
-    if (stats.dificuldadeMediaNivel === "easy")
-      dot.classList.add("tag-diff-dot-easy");
-    else if (stats.dificuldadeMediaNivel === "medium")
-      dot.classList.add("tag-diff-dot-medium");
-    else if (stats.dificuldadeMediaNivel === "hard")
-      dot.classList.add("tag-diff-dot-hard");
+if (stats.dificuldadeMediaNivel === "easy")
+  dot.classList.add("dot-easy");
+else if (stats.dificuldadeMediaNivel === "medium")
+  dot.classList.add("dot-medium");
+else if (stats.dificuldadeMediaNivel === "hard")
+  dot.classList.add("dot-hard");
 
-    const lbl = document.createElement("span");
-    lbl.textContent = ""; // sem texto — apenas o ícone
+const lbl = document.createElement("span");
+lbl.textContent = nivelLabel(stats.dificuldadeMediaNivel);
 
-    diffTag.append(dot, lbl);
-    container.appendChild(diffTag);
+diffTag.append(dot, lbl);
+container.appendChild(diffTag);
+
   }
 }
 
@@ -485,21 +485,19 @@ function renderEscalaAtualResumo(escala) {
   const difList = document.createElement("div");
   difList.className = "escala-resumo-dif-list";
 
-  Object.entries(stats.dificuldadesPorInstrumento).forEach(
-    ([inst, nivel]) => {
-      const chip = document.createElement("div");
-      chip.className = `dificuldade-chip dificuldade-${nivel}`;
+  Object.entries(stats.dificuldadesPorInstrumento).forEach(([inst, nivel]) => {
+    const chip = document.createElement("div");
+    chip.className = `dificuldade-chip dificuldade-${nivel}`;
 
-      const dot = document.createElement("div");
-      dot.className = "dificuldade-dot";
+    const dot = document.createElement("div");
+    dot.className = "dificuldade-dot";
 
-      const text = document.createElement("span");
-      text.textContent = formatInstrumentName(inst);
+    const text = document.createElement("span");
+    text.textContent = formatInstrumentName(inst);
 
-      chip.append(dot, text);
-      difList.appendChild(chip);
-    }
-  );
+    chip.append(dot, text);
+    difList.appendChild(chip);
+  });
 
   if (!difList.childElementCount) {
     const vazio = document.createElement("span");
@@ -775,14 +773,16 @@ function renderEscalasFuturas(lista) {
       const dot = document.createElement("span");
       dot.className = "dot";
 
-      if (stats.dificuldadeMediaNivel === "easy")
-        dot.classList.add("dot-easy");
+      if (stats.dificuldadeMediaNivel === "easy") dot.classList.add("dot-easy");
       else if (stats.dificuldadeMediaNivel === "medium")
         dot.classList.add("dot-medium");
       else if (stats.dificuldadeMediaNivel === "hard")
         dot.classList.add("dot-hard");
 
-      badge.append(dot);
+      const lbl = document.createElement("span");
+      lbl.textContent = nivelLabel(stats.dificuldadeMediaNivel);
+      badge.append(dot, lbl);
+
       badgeContainer.appendChild(badge);
     }
 
@@ -1141,9 +1141,12 @@ function renderRepertorio() {
       const ribbon = document.createElement("div");
       ribbon.className = "song-ribbon";
 
-      if (musica._status === "recent") ribbon.classList.add("song-ribbon-recent");
-      if (musica._status === "future") ribbon.classList.add("song-ribbon-future");
-      if (musica._status === "banned") ribbon.classList.add("song-ribbon-banned");
+      if (musica._status === "recent")
+        ribbon.classList.add("song-ribbon-recent");
+      if (musica._status === "future")
+        ribbon.classList.add("song-ribbon-future");
+      if (musica._status === "banned")
+        ribbon.classList.add("song-ribbon-banned");
 
       ribbon.textContent =
         musica._status === "recent"
@@ -1157,9 +1160,61 @@ function renderRepertorio() {
 
     attachYoutubeClick(card, musica);
 
+
+if (musica._status === "future" || musica._status === "recent") {
+  const dias = calcularDiasParaLiberar(musica);
+  if (dias != null) {
+    const release = document.createElement("div");
+    release.className = "song-release-info";
+
+    if (dias <= 0) {
+      release.textContent = `🔓 Libera hoje`;
+    } else {
+      release.textContent = `🔒 Libera em ${dias} dias`;
+    }
+
+    card.appendChild(release);
+  }
+}
+
     grid.appendChild(card);
   });
 }
+
+function calcularDiasParaLiberar(musica) {
+  const hoje = new Date();
+
+  // FUTURAS → busca a escala futura onde ela será tocada
+  const futuras = historico
+    .map((d) => ({ ...d, dataObj: parseDate(d.data) }))
+    .filter((d) => d.dataObj > hoje);
+
+  const escalaFutura = futuras.find((e) => (e.musicas || []).includes(musica.id));
+
+  if (escalaFutura) {
+    const diffMs = escalaFutura.dataObj - hoje;
+    return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  }
+
+  // RECENTES → cálculo baseado no cooldown
+  const passadas = historico
+    .map((d) => ({ ...d, dataObj: parseDate(d.data) }))
+    .filter((d) => d.dataObj < hoje)
+    .reverse();
+
+  const ultimaEscala = passadas.find((e) => (e.musicas || []).includes(musica.id));
+
+  if (ultimaEscala) {
+    const diffMs = hoje - ultimaEscala.dataObj;
+    const diasDesde = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diasParaLiberar = TOCADA_NOS_ULTIMOS_X_DIAS - diasDesde;
+    return diasParaLiberar;
+  }
+
+  return null;
+}
+
+
 
 // =========================================================
 // FILTRAGEM DE CATEGORIAS PARA O REPERTÓRIO
@@ -1167,8 +1222,6 @@ function renderRepertorio() {
 // =========================================================
 
 // Nada adicional aqui — a lógica está toda no renderRepertorio()
-
-
 
 // =========================================================
 // FIM DO ARQUIVO
