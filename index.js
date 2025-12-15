@@ -1446,7 +1446,6 @@ function renderRepertorio() {
   const hoje = new Date();
   const MS_DIA = 1000 * 60 * 60 * 24;
 
-  // helper local: dias p/ liberar (recente/futura)
   const diasParaLiberar = (id) => {
     const futura = getProximaDataEscalada(id);
     const ultima = getUltimaDataTocada(id);
@@ -1464,58 +1463,100 @@ function renderRepertorio() {
     return null;
   };
 
-  // montar lista com status, exec e diasLib
+  // Monta lista base
   const lista = musicas.map((m) => {
     const status = getStatusMusicaRepertorio(m.id);
     const exec = getTotalExecucoes(m.id);
-    const diasLib = status === "recent" || status === "future" ? diasParaLiberar(m.id) : null;
+    const diasLib =
+      status === "recent" || status === "future"
+        ? diasParaLiberar(m.id)
+        : null;
 
     const scoreCat = musicaMatchScoreCategorias(m);
 
-    return { ...m, _status: status, _exec: exec, _diasLib: diasLib, scoreCat };
+    return {
+      ...m,
+      _status: status,
+      _exec: exec,
+      _diasLib: diasLib,
+      _scoreCat: scoreCat,
+    };
   });
 
-  // ordenação conforme seu padrão final
-  const ordemStatus = ["available", "recent", "future", "banned"];
+  // Separar por status
+  const buckets = {
+    available: [],
+    recent: [],
+    future: [],
+    banned: [],
+  };
 
-  lista.sort((a, b) => {
-    const pa = ordemStatus.indexOf(a._status);
-    const pb = ordemStatus.indexOf(b._status);
-    if (pa !== pb) return pa - pb;
+  lista.forEach((m) => buckets[m._status].push(m));
 
-    // Disponíveis: menos tocadas -> mais tocadas
-    if (a._status === "available") return (a._exec || 0) - (b._exec || 0);
+  // ============================
+  // DISPONÍVEIS — ORDENAR COM CATEGORIA
+  // ============================
+  const disponiveisOrdenados = buckets.available.slice().sort((a, b) => {
+    // 1️⃣ prioridade por match de categoria (2 > 1 > 0)
+    if (activeCategories.length > 0) {
+      if (b._scoreCat !== a._scoreCat) {
+        return b._scoreCat - a._scoreCat;
+      }
+    }
 
-    // Banidas: mais tocadas -> menos tocadas
-    if (a._status === "banned") return (b._exec || 0) - (a._exec || 0);
+    // 2️⃣ menos tocadas primeiro
+    return (a._exec || 0) - (b._exec || 0);
+  });
 
-    // Recentes/Futuras: libera primeiro -> libera depois
+  // ============================
+  // RECENTES / FUTURAS — libera antes primeiro
+  // ============================
+  const ordenaPorLiberacao = (a, b) => {
     const da = a._diasLib != null ? a._diasLib : 99999;
     const db = b._diasLib != null ? b._diasLib : 99999;
     return da - db;
-  });
+  };
 
-  // atualizar legendas
-  const counts = { available: 0, recent: 0, future: 0, banned: 0 };
-  lista.forEach((m) => counts[m._status]++);
+  const recentesOrdenados = buckets.recent.slice().sort(ordenaPorLiberacao);
+  const futurasOrdenadas = buckets.future.slice().sort(ordenaPorLiberacao);
 
+  // ============================
+  // BANIDAS — mais tocadas primeiro
+  // ============================
+  const banidasOrdenadas = buckets.banned
+    .slice()
+    .sort((a, b) => (b._exec || 0) - (a._exec || 0));
+
+  // ============================
+  // ATUALIZAR LEGENDAS
+  // ============================
   const legendMap = {
     available: "legendDisponivelCount",
     recent: "legendRecenteCount",
     future: "legendFuturaCount",
     banned: "legendBanidaCount",
   };
+
   Object.entries(legendMap).forEach(([k, id]) => {
     const el = document.getElementById(id);
-    if (el) el.textContent = counts[k];
+    if (el) el.textContent = buckets[k].length;
   });
 
-  // render cards
-  lista.forEach((musica) => {
+  // ============================
+  // RENDER FINAL
+  // ============================
+  const ordemFinal = [
+    ...disponiveisOrdenados,
+    ...recentesOrdenados,
+    ...futurasOrdenadas,
+    ...banidasOrdenadas,
+  ];
+
+  ordemFinal.forEach((musica) => {
     const card = document.createElement("div");
     card.className = `song-card ${musica._status}`;
 
-    if (activeCategories.length > 0 && musica.scoreCat > 0) {
+    if (activeCategories.length > 0 && musica._scoreCat > 0) {
       card.classList.add("category-match");
     }
 
@@ -1523,7 +1564,7 @@ function renderRepertorio() {
       card.classList.add("song-unavailable");
     }
 
-    // thumb
+    // Thumbnail
     const thumbWrapper = document.createElement("div");
     thumbWrapper.className = "song-thumb-wrapper";
 
@@ -1536,14 +1577,14 @@ function renderRepertorio() {
     };
     thumbWrapper.appendChild(thumb);
 
-    // ✅ badge execuções (top-left) estilo cadeado
+    // Badge execuções
     const execBadge = document.createElement("div");
     execBadge.className = "song-exec-info";
     execBadge.textContent =
-      (musica._exec || 0) === 0 ? "✨ Nova" : `🎯 Tocada ${musica._exec} vezes`;
+      musica._exec === 0 ? "✨ Nova" : `🎯 Tocada ${musica._exec} vezes`;
     thumbWrapper.appendChild(execBadge);
 
-    // ribbon status (mantém)
+    // Ribbon status
     if (musica._status !== "available") {
       const ribbon = document.createElement("div");
       ribbon.className = "song-ribbon";
@@ -1562,7 +1603,7 @@ function renderRepertorio() {
       card.appendChild(ribbon);
     }
 
-    // conteúdo
+    // Conteúdo
     const main = document.createElement("div");
     main.className = "song-main";
 
@@ -1598,19 +1639,21 @@ function renderRepertorio() {
     });
 
     const diffBadges = criarBadgesDificuldadesMusica(musica);
-    diffBadges.forEach((badge) => tags.appendChild(badge));
+    diffBadges.forEach((b) => tags.appendChild(b));
 
     main.append(titulo, artistRow, tags);
 
     card.append(thumbWrapper, main);
 
-    // cadeado (bottom-right)
-    if (musica._status === "future" || musica._status === "recent") {
-      const dias = musica._diasLib;
-      if (dias != null) {
+    // Cadeado
+    if (musica._status === "recent" || musica._status === "future") {
+      if (musica._diasLib != null) {
         const release = document.createElement("div");
         release.className = "song-release-info";
-        release.textContent = dias <= 0 ? "🔓 Libera hoje" : `🔒 Libera em ${dias} dias`;
+        release.textContent =
+          musica._diasLib <= 0
+            ? "🔓 Libera hoje"
+            : `🔒 Libera em ${musica._diasLib} dias`;
         thumbWrapper.appendChild(release);
       }
     }
@@ -1619,6 +1662,7 @@ function renderRepertorio() {
     grid.appendChild(card);
   });
 }
+
 
 function calcularDiasParaLiberar(idMusica) {
   const hoje = new Date();
