@@ -217,11 +217,32 @@ function renderCategoriasFiltros() {
   if (!container) return;
   container.innerHTML = "";
 
-  categoriasUnicas.forEach((cat) => {
+  // conta quantas músicas DISPONÍVEIS existem por categoria
+  const counts = new Map();
+
+  musicas.forEach((m) => {
+    const status = getStatusMusicaRepertorio(m.id);
+    if (status !== "available") return;
+
+    const cats = Array.isArray(m.categorias)
+      ? m.categorias
+      : typeof m.categorias === "string"
+      ? m.categorias.split(";").map((s) => s.trim()).filter(Boolean)
+      : [];
+
+    cats.forEach((c) => counts.set(c, (counts.get(c) || 0) + 1));
+  });
+
+  // lista final de categorias (só as que têm pelo menos 1 disponível)
+  const lista = Array.from(counts.entries())
+    .filter(([, n]) => n > 0)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])); // maior -> menor
+
+  lista.forEach(([cat, qtd]) => {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "category-button";
-    btn.textContent = cat;
+    btn.textContent = `${cat} (${qtd})`;
 
     if (activeCategories.includes(cat)) {
       btn.classList.add("active");
@@ -234,11 +255,12 @@ function renderCategoriasFiltros() {
         activeCategories = activeCategories.filter((c) => c !== cat);
         btn.classList.remove("active");
       } else {
-        if (activeCategories.length >= 2) return; // máximo 2 filtros
+        if (activeCategories.length >= 2) return;
         activeCategories.push(cat);
         btn.classList.add("active");
       }
 
+      renderCategoriasFiltros(); // re-render pra manter marcação certinha
       renderRepertorio();
     });
 
@@ -317,6 +339,86 @@ function calcularEstatisticasRepertorio(escala) {
 }
 
 // =========================================================
+// CATEGORIA DOMINANTE DE UMA ESCALA
+// =========================================================
+function calcularCategoriaDominante(escala) {
+  const ids = Array.isArray(escala.musicas) ? escala.musicas : [];
+  if (!ids.length) return null;
+
+  const contagem = new Map();
+  let totalComCategoria = 0;
+
+  ids.forEach((id) => {
+    const musica = musicas.find((m) => m.id === id);
+    if (
+      !musica ||
+      !Array.isArray(musica.categorias) ||
+      !musica.categorias.length
+    )
+      return;
+
+    totalComCategoria++;
+    const unicas = [...new Set(musica.categorias)];
+    unicas.forEach((cat) => {
+      contagem.set(cat, (contagem.get(cat) || 0) + 1);
+    });
+  });
+
+  if (!totalComCategoria || contagem.size === 0) return null;
+
+  let melhorCat = null;
+  let melhorCount = 0;
+
+  contagem.forEach((count, cat) => {
+    if (count > melhorCount) {
+      melhorCount = count;
+      melhorCat = cat;
+    }
+  });
+
+  const perc = (melhorCount / totalComCategoria) * 100;
+  let intensidade;
+
+  if (perc >= 80) intensidade = "strong";
+  else if (perc >= 60) intensidade = "medium";
+  else intensidade = "weak";
+
+  return {
+    categoria: melhorCat,
+    percentual: perc,
+    intensidade,
+  };
+}
+
+function calcularIntensidadeCategorias(escala) {
+  const ids = escala.musicas || [];
+  const total = ids.length;
+  if (!total) return [];
+
+  const freq = new Map();
+
+  ids.forEach((id) => {
+    const musica = musicas.find((m) => m.id === id);
+    if (!musica) return;
+
+    const unicas = [...new Set(musica.categorias || [])];
+    unicas.forEach((cat) => {
+      freq.set(cat, (freq.get(cat) || 0) + 1);
+    });
+  });
+
+  return [...freq.entries()].map(([cat, count]) => {
+    const p = (count / total) * 100;
+    let intensidade;
+    if (p >= 80) intensidade = "strong";
+    else if (p >= 60) intensidade = "medium";
+    else intensidade = "weak";
+
+    return { categoria: cat, percentual: p, intensidade };
+  });
+}
+
+// =========================================================
 // BADGES DE DIFICULDADE (NOVO PADRÃO GLOBAL)
 // apenas ícone + nome do instrumento
 // =========================================================
@@ -360,52 +462,121 @@ function carregarEscalaAtual() {
   const hoje = new Date();
   const futuras = historico
     .map((d) => ({ ...d, dataObj: parseDate(d.data) }))
-    .filter((d) => d.dataObj && d.dataObj >= hoje)
+    .filter((d) => d.dataObj >= hoje)
     .sort((a, b) => a.dataObj - b.dataObj);
 
-  const dataEl = document.getElementById("escalaAtualData");
-  const badgesHeader = document.getElementById("escalaAtualBadges");
-
   if (!futuras.length) {
-    if (dataEl) {
-      dataEl.textContent = "Nenhum culto futuro encontrado.";
-    }
-    if (badgesHeader) {
-      badgesHeader.innerHTML = "";
-    }
+    document.getElementById("escalaAtualData").textContent =
+      "Nenhum culto futuro encontrado.";
     return;
   }
 
   const proxima = futuras[0];
+  const dataFormatada = formatarData(proxima.dataObj);
+  document.getElementById("escalaAtualData").textContent = dataFormatada;
 
-  if (dataEl) {
-    dataEl.textContent = formatarData(proxima.dataObj);
-  }
+  // ----------------------------------------------------------------
+  // 1) Definir integrantes usados
+  // ----------------------------------------------------------------
+  let integrantesUsados = [];
 
-  let integrantesIds = [];
   if (Array.isArray(proxima.integrantes) && proxima.integrantes.length > 0) {
-    if (typeof proxima.integrantes[0] === "object") {
-      integrantesIds = proxima.integrantes
-        .map((i) => i && i.id)
-        .filter((id) => id != null);
-    } else {
-      integrantesIds = proxima.integrantes.slice();
-    }
+    integrantesUsados = proxima.integrantes.slice();
   } else {
-    integrantesIds = integrantes.map((i) => i.id);
+    try {
+      const auto = montarEscalaAutomatica();
+      integrantesUsados = Object.values(auto)
+        .flat()
+        .map((m) => m.id);
+    } catch (e) {
+      console.error("Erro ao montar escala automática:", e);
+      integrantesUsados = [];
+    }
   }
 
-  const escalaAtual = {
+  // ----------------------------------------------------------------
+  // 2) Escala “render”
+  // ----------------------------------------------------------------
+  const escalaRender = {
     ...proxima,
-    integrantes: integrantesIds,
-    dataObj: proxima.dataObj,
-    musicas: Array.isArray(proxima.musicas) ? proxima.musicas.slice() : [],
+    integrantes: integrantesUsados,
   };
 
-  renderEscalaAtualHeaderBadges(escalaAtual);
-  renderEscalaAtualResumo(escalaAtual);
-  renderEscalaAtualIntegrantes(escalaAtual);
-  renderEscalaAtualMusicas(escalaAtual);
+  // ----------------------------------------------------------------
+  // 3) Header direito: APENAS categoria predominante + dificuldade média
+  // ----------------------------------------------------------------
+  renderEscalaAtualHeaderDireito(escalaRender);
+
+  // ----------------------------------------------------------------
+  // 4) Renderizações
+  // ----------------------------------------------------------------
+  renderEscalaAtualResumo(escalaRender);
+  renderEscalaAtualIntegrantes(escalaRender);
+  renderEscalaAtualMusicas(escalaRender);
+}
+
+function renderEscalaAtualHeaderDireito(escala) {
+  const container = document.getElementById("escalaAtualBadges");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  const stats = calcularStatsRepertorioDaEscala(escala);
+  const catDom = calcularCategoriaDominanteDaEscala(escala);
+
+  const wrap = document.createElement("div");
+  wrap.className = "escala-badges-header";
+
+  // ======================
+  // Categoria predominante
+  // ======================
+  if (catDom && catDom.categoria) {
+    const badgeCat = document.createElement("span");
+    badgeCat.className = "escala-cat-dominante";
+
+    const dot = document.createElement("span");
+    dot.className = "cat-dot";
+    dot.classList.add(
+      catDom.intensidade === "strong"
+        ? "cat-strong"
+        : catDom.intensidade === "medium"
+        ? "cat-medium"
+        : "cat-weak"
+    );
+
+    const label = document.createElement("span");
+    label.textContent = catDom.categoria;
+
+    badgeCat.append(dot, label);
+    wrap.appendChild(badgeCat);
+  }
+
+  // ======================
+  // Dificuldade média
+  // ======================
+  if (stats && stats.dificuldadeGeralNivel) {
+    const badgeDiff = document.createElement("span");
+    badgeDiff.className = "escala-dificuldade-geral";
+
+    const dot = document.createElement("span");
+    dot.className = "dot";
+
+    dot.classList.add(
+      stats.dificuldadeGeralNivel === "easy"
+        ? "dot-easy"
+        : stats.dificuldadeGeralNivel === "medium"
+        ? "dot-medium"
+        : "dot-hard"
+    );
+
+    const label = document.createElement("span");
+    label.textContent = nivelLabel(stats.dificuldadeGeralNivel);
+
+    badgeDiff.append(dot, label);
+    wrap.appendChild(badgeDiff);
+  }
+
+  container.appendChild(wrap);
 }
 
 // =========================================================
@@ -419,39 +590,76 @@ function renderEscalaAtualHeaderBadges(escala) {
   container.innerHTML = "";
 
   const stats = calcularEstatisticasRepertorio(escala);
+  const catInfo = calcularCategoriaDominante(escala);
 
-  // Categoria dominante removida do cálculo (alternativa: usar primeira música)
-  const categoria = obterCategoriaPrincipal(escala);
+  const headerBox = document.createElement("div");
+  headerBox.className = "escala-badges-header";
 
-  if (categoria) {
+  // Categoria dominante
+  if (catInfo && catInfo.categoria) {
     const catTag = document.createElement("span");
-    catTag.className = "tag";
-    catTag.textContent = categoria;
-    container.appendChild(catTag);
+    catTag.className = "escala-cat-dominante";
+
+    const dot = document.createElement("span");
+    dot.className = "cat-dot";
+
+    if (catInfo.intensidade === "strong") dot.classList.add("cat-strong");
+    else if (catInfo.intensidade === "medium") dot.classList.add("cat-medium");
+    else dot.classList.add("cat-weak");
+
+    const label = document.createElement("span");
+    label.textContent = catInfo.categoria;
+
+    catTag.append(dot, label);
+    headerBox.appendChild(catTag);
   }
 
-  // Dificuldade geral = badge com cor EXCLUSIVA (sem texto)
+  // Dificuldade geral
   if (stats.dificuldadeMediaNivel) {
-const diffTag = document.createElement("span");
-diffTag.className = "escala-dificuldade-geral";
+    const diffTag = document.createElement("span");
+    diffTag.className = "escala-dificuldade-geral";
 
-const dot = document.createElement("span");
-dot.className = "dot";
+    const dot = document.createElement("span");
+    dot.className = "dot";
 
-if (stats.dificuldadeMediaNivel === "easy")
-  dot.classList.add("dot-easy");
-else if (stats.dificuldadeMediaNivel === "medium")
-  dot.classList.add("dot-medium");
-else if (stats.dificuldadeMediaNivel === "hard")
-  dot.classList.add("dot-hard");
+    if (stats.dificuldadeMediaNivel === "easy") dot.classList.add("dot-easy");
+    else if (stats.dificuldadeMediaNivel === "medium")
+      dot.classList.add("dot-medium");
+    else if (stats.dificuldadeMediaNivel === "hard")
+      dot.classList.add("dot-hard");
 
-const lbl = document.createElement("span");
-lbl.textContent = nivelLabel(stats.dificuldadeMediaNivel);
+    const lbl = document.createElement("span");
+    lbl.textContent = nivelLabel(stats.dificuldadeMediaNivel);
 
-diffTag.append(dot, lbl);
-container.appendChild(diffTag);
-
+    diffTag.append(dot, lbl);
+    headerBox.appendChild(diffTag);
   }
+
+  // Categorias associadas (todas)
+  const cats = calcularIntensidadeCategorias(escala);
+
+  cats.forEach((c) => {
+    const tag = document.createElement("span");
+    tag.className = "escala-cat-dominante";
+
+    const dot = document.createElement("span");
+    dot.className = "cat-dot";
+    dot.classList.add(
+      c.intensidade === "strong"
+        ? "cat-strong"
+        : c.intensidade === "medium"
+        ? "cat-medium"
+        : "cat-weak"
+    );
+
+    const label = document.createElement("span");
+    label.textContent = c.categoria;
+
+    tag.append(dot, label);
+    headerBox.appendChild(tag);
+  });
+
+  container.appendChild(headerBox);
 }
 
 // Usa a primeira música da escala para determinar a "categoria principal"
@@ -466,18 +674,71 @@ function obterCategoriaPrincipal(escala) {
 // RESUMO DO PRÓXIMO CULTO
 // =========================================================
 
+function calcularIntensidadeCategorias(escala) {
+  const ids = Array.isArray(escala.musicas) ? escala.musicas : [];
+  if (!ids.length) return [];
+
+  const contagem = new Map();
+  let totalComCategoria = 0;
+
+  ids.forEach((id) => {
+    const musica = musicas.find((m) => m.id === id);
+    if (!musica) return;
+
+    const cats = Array.isArray(musica.categorias)
+      ? musica.categorias
+      : typeof musica.categorias === "string"
+      ? musica.categorias
+          .split(";")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
+
+    if (!cats.length) return;
+
+    totalComCategoria++;
+    [...new Set(cats)].forEach((cat) => {
+      contagem.set(cat, (contagem.get(cat) || 0) + 1);
+    });
+  });
+
+  const out = Array.from(contagem.entries()).map(([cat, count]) => {
+    const perc = totalComCategoria ? (count / totalComCategoria) * 100 : 0;
+
+    let intensidade;
+    if (perc >= 80) intensidade = "strong";
+    else if (perc >= 60) intensidade = "medium";
+    else intensidade = "weak";
+
+    return { categoria: cat, percentual: perc, intensidade };
+  });
+
+  // ✅ ORDENAR: mais predominante -> menos predominante
+  out.sort((a, b) => {
+    if (b.percentual !== a.percentual) return b.percentual - a.percentual;
+    return a.categoria.localeCompare(b.categoria);
+  });
+
+  return out;
+}
+
+// =========================================================
+// RESUMO DO PRÓXIMO CULTO
+// =========================================================
 function renderEscalaAtualResumo(escala) {
   const container = document.getElementById("escalaAtualResumo");
   if (!container) return;
   container.innerHTML = "";
 
   const stats = calcularEstatisticasRepertorio(escala);
+  const cats = calcularIntensidadeCategorias(escala);
 
-  // ======== DIFICULDADE POR INSTRUMENTO ========
   const extra = document.createElement("div");
   extra.className = "escala-resumo-extra";
 
+  // ======== DIFICULDADE POR INSTRUMENTO ========
   const difSec = document.createElement("div");
+
   const difTitle = document.createElement("div");
   difTitle.className = "escala-resumo-section-title";
   difTitle.textContent = "Dificuldade média por instrumento";
@@ -509,6 +770,46 @@ function renderEscalaAtualResumo(escala) {
 
   difSec.append(difTitle, difList);
   extra.appendChild(difSec);
+
+  // ======== CATEGORIAS DO REPERTÓRIO ========
+  const catSec = document.createElement("div");
+
+  const catTitle = document.createElement("div");
+  catTitle.className = "escala-resumo-section-title";
+  catTitle.textContent = "Categorias do repertório";
+
+  const catList = document.createElement("div");
+  catList.className = "escala-resumo-dif-list"; // mesmo layout das dificuldades
+
+  if (cats.length) {
+    cats.forEach((c) => {
+      const chip = document.createElement("div");
+      chip.className = "dificuldade-chip";
+
+      const dot = document.createElement("div");
+      dot.className = "dificuldade-dot";
+
+      if (c.intensidade === "strong") dot.classList.add("cat-strong");
+      else if (c.intensidade === "medium") dot.classList.add("cat-medium");
+      else dot.classList.add("cat-weak");
+
+      const label = document.createElement("span");
+      label.textContent = c.categoria;
+
+      chip.append(dot, label);
+      catList.appendChild(chip);
+    });
+  } else {
+    const vazio = document.createElement("span");
+    vazio.style.fontSize = "0.75rem";
+    vazio.style.color = "#9ca3af";
+    vazio.textContent = "Sem categorias cadastradas.";
+    catList.appendChild(vazio);
+  }
+
+  catSec.append(catTitle, catList);
+  extra.appendChild(catSec);
+
   container.appendChild(extra);
 }
 
@@ -743,7 +1044,7 @@ function renderEscalasFuturas(lista) {
     const card = document.createElement("div");
     card.className = "escala-card";
 
-    // ------ HEADER (Título + Data + Badge de Dificuldade Geral) ------
+    // ------ HEADER (Título + Data + Badges: categoria predominante + dificuldade geral) ------
     const header = document.createElement("div");
     header.className = "escala-header";
 
@@ -762,28 +1063,52 @@ function renderEscalasFuturas(lista) {
 
     left.append(title, dateSub);
 
-    // Badge de dificuldade geral
-    const stats = calcularEstatisticasRepertorio(escala);
+    // badges do header (somente predominante + dificuldade)
     const badgeContainer = document.createElement("div");
+    badgeContainer.className = "escala-badges-header";
 
-    if (stats.dificuldadeMediaNivel) {
-      const badge = document.createElement("span");
-      badge.className = "escala-dificuldade-geral";
+    const catDom = calcularCategoriaDominanteDaEscala(escala);
+    if (catDom && catDom.categoria) {
+      const badgeCat = document.createElement("span");
+      badgeCat.className = "escala-cat-dominante";
+
+      const dot = document.createElement("span");
+      dot.className = "cat-dot";
+      dot.classList.add(
+        catDom.intensidade === "strong"
+          ? "cat-strong"
+          : catDom.intensidade === "medium"
+          ? "cat-medium"
+          : "cat-weak"
+      );
+
+      const label = document.createElement("span");
+      label.textContent = catDom.categoria;
+
+      badgeCat.append(dot, label);
+      badgeContainer.appendChild(badgeCat);
+    }
+
+    const stats = calcularStatsRepertorioDaEscala(escala);
+    if (stats && stats.dificuldadeGeralNivel) {
+      const badgeDiff = document.createElement("span");
+      badgeDiff.className = "escala-dificuldade-geral";
 
       const dot = document.createElement("span");
       dot.className = "dot";
+      dot.classList.add(
+        stats.dificuldadeGeralNivel === "easy"
+          ? "dot-easy"
+          : stats.dificuldadeGeralNivel === "medium"
+          ? "dot-medium"
+          : "dot-hard"
+      );
 
-      if (stats.dificuldadeMediaNivel === "easy") dot.classList.add("dot-easy");
-      else if (stats.dificuldadeMediaNivel === "medium")
-        dot.classList.add("dot-medium");
-      else if (stats.dificuldadeMediaNivel === "hard")
-        dot.classList.add("dot-hard");
+      const label = document.createElement("span");
+      label.textContent = nivelLabel(stats.dificuldadeGeralNivel);
 
-      const lbl = document.createElement("span");
-      lbl.textContent = nivelLabel(stats.dificuldadeMediaNivel);
-      badge.append(dot, lbl);
-
-      badgeContainer.appendChild(badge);
+      badgeDiff.append(dot, label);
+      badgeContainer.appendChild(badgeDiff);
     }
 
     header.append(left, badgeContainer);
@@ -806,10 +1131,10 @@ function renderEscalasFuturas(lista) {
       const avatar = document.createElement("img");
       avatar.className = "escala-integrante-avatar";
       const slug = slugify(membro.nome || "");
-      avatar.src = `integrantes/${slug}.jpeg`;
+      avatar.src = `integrantes/${slug}.jpg`;
       avatar.onerror = function () {
         this.onerror = null;
-        this.src = "integrantes/default.jpeg";
+        this.src = "integrantes/default.jpg";
       };
 
       const nome = document.createElement("span");
@@ -827,13 +1152,14 @@ function renderEscalasFuturas(lista) {
     difSec.className = "escala-dificuldades";
 
     const difTitle = document.createElement("div");
-    difTitle.className = "escala-dificuldades-title";
+    difTitle.className = "escala-resumo-section-title";
     difTitle.textContent = "Dificuldade média por instrumento";
 
     const difList = document.createElement("div");
-    difList.className = "escala-dificuldades-list";
+    difList.className = "escala-resumo-dif-list";
 
-    Object.entries(stats.dificuldadesPorInstrumento).forEach(
+    const stats2 = calcularEstatisticasRepertorio(escala);
+    Object.entries(stats2.dificuldadesPorInstrumento || {}).forEach(
       ([inst, nivel]) => {
         const chip = document.createElement("div");
         chip.className = `dificuldade-chip dificuldade-${nivel}`;
@@ -860,7 +1186,50 @@ function renderEscalasFuturas(lista) {
     difSec.append(difTitle, difList);
     card.appendChild(difSec);
 
-    // ------ MÚSICAS (3 por linha, estilo unificado dos cards) ------
+    // ------ CATEGORIAS DO REPERTÓRIO (IGUAL PRÓXIMO CULTO, ORDENADO) ------
+    const cats = calcularIntensidadeCategorias(escala); // já vem ordenado desc
+    const catSec = document.createElement("div");
+
+    const catTitle = document.createElement("div");
+    catTitle.className = "escala-resumo-section-title";
+    catTitle.textContent = "Categorias do repertório";
+
+    const catList = document.createElement("div");
+    catList.className = "escala-resumo-dif-list";
+
+    if (cats.length) {
+      cats.forEach((c) => {
+        const chip = document.createElement("div");
+        chip.className = "dificuldade-chip";
+
+        const dot = document.createElement("div");
+        dot.className = "dificuldade-dot";
+        dot.classList.add(
+          c.intensidade === "strong"
+            ? "cat-strong"
+            : c.intensidade === "medium"
+            ? "cat-medium"
+            : "cat-weak"
+        );
+
+        const label = document.createElement("span");
+        label.textContent = c.categoria;
+
+        chip.append(dot, label);
+        catList.appendChild(chip);
+      });
+    } else {
+      const vazio = document.createElement("span");
+      vazio.style.fontSize = "0.75rem";
+      vazio.style.color = "#9ca3af";
+      vazio.textContent = "Sem categorias cadastradas.";
+      catList.appendChild(vazio);
+    }
+
+    catSec.append(catTitle, catList);
+    card.appendChild(catSec);
+
+    // ------ MÚSICAS (SEM categorias/dificuldades por música, como você pediu) ------
     const musicSec = document.createElement("div");
     musicSec.className = "escala-musicas";
 
@@ -884,12 +1253,11 @@ function renderEscalasFuturas(lista) {
 
       const thumb = document.createElement("img");
       thumb.className = "song-thumb";
-      thumb.src = musica._thumbUrl || "artistas/default.jpg";
+      thumb.src = musica._thumbUrl || `https://img.youtube.com/vi/${musica.referLink}/0.jpg`;
       thumb.onerror = function () {
         this.onerror = null;
         this.src = "artistas/default.jpg";
       };
-
       thumbWrapper.appendChild(thumb);
 
       const main = document.createElement("div");
@@ -904,7 +1272,7 @@ function renderEscalasFuturas(lista) {
 
       const artistAvatar = document.createElement("img");
       artistAvatar.className = "artist-avatar";
-      artistAvatar.src = musica._artistImage;
+      artistAvatar.src = musica._artistImage || `artistas/${slugify(musica.artista)}.jpg`;
       artistAvatar.onerror = function () {
         this.onerror = null;
         this.src = "artistas/default.jpg";
@@ -916,20 +1284,7 @@ function renderEscalasFuturas(lista) {
 
       artistRow.append(artistAvatar, artistName);
 
-      const tags = document.createElement("div");
-      tags.className = "song-tags";
-
-      (musica.categorias || []).forEach((c) => {
-        const tag = document.createElement("span");
-        tag.className = "tag";
-        tag.textContent = c;
-        tags.appendChild(tag);
-      });
-
-      const diffBadges = criarBadgesDificuldadesMusica(musica);
-      diffBadges.forEach((badge) => tags.appendChild(badge));
-
-      main.append(titulo, artistRow, tags);
+      main.append(titulo, artistRow);
       songCard.append(thumbWrapper, main);
 
       attachYoutubeClick(songCard, musica);
@@ -966,27 +1321,108 @@ function renderEscalasFuturas(lista) {
 // =========================================================
 
 function copiarEscala(escala) {
-  let texto = `📅 ${formatarData(escala.dataObj)}\n\n🎤 *Integrantes*\n`;
+  const catDom = calcularCategoriaDominanteDaEscala(escala);
+  const stats = calcularStatsRepertorioDaEscala(escala);
+  const cats = calcularIntensidadeCategorias(escala);
 
-  const ids = Array.isArray(escala.integrantes) ? escala.integrantes : [];
-  ids.forEach((id) => {
+  const corPorNivel = (nivel) =>
+    nivel === "easy"
+      ? "🟢"
+      : nivel === "medium"
+      ? "🟡"
+      : nivel === "hard"
+      ? "🔴"
+      : "⚪";
+
+  const corDominancia = (i) =>
+    i === "strong" ? "🟢" : i === "medium" ? "🟡" : "🔴";
+
+  let texto = `📅 *Escala do dia* — ${formatarData(escala.dataObj)}\n`;
+
+  if (catDom?.categoria) {
+    texto += `${corDominancia(catDom.intensidade)} *Categoria predominante:* ${
+      catDom.categoria
+    } (${catDom.percentual.toFixed(0)}%)\n`;
+  }
+  if (stats?.dificuldadeGeralNivel) {
+    texto += `${corPorNivel(
+      stats.dificuldadeGeralNivel
+    )} *Dificuldade média:* ${nivelLabel(stats.dificuldadeGeralNivel)}\n`;
+  }
+
+  // Categorias do repertório (ordenadas)
+  if (cats.length) {
+    texto += `\n🏷️ *Categorias do repertório*\n`;
+    cats.forEach((c) => {
+      texto += `- ${corDominancia(c.intensidade)} ${
+        c.categoria
+      } (${c.percentual.toFixed(0)}%)\n`;
+    });
+  }
+
+  // Integrantes
+  texto += `\n🎤 *Integrantes*\n`;
+  const ints = Array.isArray(escala.integrantes) ? escala.integrantes : [];
+  ints.forEach((iobj) => {
     const membro =
-      (typeof id === "object" ? id : integrantes.find((i) => i.id === id)) ||
-      null;
+      typeof iobj === "object"
+        ? integrantes.find((x) => x.nome === iobj.nome) || iobj
+        : integrantes.find((x) => x.id === iobj) || null;
+
     if (!membro) return;
 
-    const funcao = extrairFuncaoPrincipal(membro);
-    texto += `• ${membro.nome} – ${funcao}\n`;
+    const nome = membro.nome || iobj.nome || "Integrante";
+    const func =
+      membro.funcao ||
+      (Array.isArray(membro.function) && membro.function[0]
+        ? Object.keys(membro.function[0])[0]
+        : iobj.funcao) ||
+      "função";
+
+    texto += `- *${nome}* — ${func}\n`;
+
+    // Expertise (se existir)
+    if (Array.isArray(membro.function)) {
+      membro.function.forEach((obj) => {
+        const inst = Object.keys(obj)[0];
+        const nivel = obj[inst];
+        texto += `   ${corPorNivel(nivel)} ${inst}\n`;
+      });
+    }
   });
 
-  texto += `\n🎵 *Repertório*\n`;
-
-  const musicIds = Array.isArray(escala.musicas) ? escala.musicas : [];
-  musicIds.forEach((id) => {
+  // Músicas
+  texto += `\n🎵 *Músicas*\n`;
+  const ids = Array.isArray(escala.musicas) ? escala.musicas : [];
+  ids.forEach((id) => {
     const musica = musicas.find((m) => m.id === id);
     if (!musica) return;
 
-    texto += `• ${musica.titulo || musica.nome} – ${musica.artista}\n`;
+    const yt = musica.referLink
+      ? `https://www.youtube.com/watch?v=${musica.referLink}`
+      : "(sem link)";
+
+    // Categorias da música
+    const catsMus = Array.isArray(musica.categorias)
+      ? musica.categorias
+      : typeof musica.categorias === "string"
+      ? musica.categorias
+          .split(";")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
+
+    // Dificuldades por instrumento
+    const lvl = musica.level || {};
+    const diffs = Object.entries(lvl)
+      .filter(([, v]) => v)
+      .map(([inst, v]) => `${corPorNivel(v)} ${inst}`)
+      .join(" · ");
+
+    texto += `\n• *${musica.titulo}* — ${musica.artista}\n`;
+    texto += `  🔗 ${yt}\n`;
+    if (catsMus.length) texto += `  🏷️ ${catsMus.join(" · ")}\n`;
+    if (diffs) texto += `  🎚️ ${diffs}\n`;
   });
 
   navigator.clipboard.writeText(texto).then(() => {
@@ -998,57 +1434,70 @@ function copiarEscala(escala) {
 // REPERTÓRIO — RENDERIZAÇÃO COMPLETA
 // =========================================================
 
+// =========================================================
+// REPERTÓRIO — RENDERIZAÇÃO COMPLETA (com status e cadeado)
+// =========================================================
+
 function renderRepertorio() {
   const grid = document.getElementById("repertorioGrid");
   if (!grid) return;
+  grid.innerHTML = "";
 
   const hoje = new Date();
-  const historicoPassado = historico
-    .map((d) => ({ ...d, dataObj: parseDate(d.data) }))
-    .filter((d) => d.dataObj && d.dataObj < hoje)
-    .sort((a, b) => b.dataObj - a.dataObj);
+  const MS_DIA = 1000 * 60 * 60 * 24;
 
-  const recentesDatas = historicoPassado.slice(0, 8); // últimas 8 escalas
+  // helper local: dias p/ liberar (recente/futura)
+  const diasParaLiberar = (id) => {
+    const futura = getProximaDataEscalada(id);
+    const ultima = getUltimaDataTocada(id);
 
-  const usadasRecentemente = new Set();
-  const usadasFuturo = new Set();
+    if (futura) {
+      const diasAte = Math.ceil((futura - hoje) / MS_DIA);
+      return diasAte + TOCADA_NOS_ULTIMOS_X_DIAS;
+    }
 
-  historicoPassado.forEach((escala) => {
-    (escala.musicas || []).forEach((id) => usadasRecentemente.add(id));
+    if (ultima) {
+      const diasDesde = Math.floor((hoje - ultima) / MS_DIA);
+      return TOCADA_NOS_ULTIMOS_X_DIAS - diasDesde;
+    }
+
+    return null;
+  };
+
+  // montar lista com status, exec e diasLib
+  const lista = musicas.map((m) => {
+    const status = getStatusMusicaRepertorio(m.id);
+    const exec = getTotalExecucoes(m.id);
+    const diasLib = status === "recent" || status === "future" ? diasParaLiberar(m.id) : null;
+
+    const scoreCat = musicaMatchScoreCategorias(m);
+
+    return { ...m, _status: status, _exec: exec, _diasLib: diasLib, scoreCat };
   });
 
-  historico
-    .map((d) => ({ ...d, dataObj: parseDate(d.data) }))
-    .filter((d) => d.dataObj && d.dataObj > hoje)
-    .forEach((escala) => {
-      (escala.musicas || []).forEach((id) => usadasFuturo.add(id));
-    });
+  // ordenação conforme seu padrão final
+  const ordemStatus = ["available", "recent", "future", "banned"];
 
-  const arr = [];
+  lista.sort((a, b) => {
+    const pa = ordemStatus.indexOf(a._status);
+    const pb = ordemStatus.indexOf(b._status);
+    if (pa !== pb) return pa - pb;
 
-  musicas.forEach((m) => {
-    const clone = { ...m };
-    clone.scoreCat = musicaMatchScoreCategorias(m);
+    // Disponíveis: menos tocadas -> mais tocadas
+    if (a._status === "available") return (a._exec || 0) - (b._exec || 0);
 
-    const id = m.id;
+    // Banidas: mais tocadas -> menos tocadas
+    if (a._status === "banned") return (b._exec || 0) - (a._exec || 0);
 
-    if (m.banned) clone._status = "banned";
-    else if (usadasFuturo.has(id)) clone._status = "future";
-    else if (usadasRecentemente.has(id)) clone._status = "recent";
-    else clone._status = "available";
-
-    arr.push(clone);
+    // Recentes/Futuras: libera primeiro -> libera depois
+    const da = a._diasLib != null ? a._diasLib : 99999;
+    const db = b._diasLib != null ? b._diasLib : 99999;
+    return da - db;
   });
 
-  arr.sort((a, b) => {
-    const prioA = ["available", "recent", "future", "banned"].indexOf(
-      a._status
-    );
-    const prioB = ["available", "recent", "future", "banned"].indexOf(
-      b._status
-    );
-    return prioA - prioB;
-  });
+  // atualizar legendas
+  const counts = { available: 0, recent: 0, future: 0, banned: 0 };
+  lista.forEach((m) => counts[m._status]++);
 
   const legendMap = {
     available: "legendDisponivelCount",
@@ -1056,24 +1505,13 @@ function renderRepertorio() {
     future: "legendFuturaCount",
     banned: "legendBanidaCount",
   };
-
-  Object.values(legendMap).forEach((id) => {
+  Object.entries(legendMap).forEach(([k, id]) => {
     const el = document.getElementById(id);
-    if (el) el.textContent = "0";
+    if (el) el.textContent = counts[k];
   });
 
-  const counts = { available: 0, recent: 0, future: 0, banned: 0 };
-
-  grid.innerHTML = "";
-
-  arr.forEach((musica) => {
-    counts[musica._status]++;
-
-    if (legendMap[musica._status]) {
-      const el = document.getElementById(legendMap[musica._status]);
-      if (el) el.textContent = counts[musica._status];
-    }
-
+  // render cards
+  lista.forEach((musica) => {
     const card = document.createElement("div");
     card.className = `song-card ${musica._status}`;
 
@@ -1085,18 +1523,46 @@ function renderRepertorio() {
       card.classList.add("song-unavailable");
     }
 
+    // thumb
     const thumbWrapper = document.createElement("div");
     thumbWrapper.className = "song-thumb-wrapper";
 
     const thumb = document.createElement("img");
     thumb.className = "song-thumb";
-    thumb.src = musica._thumbUrl || "artistas/default.jpg";
+    thumb.src = `https://img.youtube.com/vi/${musica.referLink}/0.jpg`;
     thumb.onerror = function () {
       this.onerror = null;
       this.src = "artistas/default.jpg";
     };
     thumbWrapper.appendChild(thumb);
 
+    // ✅ badge execuções (top-left) estilo cadeado
+    const execBadge = document.createElement("div");
+    execBadge.className = "song-exec-info";
+    execBadge.textContent =
+      (musica._exec || 0) === 0 ? "✨ Nova" : `🎯 Tocada ${musica._exec} vezes`;
+    thumbWrapper.appendChild(execBadge);
+
+    // ribbon status (mantém)
+    if (musica._status !== "available") {
+      const ribbon = document.createElement("div");
+      ribbon.className = "song-ribbon";
+
+      if (musica._status === "recent") ribbon.classList.add("song-ribbon-recent");
+      if (musica._status === "future") ribbon.classList.add("song-ribbon-future");
+      if (musica._status === "banned") ribbon.classList.add("song-ribbon-banned");
+
+      ribbon.textContent =
+        musica._status === "recent"
+          ? "RECENTE"
+          : musica._status === "future"
+          ? "FUTURA"
+          : "BANIDA";
+
+      card.appendChild(ribbon);
+    }
+
+    // conteúdo
     const main = document.createElement("div");
     main.className = "song-main";
 
@@ -1109,7 +1575,7 @@ function renderRepertorio() {
 
     const artistAvatar = document.createElement("img");
     artistAvatar.className = "artist-avatar";
-    artistAvatar.src = musica._artistImage;
+    artistAvatar.src = `artistas/${slugify(musica.artista)}.jpg`;
     artistAvatar.onerror = function () {
       this.onerror = null;
       this.src = "artistas/default.jpg";
@@ -1135,93 +1601,282 @@ function renderRepertorio() {
     diffBadges.forEach((badge) => tags.appendChild(badge));
 
     main.append(titulo, artistRow, tags);
+
     card.append(thumbWrapper, main);
 
-    if (musica._status !== "available") {
-      const ribbon = document.createElement("div");
-      ribbon.className = "song-ribbon";
-
-      if (musica._status === "recent")
-        ribbon.classList.add("song-ribbon-recent");
-      if (musica._status === "future")
-        ribbon.classList.add("song-ribbon-future");
-      if (musica._status === "banned")
-        ribbon.classList.add("song-ribbon-banned");
-
-      ribbon.textContent =
-        musica._status === "recent"
-          ? "RECENTE"
-          : musica._status === "future"
-          ? "FUTURA"
-          : "BANIDA";
-
-      card.appendChild(ribbon);
+    // cadeado (bottom-right)
+    if (musica._status === "future" || musica._status === "recent") {
+      const dias = musica._diasLib;
+      if (dias != null) {
+        const release = document.createElement("div");
+        release.className = "song-release-info";
+        release.textContent = dias <= 0 ? "🔓 Libera hoje" : `🔒 Libera em ${dias} dias`;
+        thumbWrapper.appendChild(release);
+      }
     }
 
     attachYoutubeClick(card, musica);
-
-
-if (musica._status === "future" || musica._status === "recent") {
-  const dias = calcularDiasParaLiberar(musica);
-  if (dias != null) {
-    const release = document.createElement("div");
-    release.className = "song-release-info";
-
-    if (dias <= 0) {
-      release.textContent = `🔓 Libera hoje`;
-    } else {
-      release.textContent = `🔒 Libera em ${dias} dias`;
-    }
-
-    card.appendChild(release);
-  }
-}
-
     grid.appendChild(card);
   });
 }
 
-function calcularDiasParaLiberar(musica) {
+function calcularDiasParaLiberar(idMusica) {
   const hoje = new Date();
 
-  // FUTURAS → busca a escala futura onde ela será tocada
-  const futuras = historico
-    .map((d) => ({ ...d, dataObj: parseDate(d.data) }))
-    .filter((d) => d.dataObj > hoje);
+  const futuraData = getProximaDataEscalada(idMusica); // próxima data no futuro
+  const ultima = getUltimaDataTocada(idMusica); // última data no passado
 
-  const escalaFutura = futuras.find((e) => (e.musicas || []).includes(musica.id));
-
-  if (escalaFutura) {
-    const diffMs = escalaFutura.dataObj - hoje;
-    return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  // FUTURA: libera depois de tocar + cooldown
+  if (futuraData) {
+    const diasAteTocar = Math.ceil((futuraData - hoje) / (1000 * 60 * 60 * 24));
+    const dias = diasAteTocar + TOCADA_NOS_ULTIMOS_X_DIAS;
+    return dias <= 0 ? 0 : dias;
   }
 
-  // RECENTES → cálculo baseado no cooldown
-  const passadas = historico
-    .map((d) => ({ ...d, dataObj: parseDate(d.data) }))
-    .filter((d) => d.dataObj < hoje)
-    .reverse();
-
-  const ultimaEscala = passadas.find((e) => (e.musicas || []).includes(musica.id));
-
-  if (ultimaEscala) {
-    const diffMs = hoje - ultimaEscala.dataObj;
-    const diasDesde = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const diasParaLiberar = TOCADA_NOS_ULTIMOS_X_DIAS - diasDesde;
-    return diasParaLiberar;
+  // RECENTE: libera quando acabar cooldown desde a última execução
+  if (ultima) {
+    const diasDesde = Math.floor((hoje - ultima) / (1000 * 60 * 60 * 24));
+    const restante = TOCADA_NOS_ULTIMOS_X_DIAS - diasDesde;
+    return restante <= 0 ? 0 : restante;
   }
 
   return null;
 }
 
+function nivelLabel(nivel) {
+  if (nivel === "easy") return "Fácil";
+  if (nivel === "medium") return "Médio";
+  if (nivel === "hard") return "Difícil";
+  return "";
+}
 
+function calcularCategoriaDominanteDaEscala(escala) {
+  const cats = calcularIntensidadeCategorias(escala);
+  if (!cats.length) return null;
+  return cats[0]; // já vem ordenado desc
+}
+
+function calcularStatsRepertorioDaEscala(escala) {
+  const ids = Array.isArray(escala.musicas) ? escala.musicas : [];
+  const peso = { easy: 1, medium: 2, hard: 3 };
+
+  let soma = 0;
+  let n = 0;
+
+  ids.forEach((id) => {
+    const m = musicas.find((x) => x.id === id);
+    if (!m || !m.level) return;
+
+    Object.values(m.level).forEach((lvl) => {
+      if (!lvl || !peso[lvl]) return;
+      soma += peso[lvl];
+      n += 1;
+    });
+  });
+
+  if (!n) return { dificuldadeGeralNivel: null };
+
+  const media = soma / n;
+  const nivel = media < 1.67 ? "easy" : media < 2.34 ? "medium" : "hard";
+
+  return { dificuldadeGeralNivel: nivel };
+}
 
 // =========================================================
-// FILTRAGEM DE CATEGORIAS PARA O REPERTÓRIO
-// (já integrada ao renderRepertorio)
+// HELPERS DE DATA POR MÚSICA (usados no repertório)
 // =========================================================
 
-// Nada adicional aqui — a lógica está toda no renderRepertorio()
+function getProximaDataEscalada(idMusica) {
+  const hoje = new Date();
+
+  const futuras = historico
+    .map((h) => ({
+      dataObj: parseDate(h.data),
+      musicas: h.musicas || [],
+    }))
+    .filter(
+      (h) =>
+        h.dataObj instanceof Date &&
+        !isNaN(h.dataObj) &&
+        h.dataObj > hoje &&
+        h.musicas.includes(idMusica)
+    )
+    .sort((a, b) => a.dataObj - b.dataObj);
+
+  return futuras.length ? futuras[0].dataObj : null;
+}
+
+function getUltimaDataTocada(idMusica) {
+  const hoje = new Date();
+
+  const passadas = historico
+    .map((h) => ({
+      dataObj: parseDate(h.data),
+      musicas: h.musicas || [],
+    }))
+    .filter(
+      (h) =>
+        h.dataObj instanceof Date &&
+        !isNaN(h.dataObj) &&
+        h.dataObj < hoje &&
+        h.musicas.includes(idMusica)
+    )
+    .sort((a, b) => b.dataObj - a.dataObj);
+
+  return passadas.length ? passadas[0].dataObj : null;
+}
+
+function criarCardMusicaRepertorio(
+  musica,
+  status,
+  ultimaExecucao,
+  proximaExecucao
+) {
+  const card = document.createElement("div");
+  card.className = "song-card";
+
+  card.classList.add(status);
+
+  // Thumbnail
+  const wrapper = document.createElement("div");
+  wrapper.className = "song-thumb-wrapper";
+
+  const thumb = document.createElement("img");
+  thumb.className = "song-thumb";
+  thumb.src = `https://img.youtube.com/vi/${musica.referLink}/0.jpg`;
+  thumb.onerror = () => (thumb.src = "artistas/default.jpg");
+  wrapper.appendChild(thumb);
+
+  // Ribbon (status)
+  const ribbon = document.createElement("div");
+  ribbon.className = "song-ribbon";
+  ribbon.textContent =
+    status === "available"
+      ? "Disponível"
+      : status === "recent"
+      ? "Recente"
+      : status === "future"
+      ? "Futura"
+      : "Banida";
+
+  ribbon.classList.add(`song-ribbon-${status}`);
+  if (activeCategories.length > 0) ribbon.classList.add("song-ribbon-filtered");
+
+  // Info principal
+  const main = document.createElement("div");
+  main.className = "song-main";
+
+  const title = document.createElement("p");
+  title.className = "song-title";
+  title.textContent = musica.titulo;
+
+  // Artista
+  const artistRow = document.createElement("div");
+  artistRow.className = "artist-row";
+
+  const artistaImg = document.createElement("img");
+  artistaImg.className = "artist-avatar";
+  artistaImg.src = `artistas/${slugify(musica.artista)}.jpg`;
+  artistaImg.onerror = () => (artistaImg.src = "artistas/default.jpg");
+
+  const artistaNome = document.createElement("span");
+  artistaNome.className = "artist-name";
+  artistaNome.textContent = musica.artista;
+
+  artistRow.append(artistaImg, artistaNome);
+
+  // Tags (categorias)
+  const tags = document.createElement("div");
+  tags.className = "song-tags";
+
+  const cats = Array.isArray(musica.categorias)
+    ? musica.categorias
+    : typeof musica.categorias === "string"
+    ? musica.categorias
+        .split(";")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
+
+  cats.forEach((c) => {
+    const tag = document.createElement("span");
+    tag.className = "tag";
+    tag.textContent = c;
+    tags.appendChild(tag);
+  });
+
+  // Execuções
+  const execPill = document.createElement("span");
+  execPill.className = "song-pill";
+  execPill.textContent = `${getTotalExecucoes(musica.id)} exec`;
+  tags.appendChild(execPill);
+
+  // Liberação (cadeado)
+  if (status === "future" || status === "recent") {
+    const dias = calcularDiasParaLiberar(musica.id);
+
+    if (dias != null) {
+      const libera = document.createElement("div");
+      libera.className = "song-release-info";
+      libera.textContent =
+        dias <= 0 ? "🔓 Libera hoje" : `🔒 Libera em ${dias} dias`;
+      wrapper.appendChild(libera);
+    }
+  }
+
+  main.append(title, artistRow, tags);
+  card.append(wrapper, ribbon, main);
+
+  // click abre youtube
+  if (musica.referLink) {
+    card.addEventListener("click", () => {
+      window.open(
+        `https://www.youtube.com/watch?v=${musica.referLink}`,
+        "_blank"
+      );
+    });
+  }
+
+  return card;
+}
+
+// =========================================================
+// TOTAL DE EXECUÇÕES DE UMA MÚSICA NO HISTÓRICO
+// =========================================================
+function getTotalExecucoes(idMusica) {
+  if (!idMusica || !Array.isArray(historico)) return 0;
+
+  let total = 0;
+
+  historico.forEach((culto) => {
+    if (!Array.isArray(culto.musicas)) return;
+    culto.musicas.forEach((id) => {
+      if (id === idMusica) total++;
+    });
+  });
+
+  return total;
+}
+
+function getStatusMusicaRepertorio(idMusica) {
+  const m = musicas.find((x) => x.id === idMusica);
+  if (!m) return "available";
+
+  if (m.banned) return "banned";
+
+  const futura = getProximaDataEscalada(idMusica);
+  if (futura) return "future";
+
+  const ultima = getUltimaDataTocada(idMusica);
+  if (!ultima) return "available";
+
+  const hoje = new Date();
+  const diasDesde = Math.floor((hoje - ultima) / (1000 * 60 * 60 * 24));
+  if (diasDesde <= TOCADA_NOS_ULTIMOS_X_DIAS) return "recent";
+
+  return "available";
+}
+
 
 // =========================================================
 // FIM DO ARQUIVO

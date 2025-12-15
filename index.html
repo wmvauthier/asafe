@@ -1,139 +1,147 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Projeto Asafe - Wrapped</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="index.css" />
-  </head>
 
-  <body>
-    <div class="app">
-      <header class="app-header">
-        <div class="app-title-group">
-          <h1 class="app-title">Projeto Asafe</h1>
-          <span class="app-subtitle">Painel estilo Spotify Wrapped</span>
-        </div>
-      </header>
+<head>
+  <meta charset="UTF-8" />
+  <title>Projeto Asafe - Wrapped</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="index.css" />
+</head>
 
-      <!-- Navegação -->
-      <nav class="tabs">
-        <button class="tab-button active" data-view="escala">
-          Próximo culto
-        </button>
-        <button class="tab-button" data-view="escalas-futuras">
-          Escalas futuras
-        </button>
-        <button class="tab-button" data-view="repertorio">
-          Repertório
-        </button>
-      </nav>
+<body>
 
-      <main class="views">
-        <!-- =======================================================
+  <div id="rotate-lock" class="rotate-warning">
+    <div class="rotate-box">
+      🔄<br>
+      Rotacione seu dispositivo para o modo paisagem (Landscape)
+    </div>
+  </div>
+
+  <div class="app">
+    <header class="app-header">
+      <div class="app-title-group">
+        <h1 class="app-title">Projeto Asafe</h1>
+        <span class="app-subtitle">Painel estilo Spotify Wrapped</span>
+      </div>
+    </header>
+
+    <!-- Navegação -->
+    <nav class="tabs">
+      <button class="tab-button active" data-view="escala">
+        Próximo culto
+      </button>
+      <button class="tab-button" data-view="escalas-futuras">
+        Escalas futuras
+      </button>
+      <button class="tab-button" data-view="repertorio">
+        Repertório
+      </button>
+    </nav>
+
+    <main class="views">
+      <!-- =======================================================
              PRÓXIMO CULTO (col-4 com card + integrantes)
              ======================================================= -->
-        <section id="view-escala" class="view-panel active">
-          <div class="escala-main-row">
-            <!-- COLUNA ESQUERDA: CARD PRINCIPAL + INTEGRANTES -->
-            <div class="escala-col-4">
+      <section id="view-escala" class="view-panel active">
+        <div class="escala-main-row">
 
-              <!-- -------- CARD PRINCIPAL -------- -->
-              <section class="card escala-atual-card">
-                <header class="card-header card-header--escala-atual">
-                  <div class="card-header-left">
-                    <h2 class="card-title">📅 Próximo culto</h2>
-                    <p id="escalaAtualData" class="card-subtitle">
-                      Carregando...
-                    </p>
-                  </div>
+          <!-- LINHA SUPERIOR: PRÓXIMO CULTO + INTEGRANTES LADO A LADO -->
+          <div class="escala-top-row">
+            <!-- -------- CARD PRINCIPAL -------- -->
+            <section class="card escala-atual-card">
+              <header class="card-header card-header--escala-atual">
+                <div class="card-header-left">
+                  <h2 class="card-title">📅 Próximo culto</h2>
+                  <p id="escalaAtualData" class="card-subtitle">
+                    Carregando...
+                  </p>
+                </div>
 
-                  <div class="card-header-right" id="escalaAtualBadges">
-                    <!-- badges (categoria + dificuldade geral) vão aqui -->
-                  </div>
-                </header>
+                <div class="card-header-right" id="escalaAtualBadges">
+                  <!-- badges (categoria + dificuldade geral) vão aqui -->
+                </div>
+              </header>
 
-                <div id="escalaAtualResumo" class="escala-resumo"></div>
-              </section>
+              <div id="escalaAtualResumo" class="escala-resumo"></div>
+            </section>
 
-              <!-- -------- INTEGRANTES -------- -->
-              <section class="card integrantes-card">
-                <header class="card-header">
-                  <h3 class="card-title">🎤 Integrantes da escala</h3>
-                </header>
-                <div id="escalaAtualIntegrantes" class="integrantes-grid"></div>
-              </section>
-
-            </div>
-
-            <!-- COLUNA DIREITA: REPERTÓRIO DO DIA -->
-            <div class="escala-col-8">
-              <section class="card repertorio-card">
-                <header class="card-header">
-                  <h3 class="card-title">🎵 Repertório do dia</h3>
-                </header>
-                <div id="escalaAtualMusicas" class="musicas-list"></div>
-              </section>
-            </div>
+            <!-- -------- INTEGRANTES -------- -->
+            <section class="card integrantes-card">
+              <header class="card-header">
+                <h3 class="card-title">🎤 Integrantes da escala</h3>
+              </header>
+              <div id="escalaAtualIntegrantes" class="integrantes-grid"></div>
+            </section>
           </div>
-        </section>
 
-        <!-- =======================================================
+          <!-- LINHA INFERIOR: REPERTÓRIO DO DIA (LARGURA TOTAL) -->
+          <section class="card repertorio-card">
+            <header class="card-header">
+              <h3 class="card-title">🎵 Repertório do dia</h3>
+            </header>
+            <div id="escalaAtualMusicas" class="musicas-list"></div>
+          </section>
+        </div>
+      </section>
+
+
+      <!-- =======================================================
              ESCALAS FUTURAS
              ======================================================= -->
-        <section id="view-escalas-futuras" class="view-panel">
-          <section class="card">
-            <header class="card-header">
-              <h2 class="card-title">📆 Escalas futuras</h2>
-            </header>
+      <section id="view-escalas-futuras" class="view-panel">
+        <section class="card">
+          <header class="card-header">
+            <h2 class="card-title">📆 Escalas futuras</h2>
+          </header>
 
-            <div id="escalasFuturasContainer" class="escalas-futuras-list"></div>
-          </section>
+          <div id="escalasFuturasContainer" class="escalas-futuras-list"></div>
         </section>
+      </section>
 
-        <!-- =======================================================
+      <!-- =======================================================
              REPERTÓRIO
              ======================================================= -->
-        <section id="view-repertorio" class="view-panel">
-          <section class="card">
-            <header class="card-header card-header--repertorio">
-              <div>
-                <h2 class="card-title">📚 Repertório</h2>
-                <p class="card-subtitle">
-                  Visualize o status de cada música e filtre por categorias
-                </p>
-              </div>
-
-              <!-- Legendas -->
-              <div class="legend">
-                <span class="legend-item legend-disponivel">
-                  Disponíveis (<span id="legendDisponivelCount">0</span>)
-                </span>
-                <span class="legend-item legend-recente">
-                  Recentes (<span id="legendRecenteCount">0</span>)
-                </span>
-                <span class="legend-item legend-futura">
-                  Futuras (<span id="legendFuturaCount">0</span>)
-                </span>
-                <span class="legend-item legend-banida">
-                  Banidas (<span id="legendBanidaCount">0</span>)
-                </span>
-              </div>
-            </header>
-
-            <!-- Filtro de categorias -->
-            <div class="categorias-filter">
-              <span class="categorias-label">Filtro por categorias (até 2):</span>
-              <div id="categoriasContainer" class="categorias-buttons"></div>
+      <section id="view-repertorio" class="view-panel">
+        <section class="card">
+          <header class="card-header card-header--repertorio">
+            <div>
+              <h2 class="card-title">📚 Repertório</h2>
+              <p class="card-subtitle">
+                Visualize o status de cada música e filtre por categorias
+              </p>
             </div>
 
-            <!-- Grid de músicas -->
-            <div id="repertorioGrid" class="repertorio-grid"></div>
-          </section>
-        </section>
-      </main>
-    </div>
+            <!-- Legendas -->
+            <div class="legend">
+              <span class="legend-item legend-disponivel">
+                Disponíveis (<span id="legendDisponivelCount">0</span>)
+              </span>
+              <span class="legend-item legend-recente">
+                Recentes (<span id="legendRecenteCount">0</span>)
+              </span>
+              <span class="legend-item legend-futura">
+                Futuras (<span id="legendFuturaCount">0</span>)
+              </span>
+              <span class="legend-item legend-banida">
+                Banidas (<span id="legendBanidaCount">0</span>)
+              </span>
+            </div>
+          </header>
 
-    <script src="index.js"></script>
-  </body>
+          <!-- Filtro de categorias -->
+          <div class="categorias-filter">
+            <span class="categorias-label">Filtro por categorias (até 2):</span>
+            <div id="categoriasContainer" class="categorias-buttons"></div>
+          </div>
+
+          <!-- Grid de músicas -->
+          <div id="repertorioGrid" class="repertorio-grid"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+
 </html>
