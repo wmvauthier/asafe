@@ -413,6 +413,36 @@ body {
   white-space: nowrap;
 }
 
+/* ===============================
+   PATCH (wrapped.css)
+   ADICIONE este bloco LOGO APÓS o .track-count { ... }
+   =============================== */
+
+.count-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(2, 6, 23, 0.35);
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.count-pill-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.pop-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 6px;
+  transform: translateY(1px);
+}
+
 .thumb {
   border-radius: 8px;
   object-fit: cover;
@@ -1036,4 +1066,29 @@ body {
 .title-ranking-item .value {
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+/* ===== Popularidade no wrapped ===== */
+
+.popularity-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+.popularity-chip.classic {
+  color: #facc15;
+}
+
+.popularity-chip.common {
+  color: #e5e7eb;
+}
+
+.popularity-chip.rare {
+  color: #22c55e;
 }

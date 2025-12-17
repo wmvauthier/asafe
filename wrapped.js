@@ -8,6 +8,7 @@ let HISTORICO_RAW = [];
 let HISTORICO = [];
 let MUSIC_BY_ID = new Map();
 let MEMBER_BY_ID = new Map();
+let CACHE_POPULARIDADE_WRAPPED = null;
 
 function parseBrDate(str) {
   const [d, m, y] = str.split("/").map(Number);
@@ -102,6 +103,72 @@ function artistImg(name) {
   if (!name) return "";
   const slug = slugifyArtistName(name);
   return `artistas/${slug}.jpg`;
+}
+
+// ===============================
+// PATCH (wrapped.js)
+// 1) ADICIONE este bloco LOGO APÓS a função artistImg(...)
+// ===============================
+
+// ---------------------------
+// Popularidade (Clássico / Comum / Secreto)
+// ---------------------------
+
+function computePopularidadeCatalog() {
+  // Cache: Map<musicId, { tier, icon, label }>
+  if (CACHE_POPULARIDADE_WRAPPED) return CACHE_POPULARIDADE_WRAPPED;
+
+  const counts = new Map();
+  for (const m of MUSICAS_RAW) counts.set(m.id, 0);
+  for (const ev of HISTORICO) {
+    if (!Array.isArray(ev.musicas)) continue;
+    for (const mid of ev.musicas) counts.set(mid, (counts.get(mid) || 0) + 1);
+  }
+
+  const ranked = Array.from(counts.entries());
+  ranked.sort((a, b) => {
+    if (b[1] !== a[1]) return b[1] - a[1];
+    const ta = MUSIC_BY_ID.get(a[0])?.titulo || "";
+    const tb = MUSIC_BY_ID.get(b[0])?.titulo || "";
+    return ta.localeCompare(tb);
+  });
+
+  const n = ranked.length || 1;
+  const topCut = Math.max(1, Math.ceil(n * 0.25));
+  const midCut = Math.max(topCut + 1, Math.ceil(n * 0.75));
+
+  const out = new Map();
+  ranked.forEach(([mid], idx) => {
+    let tier = "common";
+    let icon = "🎧";
+    let label = "Comum";
+
+    if (idx < topCut) {
+      tier = "classic";
+      icon = "🏆";
+      label = "Clássico";
+    } else if (idx >= midCut) {
+      tier = "secret";
+      icon = "🕵️";
+      label = "Secreto";
+    }
+
+    out.set(mid, { tier, icon, label });
+  });
+
+  CACHE_POPULARIDADE_WRAPPED = out;
+  return out;
+}
+
+function getPopularidadeIcon(musicId) {
+  const map = computePopularidadeCatalog();
+  const info = map.get(musicId);
+  if (!info) return "";
+  return `<span class="pop-icon" title="${info.label}">${info.icon}</span>`;
+}
+
+function formatCountPill(text) {
+  return `<span class="count-pill"><span class="count-pill-icon">🎯</span>${text}</span>`;
 }
 
 // ---------------------------
@@ -458,10 +525,75 @@ function createCard(title, contentHtml, extraClass = "") {
 // Render: Visão da banda
 // ---------------------------
 
+// ===============================
+// PATCH (wrapped.js)
+// 2) SUBSTITUA a função renderBandSection(...) INTEIRA por esta
+// ===============================
+
 function renderBandSection(events) {
   const insights = computeBandInsights(events);
   const root = document.getElementById("bandSection");
   root.innerHTML = "";
+
+  function buildRankedMusicsList(items, emptyMsg, countLabelFn) {
+    if (!items || items.length === 0) return `<p class="muted">${emptyMsg}</p>`;
+    const html = items
+      .slice(0, 10)
+      .map((m, idx) => {
+        const rankNum = idx + 1;
+        const banBadge =
+          m.musica && m.musica.ban
+            ? '<span class="badge badge-ban">BANIDA</span>'
+            : "";
+        const thumb = m.musica
+          ? `<a href="https://www.youtube.com/watch?v=${m.musica.referLink}" target="_blank">
+              <img class="thumb thumb-md" src="https://img.youtube.com/vi/${m.musica.referLink}/0.jpg" alt="thumb">
+            </a>`
+          : "";
+        const pop = m.musica ? getPopularidadeIcon(m.musica.id) : "";
+        const title = m.musica ? m.musica.titulo : "ID " + m.id;
+        const artist = m.musica ? m.musica.artista : "";
+        return `
+          <li class="top-track-item">
+            <div class="top-track-left">
+              <span class="rank rank-${rankNum}">#${rankNum}</span>
+              ${thumb}
+              <div class="track-info">
+                <div class="track-title">${pop}${title} ${banBadge}</div>
+                <div class="track-artist">${artist}</div>
+              </div>
+            </div>
+            ${formatCountPill(countLabelFn(m, rankNum))}
+          </li>
+        `;
+      })
+      .join("");
+    return `<ul class="list top-tracks">${html}</ul>`;
+  }
+
+  function buildRankedArtistsList(items, emptyMsg) {
+    if (!items || items.length === 0) return `<p class="muted">${emptyMsg}</p>`;
+    const html = items
+      .slice(0, 10)
+      .map((a, idx) => {
+        const rankNum = idx + 1;
+        const imgSrc = artistImg(a.name);
+        return `
+          <li class="artist-row">
+            <div class="artist-row-main">
+              <span class="rank rank-${rankNum}">#${rankNum}</span>
+              <div class="artist-avatar artist-avatar-sm">
+                <img src="${imgSrc}" alt="${a.name}" onerror="this.style.display='none';" />
+              </div>
+              <span class="artist-row-name">${a.name}</span>
+            </div>
+            ${formatCountPill(`${a.count}x`)}
+          </li>
+        `;
+      })
+      .join("");
+    return `<ul class="list">${html}</ul>`;
+  }
 
   // Resumo
   const summary = document.createElement("div");
@@ -539,151 +671,24 @@ function renderBandSection(events) {
 
   root.appendChild(summary);
 
-  // Linha 1: Top músicas + raridades
-  const featuredTracks = insights.topMusics.slice(0, 3);
-  const restTracks = insights.topMusics.slice(3);
+  // Top músicas + raridades (SEM “top 3” destacado separado)
+  const topMusicsCard = createCard(
+    "MÚSICAS MAIS TOCADAS",
+    buildRankedMusicsList(
+      insights.topMusics,
+      "Nenhuma música no período.",
+      (m) => `${m.count}x no período`
+    )
+  );
 
-  const featuredTracksHtml = featuredTracks
-    .map((m, idx) => {
-      const banBadge =
-        m.musica && m.musica.ban
-          ? '<span class="badge badge-ban">BANIDA</span>'
-          : "";
-      const thumb = m.musica
-        ? `<a href="https://www.youtube.com/watch?v=${m.musica.referLink}" target="_blank">
-      <img class="thumb thumb-xl" src="https://img.youtube.com/vi/${m.musica.referLink}/0.jpg" alt="thumb">
-    </a>`
-        : "";
-      return `
-      <div class="track-feature-card">
-        <div class="track-feature-left">
-          ${thumb}
-        </div>
-        <div class="track-feature-info">
-          <div class="track-title"><span class="rank rank-${idx + 1}">#${
-        idx + 1
-      }</span> ${m.musica ? m.musica.titulo : "ID " + m.id} ${banBadge}</div>
-          <div class="track-artist">${m.musica ? m.musica.artista : ""}</div>
-          <div class="track-count-row">
-            <span class="track-count">${m.count}× no período</span>
-          </div>
-        </div>
-      </div>
-    `;
-    })
-    .join("");
-
-  const restTracksHtml = restTracks
-    .map((m, idx) => {
-      const banBadge =
-        m.musica && m.musica.ban
-          ? '<span class="badge badge-ban">BANIDA</span>'
-          : "";
-      const thumb = m.musica
-        ? `<a href="https://www.youtube.com/watch?v=${m.musica.referLink}" target="_blank">
-      <img class="thumb thumb-md" src="https://img.youtube.com/vi/${m.musica.referLink}/0.jpg" alt="thumb">
-    </a>`
-        : "";
-      const rankNum = idx + 4;
-      return `
-      <li class="top-track-item">
-        <div class="top-track-left">
-          <span class="rank rank-${rankNum}">#${rankNum}</span>
-          ${thumb}
-          <div class="track-info">
-            <div class="track-title">${
-              m.musica ? m.musica.titulo : "ID " + m.id
-            } ${banBadge}</div>
-            <div class="track-artist">${m.musica ? m.musica.artista : ""}</div>
-          </div>
-        </div>
-        <span class="track-count">${m.count}×</span>
-      </li>
-    `;
-    })
-    .join("");
-
-  const topMusicsCardHtml = `
-    <div class="track-featured-row">
-      ${featuredTracksHtml || "<p class='muted'>Nenhuma música no período.</p>"}
-    </div>
-    ${
-      restTracks.length
-        ? `<ul class="list top-tracks">${restTracksHtml}</ul>`
-        : ""
-    }
-  `;
-  const topMusicsCard = createCard("MÚSICAS MAIS TOCADAS", topMusicsCardHtml);
-
-  const featuredRares = insights.raridades.slice(0, 3);
-  const restRares = insights.raridades.slice(3);
-
-  const featuredRaresHtml = featuredRares
-    .map((m, idx) => {
-      const thumb = m.musica
-        ? `<a href="https://www.youtube.com/watch?v=${m.musica.referLink}" target="_blank">
-      <img class="thumb thumb-xl" src="https://img.youtube.com/vi/${m.musica.referLink}/0.jpg" alt="thumb">
-    </a>`
-        : "";
-      return `
-      <div class="track-feature-card">
-        <div class="track-feature-left">
-          ${thumb}
-        </div>
-        <div class="track-feature-info">
-          <div class="track-title"><span class="rank rank-${idx + 1}">#${
-        idx + 1
-      }</span> ${m.musica ? m.musica.titulo : "ID " + m.id}</div>
-          <div class="track-artist">${m.musica ? m.musica.artista : ""}</div>
-          <div class="track-count-row">
-            <span class="track-count">${m.count}× no período</span>
-          </div>
-        </div>
-      </div>
-    `;
-    })
-    .join("");
-
-  const restRaresHtml = restRares
-    .map((m, idx) => {
-      const thumb = m.musica
-        ? `<a href="https://www.youtube.com/watch?v=${m.musica.referLink}" target="_blank">
-      <img class="thumb thumb-md" src="https://img.youtube.com/vi/${m.musica.referLink}/0.jpg" alt="thumb">
-    </a>`
-        : "";
-      const rankNum = idx + 4;
-      return `
-      <li class="top-track-item">
-        <div class="top-track-left">
-          <span class="rank rank-${rankNum}">#${rankNum}</span>
-          ${thumb}
-          <div class="track-info">
-            <div class="track-title">${
-              m.musica ? m.musica.titulo : "ID " + m.id
-            }</div>
-            <div class="track-artist">${m.musica ? m.musica.artista : ""}</div>
-          </div>
-        </div>
-        <span class="track-count">${m.count}×</span>
-      </li>
-    `;
-    })
-    .join("");
-
-  const raridadesCardHtml = `
-    <div class="track-featured-row">
-      ${
-        featuredRaresHtml ||
-        "<p class='muted'>Não há músicas raras no período.</p>"
-      }
-    </div>
-    ${
-      restRares.length
-        ? `<ul class="list top-tracks">${restRaresHtml}</ul>`
-        : ""
-    }
-  `;
-  const raridadesCard = createCard("MÚSICAS MENOS TOCADAS", raridadesCardHtml);
+  const raridadesCard = createCard(
+    "MÚSICAS MENOS TOCADAS",
+    buildRankedMusicsList(
+      insights.raridades,
+      "Não há músicas raras no período.",
+      (m) => `${m.count}x no período`
+    )
+  );
 
   const rowTracks = document.createElement("div");
   rowTracks.className = "band-row";
@@ -691,140 +696,18 @@ function renderBandSection(events) {
   rowTracks.appendChild(raridadesCard);
   root.appendChild(rowTracks);
 
-  // Linha 2: Top artistas + menos tocados
-  const featuredTopArtists = insights.topArtists.slice(0, 3);
-  const restTopArtists = insights.topArtists.slice(3);
+  // Artistas mais/menos (SEM “top 3” destacado separado)
+  const artistasCard = createCard(
+    "Artistas mais tocados",
+    buildRankedArtistsList(insights.topArtists, "Nenhum artista no período.")
+  );
 
-  const featuredTopArtistsHtml = featuredTopArtists
-    .map((a, idx) => {
-      const initials = a.name
-        .split(" ")
-        .map((p) => p[0])
-        .join("")
-        .slice(0, 3)
-        .toUpperCase();
-      const imgSrc = artistImg(a.name);
-      return `
-      <div class="artist-feature-card">
-        <div class="artist-avatar">
-          <img src="${imgSrc}" alt="${
-        a.name
-      }" onerror="this.style.display='none';" />
-        </div>
-        <div class="artist-meta">
-          <div class="artist-name"><span class="rank-label rank-${idx + 1}">#${
-        idx + 1
-      }</span> ${a.name}</div>
-          <div class="artist-count">${a.count} execuções</div>
-        </div>
-      </div>
-    `;
-    })
-    .join("");
-
-  const restTopArtistsHtml = restTopArtists
-    .map((a, idx) => {
-      const initials = a.name
-        .split(" ")
-        .map((p) => p[0])
-        .join("")
-        .slice(0, 3)
-        .toUpperCase();
-      const imgSrc = artistImg(a.name);
-      const rankNum = idx + 4;
-      return `
-      <li class="artist-row">
-        <div class="artist-row-main">
-          <span class="rank rank-${rankNum}">#${rankNum}</span>
-          <div class="artist-avatar artist-avatar-sm">
-            <img src="${imgSrc}" alt="${a.name}" onerror="this.style.display='none';" />
-          </div>
-          <span class="artist-row-name">${a.name}</span>
-        </div>
-        <span class="track-count">${a.count}×</span>
-      </li>
-    `;
-    })
-    .join("");
-
-  const artistasCardHtml = `
-    <div class="artist-featured-row">
-      ${
-        featuredTopArtistsHtml ||
-        "<p class='muted'>Nenhum artista no período.</p>"
-      }
-    </div>
-    ${
-      restTopArtists.length ? `<ul class="list">${restTopArtistsHtml}</ul>` : ""
-    }
-  `;
-  const artistasCard = createCard("Artistas mais tocados", artistasCardHtml);
-
-  const leastArtists = insights.leastArtists;
-  const leastFeatured = leastArtists.slice(0, 3);
-  const leastRest = leastArtists.slice(3);
-
-  const leastFeaturedHtml = leastFeatured
-    .map((a, idx) => {
-      const initials = a.name
-        .split(" ")
-        .map((p) => p[0])
-        .join("")
-        .slice(0, 3)
-        .toUpperCase();
-      const imgSrc = artistImg(a.name);
-      return `
-      <div class="artist-feature-card">
-        <div class="artist-avatar">
-          <img src="${imgSrc}" alt="${
-        a.name
-      }" onerror="this.style.display='none';" />
-        </div>
-        <div class="artist-meta">
-          <div class="artist-name"><span class="rank-label rank-${idx + 1}">#${
-        idx + 1
-      }</span> ${a.name}</div>
-          <div class="artist-count">${a.count} execuções</div>
-        </div>
-      </div>
-    `;
-    })
-    .join("");
-
-  const leastRestHtml = leastRest
-    .map((a, idx) => {
-      const initials = a.name
-        .split(" ")
-        .map((p) => p[0])
-        .join("")
-        .slice(0, 3)
-        .toUpperCase();
-      const imgSrc = artistImg(a.name);
-      const rankNum = idx + 4;
-      return `
-      <li class="artist-row">
-        <div class="artist-row-main">
-          <span class="rank rank-${rankNum}">#${rankNum}</span>
-          <div class="artist-avatar artist-avatar-sm">
-            <img src="${imgSrc}" alt="${a.name}" onerror="this.style.display='none';" />
-          </div>
-          <span class="artist-row-name">${a.name}</span>
-        </div>
-        <span class="track-count">${a.count}×</span>
-      </li>
-    `;
-    })
-    .join("");
-
-  const leastArtistsHtml = `
-    <div class="artist-featured-row">
-      ${leastFeaturedHtml || "<p class='muted'>Nenhum artista cadastrado.</p>"}
-    </div>
-    ${leastRest.length ? `<ul class="list">${leastRestHtml}</ul>` : ""}
-  `;
   const leastArtistsCard = createCard(
     "Artistas menos tocados",
-    leastArtistsHtml
+    buildRankedArtistsList(
+      insights.leastArtists,
+      "Nenhum artista cadastrado."
+    )
   );
 
   const rowArtists = document.createElement("div");
@@ -834,9 +717,15 @@ function renderBandSection(events) {
   root.appendChild(rowArtists);
 }
 
+
 // ---------------------------
 // Render: Perfil do integrante
 // ---------------------------
+
+// ===============================
+// PATCH (wrapped.js)
+// 3) SUBSTITUA a função renderMemberSection(...) INTEIRA por esta
+// ===============================
 
 function renderMemberSection(events) {
   const select = document.getElementById("memberFilter");
@@ -872,8 +761,6 @@ function renderMemberSection(events) {
   const artDiffPct = insights.uniqueArtistsPercent;
 
   const dc = insights.difficultyCounts;
-  const totalDiff =
-    (dc.easy || 0) + (dc.medium || 0) + (dc.hard || 0) + (dc.unknown || 0);
 
   header.innerHTML = `
     <div class="member-header-main">
@@ -912,122 +799,61 @@ function renderMemberSection(events) {
   const grid = document.createElement("div");
   grid.className = "card-grid";
 
+  // ✅ Agora: sem “top 1 destacado”; + ícone de popularidade ao lado do nome; + 🎯 no contador
   function buildMusicBlock(musics, emptyMsg, countLabelFn) {
-    if (!musics || musics.length === 0) {
-      return `<p class="muted">${emptyMsg}</p>`;
-    }
-    const [feat, ...rest] = musics;
-    const featThumb = feat.musica
-      ? `<a href="https://www.youtube.com/watch?v=${feat.musica.referLink}" target="_blank">
-      <img class="thumb thumb-xl" src="https://img.youtube.com/vi/${feat.musica.referLink}/0.jpg" alt="thumb">
-    </a>`
-      : "";
-    const featHtml = `
-      <div class="track-feature-card">
-        <div class="track-feature-left">
-          ${featThumb}
-        </div>
-        <div class="track-feature-info">
-          <div class="track-title"><span class="rank rank-1">#1</span> ${
-            feat.musica ? feat.musica.titulo : "ID " + feat.id
-          }</div>
-          <div class="track-artist">${
-            feat.musica ? feat.musica.artista : ""
-          }</div>
-          <div class="track-count-row">
-            <span class="track-count">${countLabelFn(feat, 1)}</span>
-          </div>
-        </div>
-      </div>
-    `;
-    const restHtml = rest
+    if (!musics || musics.length === 0) return `<p class="muted">${emptyMsg}</p>`;
+    const html = musics
+      .slice(0, 10)
       .map((m, idx) => {
+        const rankNum = idx + 1;
         const thumb = m.musica
           ? `<a href="https://www.youtube.com/watch?v=${m.musica.referLink}" target="_blank">
-        <img class="thumb thumb-md" src="https://img.youtube.com/vi/${m.musica.referLink}/0.jpg" alt="thumb">
-      </a>`
+              <img class="thumb thumb-md" src="https://img.youtube.com/vi/${m.musica.referLink}/0.jpg" alt="thumb">
+            </a>`
           : "";
-        const rankNum = idx + 2;
+        const pop = m.musica ? getPopularidadeIcon(m.musica.id) : "";
+        const title = m.musica ? m.musica.titulo : "ID " + m.id;
+        const artist = m.musica ? m.musica.artista : "";
         return `
-        <li class="top-track-item">
-          <div class="top-track-left">
-            <span class="rank rank-${rankNum}">#${rankNum}</span>
-            ${thumb}
-            <div class="track-info">
-              <div class="track-title">${
-                m.musica ? m.musica.titulo : "ID " + m.id
-              }</div>
-              <div class="track-artist">${
-                m.musica ? m.musica.artista : ""
-              }</div>
+          <li class="top-track-item">
+            <div class="top-track-left">
+              <span class="rank rank-${rankNum}">#${rankNum}</span>
+              ${thumb}
+              <div class="track-info">
+                <div class="track-title">${pop}${title}</div>
+                <div class="track-artist">${artist}</div>
+              </div>
             </div>
-          </div>
-          <span class="track-count">${countLabelFn(m, rankNum)}</span>
-        </li>
-      `;
+            ${formatCountPill(countLabelFn(m, rankNum))}
+          </li>
+        `;
       })
       .join("");
-    return `
-      <div class="track-featured-row">
-        ${featHtml}
-      </div>
-      ${rest.length ? `<ul class="list top-tracks">${restHtml}</ul>` : ""}
-    `;
+    return `<ul class="list top-tracks">${html}</ul>`;
   }
 
   function buildArtistBlock(artists, emptyMsg) {
-    if (!artists || artists.length === 0) {
-      return `<p class="muted">${emptyMsg}</p>`;
-    }
-    const [feat, ...rest] = artists;
-    const initialsFeat = feat.name
-      .split(" ")
-      .map((p) => p[0])
-      .join("")
-      .slice(0, 3)
-      .toUpperCase();
-    const imgSrcFeat = artistImg(feat.name);
-    const featHtml = `
-      <div class="artist-feature-card">
-        <div class="artist-avatar">
-          <img src="${imgSrcFeat}" alt="${feat.name}" onerror="this.style.display='none';" />
-        </div>
-        <div class="artist-meta">
-          <div class="artist-name"><span class="rank-label rank-1">#1</span> ${feat.name}</div>
-          <div class="artist-count">${feat.count} execuções</div>
-        </div>
-      </div>
-    `;
-    const restHtml = rest
+    if (!artists || artists.length === 0) return `<p class="muted">${emptyMsg}</p>`;
+    const html = artists
+      .slice(0, 15)
       .map((a, idx) => {
-        const initials = a.name
-          .split(" ")
-          .map((p) => p[0])
-          .join("")
-          .slice(0, 3)
-          .toUpperCase();
+        const rankNum = idx + 1;
         const imgSrcA = artistImg(a.name);
-        const rankNum = idx + 2;
         return `
-        <li class="artist-row">
-          <div class="artist-row-main">
-            <span class="rank rank-${rankNum}">#${rankNum}</span>
-            <div class="artist-avatar artist-avatar-sm">
-              <img src="${imgSrcA}" alt="${a.name}" onerror="this.style.display='none';" />
+          <li class="artist-row">
+            <div class="artist-row-main">
+              <span class="rank rank-${rankNum}">#${rankNum}</span>
+              <div class="artist-avatar artist-avatar-sm">
+                <img src="${imgSrcA}" alt="${a.name}" onerror="this.style.display='none';" />
+              </div>
+              <span class="artist-row-name">${a.name}</span>
             </div>
-            <span class="artist-row-name">${a.name}</span>
-          </div>
-          <span class="track-count">${a.count}×</span>
-        </li>
-      `;
+            ${formatCountPill(`${a.count}x`)}
+          </li>
+        `;
       })
       .join("");
-    return `
-      <div class="artist-featured-row">
-        ${featHtml}
-      </div>
-      ${rest.length ? `<ul class="list">${restHtml}</ul>` : ""}
-    `;
+    return `<ul class="list">${html}</ul>`;
   }
 
   function buildParceriasBlock(parceiros) {
@@ -1076,7 +902,6 @@ function renderMemberSection(events) {
     `;
   }
 
-  // ----- ORDEM DOS CARDS NO PERFIL DO INTEGRANTE -----
   // 1. Músicas assinatura
   const assinaturaHtml = buildMusicBlock(
     insights.assinaturaTop,
@@ -1089,7 +914,7 @@ function renderMemberSection(events) {
   const tocadasHtml = buildMusicBlock(
     insights.topMusicsTocadas,
     "Nenhuma música tocada.",
-    (m) => `${m.count}×`
+    (m) => `${m.count}x`
   );
   grid.appendChild(createCard("Músicas que mais tocou", tocadasHtml));
 
@@ -1104,7 +929,7 @@ function renderMemberSection(events) {
   const escolhidasHtmlInner = buildMusicBlock(
     insights.topMusicsEscolhidas,
     "Nenhuma informação de escolha.",
-    (m) => `${m.count}×`
+    (m) => `${m.count}x`
   );
   grid.appendChild(
     createCard("Músicas que mais escolheu", `</p>${escolhidasHtmlInner}`)
@@ -1123,6 +948,7 @@ function renderMemberSection(events) {
 
   root.appendChild(grid);
 }
+
 
 // ---------------------------
 // Navegação entre visões
@@ -1250,42 +1076,68 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+// =========================================================
+// POPULARIDADE DAS MÚSICAS (WRAPPED)
+// =========================================================
+
+function classificarPopularidadeWrapped(musicas, historico) {
+  if (!musicas || !historico) return {};
+
+  const execMap = {};
+
+  historico.forEach((h) => {
+    h.musicas?.forEach((id) => {
+      execMap[id] = (execMap[id] || 0) + 1;
+    });
+  });
+
+  const lista = musicas.map((m) => ({
+    id: m.id,
+    exec: execMap[m.id] || 0,
+  }));
+
+  lista.sort((a, b) => b.exec - a.exec);
+
+  const total = lista.length;
+  const mapa = {};
+
+  lista.forEach((item, index) => {
+    const perc = index / total;
+
+    let nivel;
+    if (perc <= 0.25) nivel = "classic";
+    else if (perc <= 0.75) nivel = "common";
+    else nivel = "rare";
+
+    mapa[item.id] = {
+      nivel,
+      exec: item.exec,
+      rank: index + 1,
+      percentil: perc,
+    };
+  });
+
+  return mapa;
+}
+
+function getPopularidadeWrapped(idMusica) {
+  if (!CACHE_POPULARIDADE_WRAPPED) {
+    CACHE_POPULARIDADE_WRAPPED = classificarPopularidadeWrapped(
+      musicas,
+      historico
+    );
+  }
+  return (
+    CACHE_POPULARIDADE_WRAPPED[idMusica] || {
+      nivel: "common",
+      exec: 0,
+    }
+  );
+}
+
 // =========================
 // Títulos e Badges
 // =========================
-
-const TITLES = [
-  {
-    id: "presenca-master",
-    nome: "Presença Master",
-    descricao: "Se presença desse ponto, já tinha pedido música no Fantástico.",
-    ranking: [
-      { memberId: 1, value: 42 }, // Lucas
-      { memberId: 11, value: 38 }, // Pedro
-      { memberId: 3, value: 36 }, // Douglas
-      { memberId: 4, value: 34 }, // Emerson
-      { memberId: 6, value: 31 }, // Guilherme
-      { memberId: 2, value: 29 }, // Matheus
-    ],
-  },
-
-  {
-    id: "solo-eterno",
-    nome: "Solo Eterno",
-    descricao: "Quando o solo começa, ninguém sabe quando termina. Nem ele.",
-    ranking: [
-      { memberId: 2, value: 18 }, // Matheus
-      { memberId: 13, value: 17 }, // Diogo
-      { memberId: 12, value: 16 }, // Rhaldney
-      { memberId: 3, value: 15 }, // Douglas
-      { memberId: 6, value: 14 }, // Guilherme
-      { memberId: 1, value: 13 }, // Lucas
-    ],
-  },
-];
-
-
-
 
 function renderTitles() {
   const grid = document.getElementById("titlesGrid");
@@ -1358,9 +1210,9 @@ function renderTitles() {
       valor.textContent = `${r.value}`;
 
       // cores só no marcador de posição (pos), como você queria
-      if (idx === 0) pos.style.color = "#facc15";      // ouro
-      if (idx === 1) pos.style.color = "#e5e7eb";      // prata
-      if (idx === 2) pos.style.color = "#f59e0b";      // bronze
+      if (idx === 0) pos.style.color = "#facc15"; // ouro
+      if (idx === 1) pos.style.color = "#e5e7eb"; // prata
+      if (idx === 2) pos.style.color = "#f59e0b"; // bronze
 
       item.append(medal, pos, nome, valor);
       ranking.appendChild(item);
@@ -1371,4 +1223,3 @@ function renderTitles() {
     grid.appendChild(card);
   });
 }
-

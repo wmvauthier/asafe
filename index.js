@@ -960,8 +960,8 @@ function renderEscalaAtualMusicas(escala) {
     popBadge.className = `song-overlay song-popularity-badge ${nivel}`;
 
     if (nivel === "classic") popBadge.innerHTML = "🏆 Clássica";
-    else if (nivel === "rare") popBadge.innerHTML = "✨ Rara";
-    else popBadge.innerHTML = "🎵 Comum";
+    else if (nivel === "rare") popBadge.innerHTML = "🕵️ Rara";
+    else popBadge.innerHTML = "🎧 Comum";
 
     thumbWrapper.appendChild(popBadge);
 
@@ -1283,8 +1283,8 @@ function renderEscalasFuturas(lista) {
       popBadge.className = `song-overlay song-popularity-badge ${nivel}`;
 
       if (nivel === "classic") popBadge.innerHTML = "🏆 Clássica";
-      else if (nivel === "rare") popBadge.innerHTML = "✨ Rara";
-      else popBadge.innerHTML = "🎵 Comum";
+      else if (nivel === "rare") popBadge.innerHTML = "🕵️ Rara";
+      else popBadge.innerHTML = "🎧 Comum";
 
       thumbWrapper.appendChild(popBadge);
 
@@ -1444,7 +1444,7 @@ function copiarEscala(escala) {
   });
 
   // Músicas
-  texto += `\n🎵 *Músicas*\n`;
+  texto += `\n🎧 *Músicas*\n`;
   const ids = Array.isArray(escala.musicas) ? escala.musicas : [];
   ids.forEach((id) => {
     const musica = musicas.find((m) => m.id === id);
@@ -1624,8 +1624,8 @@ function renderRepertorio() {
     badge.className = `song-overlay song-popularity-badge ${nivel}`;
 
     if (nivel === "classic") badge.innerHTML = "🏆 Clássica";
-    else if (nivel === "rare") badge.innerHTML = "✨ Rara";
-    else badge.innerHTML = "🎵 Comum";
+    else if (nivel === "rare") badge.innerHTML = "🕵️ Rara";
+    else badge.innerHTML = "🎧 Comum";
 
     thumbWrapper.appendChild(badge);
 
