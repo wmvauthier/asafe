@@ -960,7 +960,7 @@ function renderEscalaAtualMusicas(escala) {
     popBadge.className = `song-overlay song-popularity-badge ${nivel}`;
 
     if (nivel === "classic") popBadge.innerHTML = "🏆 Clássica";
-    else if (nivel === "rare") popBadge.innerHTML = "🕵️ Rara";
+    else if (nivel === "rare") popBadge.innerHTML = "🕵️ Incomum";
     else popBadge.innerHTML = "🎧 Comum";
 
     thumbWrapper.appendChild(popBadge);
@@ -1283,7 +1283,7 @@ function renderEscalasFuturas(lista) {
       popBadge.className = `song-overlay song-popularity-badge ${nivel}`;
 
       if (nivel === "classic") popBadge.innerHTML = "🏆 Clássica";
-      else if (nivel === "rare") popBadge.innerHTML = "🕵️ Rara";
+      else if (nivel === "rare") popBadge.innerHTML = "🕵️ Incomum";
       else popBadge.innerHTML = "🎧 Comum";
 
       thumbWrapper.appendChild(popBadge);
@@ -1624,7 +1624,7 @@ function renderRepertorio() {
     badge.className = `song-overlay song-popularity-badge ${nivel}`;
 
     if (nivel === "classic") badge.innerHTML = "🏆 Clássica";
-    else if (nivel === "rare") badge.innerHTML = "🕵️ Rara";
+    else if (nivel === "rare") badge.innerHTML = "🕵️ Incomum";
     else badge.innerHTML = "🎧 Comum";
 
     thumbWrapper.appendChild(badge);

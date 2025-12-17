@@ -685,7 +685,7 @@ function renderBandSection(events) {
     "MÚSICAS MENOS TOCADAS",
     buildRankedMusicsList(
       insights.raridades,
-      "Não há músicas raras no período.",
+      "Não há músicas Incomums no período.",
       (m) => `${m.count}x no período`
     )
   );
