@@ -560,9 +560,9 @@ function renderBandSection(events) {
           ${thumb}
         </div>
         <div class="track-feature-info">
-          <div class="track-title"><span class="rank rank-${idx + 1}">#${idx + 1}</span> ${
-            m.musica ? m.musica.titulo : "ID " + m.id
-          } ${banBadge}</div>
+          <div class="track-title"><span class="rank rank-${idx + 1}">#${
+        idx + 1
+      }</span> ${m.musica ? m.musica.titulo : "ID " + m.id} ${banBadge}</div>
           <div class="track-artist">${m.musica ? m.musica.artista : ""}</div>
           <div class="track-count-row">
             <span class="track-count">${m.count}× no período</span>
@@ -631,9 +631,9 @@ function renderBandSection(events) {
           ${thumb}
         </div>
         <div class="track-feature-info">
-          <div class="track-title"><span class="rank rank-${idx + 1}">#${idx + 1}</span> ${
-            m.musica ? m.musica.titulo : "ID " + m.id
-          }</div>
+          <div class="track-title"><span class="rank rank-${idx + 1}">#${
+        idx + 1
+      }</span> ${m.musica ? m.musica.titulo : "ID " + m.id}</div>
           <div class="track-artist">${m.musica ? m.musica.artista : ""}</div>
           <div class="track-count-row">
             <span class="track-count">${m.count}× no período</span>
@@ -683,10 +683,7 @@ function renderBandSection(events) {
         : ""
     }
   `;
-  const raridadesCard = createCard(
-    "MÚSICAS MENOS TOCADAS",
-    raridadesCardHtml
-  );
+  const raridadesCard = createCard("MÚSICAS MENOS TOCADAS", raridadesCardHtml);
 
   const rowTracks = document.createElement("div");
   rowTracks.className = "band-row";
@@ -1131,14 +1128,39 @@ function renderMemberSection(events) {
 // Navegação entre visões
 // ---------------------------
 
+// =========================================================
+// SLUGIFY (usado para imagens de integrantes)
+// =========================================================
+function slugify(text) {
+  if (!text) return "";
+  return text
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
+// ---------------------------
+// Navegação entre visões
+// ---------------------------
 function setActiveView(view) {
+  // Tabs (botões)
   document.querySelectorAll(".view-tab").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.view === view);
   });
 
+  // Painéis (seções)
   document.querySelectorAll(".view-panel").forEach((panel) => {
     panel.classList.toggle("active", panel.dataset.view === view);
   });
+
+  // Render específico por view
+  if (view === "titles") {
+    renderTitles();
+  }
 }
 
 function populateMemberFilter() {
@@ -1227,3 +1249,126 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 });
+
+// =========================
+// Títulos e Badges
+// =========================
+
+const TITLES = [
+  {
+    id: "presenca-master",
+    nome: "Presença Master",
+    descricao: "Se presença desse ponto, já tinha pedido música no Fantástico.",
+    ranking: [
+      { memberId: 1, value: 42 }, // Lucas
+      { memberId: 11, value: 38 }, // Pedro
+      { memberId: 3, value: 36 }, // Douglas
+      { memberId: 4, value: 34 }, // Emerson
+      { memberId: 6, value: 31 }, // Guilherme
+      { memberId: 2, value: 29 }, // Matheus
+    ],
+  },
+
+  {
+    id: "solo-eterno",
+    nome: "Solo Eterno",
+    descricao: "Quando o solo começa, ninguém sabe quando termina. Nem ele.",
+    ranking: [
+      { memberId: 2, value: 18 }, // Matheus
+      { memberId: 13, value: 17 }, // Diogo
+      { memberId: 12, value: 16 }, // Rhaldney
+      { memberId: 3, value: 15 }, // Douglas
+      { memberId: 6, value: 14 }, // Guilherme
+      { memberId: 1, value: 13 }, // Lucas
+    ],
+  },
+];
+
+
+
+
+function renderTitles() {
+  const grid = document.getElementById("titlesGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  let integrantes = INTEGRANTES_RAW;
+
+  TITLES.forEach((title) => {
+    const card = document.createElement("div");
+    card.className = "title-card";
+
+    // THUMB = campeão
+    const winner = title.ranking[0];
+    const winnerMember = integrantes.find((i) => i.id === winner.memberId);
+    if (!winnerMember) return;
+
+    const thumb = document.createElement("div");
+    thumb.className = "title-thumb";
+
+    const img = document.createElement("img");
+    img.src = `integrantes/${slugify(winnerMember.nome)}.jpeg`;
+    img.onerror = () => (img.src = "integrantes/default.jpeg");
+    thumb.appendChild(img);
+
+    // BODY
+    const body = document.createElement("div");
+    body.className = "title-body";
+
+    const name = document.createElement("div");
+    name.className = "title-name";
+    name.textContent = title.nome;
+
+    const desc = document.createElement("div");
+    desc.className = "title-description";
+    desc.textContent = title.descricao;
+
+    // RANKING
+    const ranking = document.createElement("div");
+    ranking.className = "title-ranking";
+
+    title.ranking.slice(0, 5).forEach((r, idx) => {
+      const member = integrantes.find((i) => i.id === r.memberId);
+      if (!member) return;
+
+      const item = document.createElement("div");
+      item.className = "title-ranking-item";
+
+      // medalha (só top 3)
+      const medal = document.createElement("span");
+      medal.className = "title-ranking-medal";
+      if (idx === 0) medal.textContent = "🥇";
+      else if (idx === 1) medal.textContent = "🥈";
+      else if (idx === 2) medal.textContent = "🥉";
+      else medal.textContent = "";
+
+      // posição
+      const pos = document.createElement("span");
+      pos.className = "pos";
+      pos.textContent = `#${idx + 1}`;
+
+      // nome
+      const nome = document.createElement("span");
+      nome.className = "name";
+      nome.textContent = member.nome;
+
+      // valor
+      const valor = document.createElement("span");
+      valor.className = "value";
+      valor.textContent = `${r.value}`;
+
+      // cores só no marcador de posição (pos), como você queria
+      if (idx === 0) pos.style.color = "#facc15";      // ouro
+      if (idx === 1) pos.style.color = "#e5e7eb";      // prata
+      if (idx === 2) pos.style.color = "#f59e0b";      // bronze
+
+      item.append(medal, pos, nome, valor);
+      ranking.appendChild(item);
+    });
+
+    body.append(name, desc, ranking);
+    card.append(thumb, body);
+    grid.appendChild(card);
+  });
+}
+

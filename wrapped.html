@@ -1,11 +1,21 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <title>Wrapped da Banda</title>
   <link rel="stylesheet" href="wrapped.css" />
 </head>
+
 <body>
+
+  <div class="rotate-warning">
+    <div>
+      🔄<br><br>
+      Este painel funciona melhor com o dispositivo em modo paisagem (landscape).
+    </div>
+  </div>
+
   <div class="app">
     <header class="app-header">
       <div>
@@ -38,12 +48,18 @@
           <span class="icon">👤</span>
           <span>Perfil do integrante</span>
         </button>
+        <button class="view-tab" data-view="titles">
+          <span class="icon">🏆</span>
+          <span>Títulos</span>
+        </button>
       </div>
     </header>
 
     <main class="sections">
       <div class="views-wrapper">
         <div class="views-inner">
+
+
           <section class="view-panel active" data-view="band">
             <div id="bandSection"></div>
           </section>
@@ -51,6 +67,20 @@
           <section class="view-panel" data-view="member">
             <div id="memberSection"></div>
           </section>
+
+          <section class="view-panel" data-view="titles">
+            <div class="section-title">
+              <span class="icon">🏆</span>
+              Galeria de Títulos
+            </div>
+            <div class="section-subtitle">
+              Conquistas, estatísticas duvidosas e glórias eternas da banda.
+            </div>
+
+            <div id="titlesGrid" class="titles-grid"></div>
+          </section>
+
+
         </div>
       </div>
     </main>
@@ -58,4 +88,5 @@
 
   <script src="wrapped.js"></script>
 </body>
+
 </html>

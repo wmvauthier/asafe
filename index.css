@@ -461,7 +461,7 @@ body {
   top: 6px;
   right: -32px;
   transform: rotate(40deg);
-  padding: 3px 40px;
+  padding: 3px 50px;
   font-size: 0.7rem;
   font-weight: 600;
   background: #6b7280;
@@ -517,6 +517,7 @@ body {
   top: 8px;
   left: 8px;
   font-size: 0.7rem;
+  font-weight: 700;
   padding: 2px 8px;
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.9);
@@ -911,7 +912,128 @@ body {
   transform-origin: top left;
 }
 
+/* ======================================
+   BADGE DE POPULARIDADE DA MÚSICA
+   ====================================== */
 
+.song-popularity-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  /* CONTRASTE FORTE */
+  background: rgba(2, 6, 23, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.65);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* cores bem contrastantes */
+.song-popularity-badge.classic {
+  color: #facc15; /* dourado */
+}
+
+.song-popularity-badge.common {
+  color: #e5e7eb; /* branco */
+}
+
+.song-popularity-badge.rare {
+  color: #e5e7eb; /* verde vivo */
+}
+
+/* ======================================================
+   PADRÃO UNIFICADO DE OVERLAYS (BADGES / RIBBONS)
+   ====================================================== */
+
+.song-overlay {
+  position: absolute;
+  z-index: 6;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+
+  border-radius: 999px;
+
+  background: rgba(2, 6, 23, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* ======================================================
+   FIX DEFINITIVO: Overlays acima da thumbnail
+   ====================================================== */
+
+/* Wrapper da thumb cria o contexto correto */
+.song-thumb-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+/* A imagem SEMPRE fica atrás */
+.song-thumb {
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+/* Todos os overlays ficam acima da imagem */
+.song-popularity-badge,
+.song-ribbon,
+.song-release-info,
+.song-exec-info {
+  position: absolute;
+  z-index: 5;
+}
+
+/* posições específicas (reforço) */
+.song-popularity-badge {
+  bottom: 8px;
+  left: 8px;
+}
+
+.song-ribbon {
+  top: 8px;
+  right: -13px;
+
+  border-radius: 4px 999px 999px 4px;
+  padding-left: 12px;
+  padding-right: 10px;
+
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+
+.song-exec-info {
+  top: 8px;
+  left: 8px;
+}
+
+.song-release-info {
+  bottom: 8px;
+  right: 8px;
+}
+
+/* Blindagem contra filtros da thumb */
+.song-card.song-unavailable .song-thumb {
+  filter: grayscale(100%);
+  opacity: 0.85;
+  z-index: 1; /* garante que NÃO sobe */
+}
 
 /* ==========================
    RESPONSIVIDADE

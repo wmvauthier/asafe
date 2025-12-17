@@ -8,6 +8,7 @@ let musicas = [];
 let historico = [];
 let categoriasUnicas = [];
 let activeCategories = [];
+let CACHE_POPULARIDADE = null;
 
 // Constantes
 const TOCADA_NOS_ULTIMOS_X_DIAS = 56; // ~8 semanas
@@ -227,7 +228,10 @@ function renderCategoriasFiltros() {
     const cats = Array.isArray(m.categorias)
       ? m.categorias
       : typeof m.categorias === "string"
-      ? m.categorias.split(";").map((s) => s.trim()).filter(Boolean)
+      ? m.categorias
+          .split(";")
+          .map((s) => s.trim())
+          .filter(Boolean)
       : [];
 
     cats.forEach((c) => counts.set(c, (counts.get(c) || 0) + 1));
@@ -948,6 +952,28 @@ function renderEscalaAtualMusicas(escala) {
 
     // Thumbnail quadrada
     const thumbWrapper = document.createElement("div");
+
+    // ===== BADGE: POPULARIDADE =====
+    const nivel = getNivelPopularidadeMusica(musica.id);
+
+    const popBadge = document.createElement("div");
+    popBadge.className = `song-overlay song-popularity-badge ${nivel}`;
+
+    if (nivel === "classic") popBadge.innerHTML = "🏆 Clássica";
+    else if (nivel === "rare") popBadge.innerHTML = "✨ Rara";
+    else popBadge.innerHTML = "🎵 Comum";
+
+    thumbWrapper.appendChild(popBadge);
+
+    // ===== BADGE: EXECUÇÕES =====
+    const totalExec = getTotalExecucoes(musica.id);
+
+    const execBadge = document.createElement("div");
+    execBadge.className = "song-overlay song-exec-info";
+    execBadge.innerHTML = totalExec > 0 ? `🎯 Tocada ${totalExec}x` : `🆕 Nova`;
+
+    thumbWrapper.appendChild(execBadge);
+
     thumbWrapper.className = "song-thumb-wrapper";
 
     const img = document.createElement("img");
@@ -1055,13 +1081,13 @@ function renderEscalasFuturas(lista) {
 
     const title = document.createElement("div");
     title.className = "escala-title";
-    title.textContent = "Escala do dia";
+    title.textContent = '📆 '+formatarData(escala.dataObj);
 
-    const dateSub = document.createElement("div");
-    dateSub.className = "escala-date-sub";
-    dateSub.textContent = formatarData(escala.dataObj);
+    // const dateSub = document.createElement("div");
+    // dateSub.className = "escala-date-sub";
+    // dateSub.textContent = formatarData(escala.dataObj);
 
-    left.append(title, dateSub);
+    left.append(title);
 
     // badges do header (somente predominante + dificuldade)
     const badgeContainer = document.createElement("div");
@@ -1131,10 +1157,10 @@ function renderEscalasFuturas(lista) {
       const avatar = document.createElement("img");
       avatar.className = "escala-integrante-avatar";
       const slug = slugify(membro.nome || "");
-      avatar.src = `integrantes/${slug}.jpg`;
+      avatar.src = `integrantes/${slug}.jpeg`;
       avatar.onerror = function () {
         this.onerror = null;
-        this.src = "integrantes/default.jpg";
+        this.src = "integrantes/default.jpeg";
       };
 
       const nome = document.createElement("span");
@@ -1249,11 +1275,36 @@ function renderEscalasFuturas(lista) {
       songCard.className = "song-card";
 
       const thumbWrapper = document.createElement("div");
+
+      // ===== BADGE: POPULARIDADE =====
+      const nivel = getNivelPopularidadeMusica(musica.id);
+
+      const popBadge = document.createElement("div");
+      popBadge.className = `song-overlay song-popularity-badge ${nivel}`;
+
+      if (nivel === "classic") popBadge.innerHTML = "🏆 Clássica";
+      else if (nivel === "rare") popBadge.innerHTML = "✨ Rara";
+      else popBadge.innerHTML = "🎵 Comum";
+
+      thumbWrapper.appendChild(popBadge);
+
+      // ===== BADGE: EXECUÇÕES =====
+      const totalExec = getTotalExecucoes(musica.id);
+
+      const execBadge = document.createElement("div");
+      execBadge.className = "song-overlay song-exec-info";
+      execBadge.innerHTML =
+        totalExec > 0 ? `🎯 Tocada ${totalExec}x` : `🆕 Nova`;
+
+      thumbWrapper.appendChild(execBadge);
+
       thumbWrapper.className = "song-thumb-wrapper";
 
       const thumb = document.createElement("img");
       thumb.className = "song-thumb";
-      thumb.src = musica._thumbUrl || `https://img.youtube.com/vi/${musica.referLink}/0.jpg`;
+      thumb.src =
+        musica._thumbUrl ||
+        `https://img.youtube.com/vi/${musica.referLink}/0.jpg`;
       thumb.onerror = function () {
         this.onerror = null;
         this.src = "artistas/default.jpg";
@@ -1272,7 +1323,8 @@ function renderEscalasFuturas(lista) {
 
       const artistAvatar = document.createElement("img");
       artistAvatar.className = "artist-avatar";
-      artistAvatar.src = musica._artistImage || `artistas/${slugify(musica.artista)}.jpg`;
+      artistAvatar.src =
+        musica._artistImage || `artistas/${slugify(musica.artista)}.jpg`;
       artistAvatar.onerror = function () {
         this.onerror = null;
         this.src = "artistas/default.jpg";
@@ -1468,9 +1520,7 @@ function renderRepertorio() {
     const status = getStatusMusicaRepertorio(m.id);
     const exec = getTotalExecucoes(m.id);
     const diasLib =
-      status === "recent" || status === "future"
-        ? diasParaLiberar(m.id)
-        : null;
+      status === "recent" || status === "future" ? diasParaLiberar(m.id) : null;
 
     const scoreCat = musicaMatchScoreCategorias(m);
 
@@ -1566,6 +1616,19 @@ function renderRepertorio() {
 
     // Thumbnail
     const thumbWrapper = document.createElement("div");
+
+    // ===== BADGE DE POPULARIDADE =====
+    const nivel = getNivelPopularidadeMusica(musica.id);
+
+    const badge = document.createElement("div");
+    badge.className = `song-overlay song-popularity-badge ${nivel}`;
+
+    if (nivel === "classic") badge.innerHTML = "🏆 Clássica";
+    else if (nivel === "rare") badge.innerHTML = "✨ Rara";
+    else badge.innerHTML = "🎵 Comum";
+
+    thumbWrapper.appendChild(badge);
+
     thumbWrapper.className = "song-thumb-wrapper";
 
     const thumb = document.createElement("img");
@@ -1589,9 +1652,12 @@ function renderRepertorio() {
       const ribbon = document.createElement("div");
       ribbon.className = "song-ribbon";
 
-      if (musica._status === "recent") ribbon.classList.add("song-ribbon-recent");
-      if (musica._status === "future") ribbon.classList.add("song-ribbon-future");
-      if (musica._status === "banned") ribbon.classList.add("song-ribbon-banned");
+      if (musica._status === "recent")
+        ribbon.classList.add("song-ribbon-recent");
+      if (musica._status === "future")
+        ribbon.classList.add("song-ribbon-future");
+      if (musica._status === "banned")
+        ribbon.classList.add("song-ribbon-banned");
 
       ribbon.textContent =
         musica._status === "recent"
@@ -1662,7 +1728,6 @@ function renderRepertorio() {
     grid.appendChild(card);
   });
 }
-
 
 function calcularDiasParaLiberar(idMusica) {
   const hoje = new Date();
@@ -1921,6 +1986,50 @@ function getStatusMusicaRepertorio(idMusica) {
   return "available";
 }
 
+// =========================================================
+// CLASSIFICAÇÃO DE MÚSICAS POR POPULARIDADE (DISTRIBUIÇÃO)
+// =========================================================
+
+function getNivelPopularidadeMusica(idMusica) {
+  if (!CACHE_POPULARIDADE) {
+    CACHE_POPULARIDADE = classificarNiveisDePopularidade(musicas);
+  }
+  return CACHE_POPULARIDADE[idMusica]?.nivel || "common";
+}
+
+function classificarNiveisDePopularidade(musicas) {
+  if (!Array.isArray(musicas) || !musicas.length) return {};
+
+  // cria lista com execuções
+  const lista = musicas.map((m) => ({
+    id: m.id,
+    exec: getTotalExecucoes(m.id),
+  }));
+
+  // ordena por execuções (desc)
+  lista.sort((a, b) => b.exec - a.exec);
+
+  const total = lista.length;
+  const mapa = {};
+
+  lista.forEach((item, index) => {
+    const perc = index / total;
+
+    let nivel;
+    if (perc <= 0.25) nivel = "classic";
+    else if (perc <= 0.75) nivel = "common";
+    else nivel = "rare";
+
+    mapa[item.id] = {
+      nivel,
+      exec: item.exec,
+      rank: index + 1,
+      percentil: perc,
+    };
+  });
+
+  return mapa;
+}
 
 // =========================================================
 // FIM DO ARQUIVO
