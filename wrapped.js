@@ -29,20 +29,28 @@ const TITLES = [
     id: "onipresente-repertorio",
     categoria: "repertorio",
     nome: "Onipresente do Repertório",
-    descricao: "“Se essa música existe, ele provavelmente já tocou.” — Maior porcentagem do repertório tocado.",
+    descricao:
+      "“Se essa música existe, ele provavelmente já tocou.” — Maior porcentagem do repertório tocado.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankBy(stats, (s) => s.repertorioPct).map(x => ({...x, value: pct(x.value)}));
+      return rankBy(stats, (s) => s.repertorioPct).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
     },
   },
   {
     id: "participacao-especial-repertorio",
     categoria: "repertorio",
     nome: "Participação Especial",
-    descricao: "“Aparece pouco, mas sempre deixa sua marca.” — Menor porcentagem do repertório tocado.",
+    descricao:
+      "“Aparece pouco, mas sempre deixa sua marca.” — Menor porcentagem do repertório tocado.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankByAsc(stats, (s) => s.repertorioPct).map(x => ({...x, value: pct(x.value)}));
+      return rankByAsc(stats, (s) => s.repertorioPct).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
     },
   },
 
@@ -53,7 +61,8 @@ const TITLES = [
     id: "turista-musical",
     categoria: "diversidade",
     nome: "Turista Musical",
-    descricao: "“Cada culto, um destino novo.” — Tocou mais artistas diferentes.",
+    descricao:
+      "“Cada culto, um destino novo.” — Tocou mais artistas diferentes.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
       return rankBy(stats, (s) => s.artistsCount);
@@ -63,7 +72,8 @@ const TITLES = [
     id: "fiel-a-casa",
     categoria: "diversidade",
     nome: "Fiel à Casa",
-    descricao: "“Mudam-se os cultos, permanecem os artistas.” — Tocou menos artistas diferentes.",
+    descricao:
+      "“Mudam-se os cultos, permanecem os artistas.” — Tocou menos artistas diferentes.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
       return rankByAsc(stats, (s) => s.artistsCount);
@@ -77,30 +87,42 @@ const TITLES = [
     id: "modo-hardcore",
     categoria: "tecnica",
     nome: "Modo Hardcore",
-    descricao: "“Se tem acorde estranho, ele quer tocar.” — Maior % de músicas difíceis para seu instrumento (entre as tocadas).",
+    descricao:
+      "“Se tem acorde estranho, ele quer tocar.” — Maior % de músicas difíceis para seu instrumento (entre as tocadas).",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankBy(stats, (s) => s.diffPct.hard).map(x => ({...x, value: pct(x.value)}));
+      return rankBy(stats, (s) => s.diffPct.hard).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
     },
   },
   {
     id: "zona-de-conforto-tecnica",
     categoria: "tecnica",
     nome: "Zona de Conforto",
-    descricao: "“Nem fácil demais, nem impossível.” — Maior % de músicas medianas para seu instrumento (entre as tocadas).",
+    descricao:
+      "“Nem fácil demais, nem impossível.” — Maior % de músicas medianas para seu instrumento (entre as tocadas).",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankBy(stats, (s) => s.diffPct.medium).map(x => ({...x, value: pct(x.value)}));
+      return rankBy(stats, (s) => s.diffPct.medium).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
     },
   },
   {
     id: "climinha-worship",
     categoria: "tecnica",
     nome: "Climinha Worship",
-    descricao: "“Quando começa o acorde aberto, ele já está pronto.” — Maior % de músicas fáceis para seu instrumento (entre as tocadas).",
+    descricao:
+      "“Quando começa o acorde aberto, ele já está pronto.” — Maior % de músicas fáceis para seu instrumento (entre as tocadas).",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankBy(stats, (s) => s.diffPct.easy).map(x => ({...x, value: pct(x.value)}));
+      return rankBy(stats, (s) => s.diffPct.easy).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
     },
   },
 
@@ -111,7 +133,8 @@ const TITLES = [
     id: "dj-do-culto",
     categoria: "curadoria",
     nome: "O DJ do Culto",
-    descricao: "“Se a playlist tá boa, alguém sabe quem foi.” — Escolheu mais músicas.",
+    descricao:
+      "“Se a playlist tá boa, alguém sabe quem foi.” — Escolheu mais músicas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
       return rankBy(stats, (s) => s.chosenSongsCount);
@@ -121,7 +144,8 @@ const TITLES = [
     id: "deixa-com-eles",
     categoria: "curadoria",
     nome: "Deixa com Eles",
-    descricao: "“Confia na galera e só aparece pra tocar.” — Escolheu menos músicas.",
+    descricao:
+      "“Confia na galera e só aparece pra tocar.” — Escolheu menos músicas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
       return rankByAsc(stats, (s) => s.chosenSongsCount);
@@ -135,40 +159,56 @@ const TITLES = [
     id: "anti-repeticao",
     categoria: "curadoria",
     nome: "Anti-Repetição",
-    descricao: "“Repetir? Só se for MUITO bom.” — Maior % de músicas diferentes dentre as escolhidas.",
+    descricao:
+      "“Repetir? Só se for MUITO bom.” — Maior % de músicas diferentes dentre as escolhidas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankBy(stats, (s) => s.chosenSongsUniquePct).map(x => ({...x, value: pct(x.value)}));
+      return rankBy(stats, (s) => s.chosenSongsUniquePct).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
     },
   },
   {
     id: "classicos-nunca-morrem",
     categoria: "curadoria",
     nome: "Clássicos Nunca Morrem",
-    descricao: "“Time que tá ganhando não se mexe.” — Menor % de músicas diferentes dentre as escolhidas.",
+    descricao:
+      "“Time que tá ganhando não se mexe.” — Menor % de músicas diferentes dentre as escolhidas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankByAsc(stats, (s) => s.chosenSongsUniquePct).map(x => ({...x, value: pct(x.value)}));
+      return rankByAsc(stats, (s) => s.chosenSongsUniquePct).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
     },
   },
   {
     id: "curador-ecletico",
     categoria: "curadoria",
     nome: "Curador Eclético",
-    descricao: "“Sempre trazendo algo novo.” — Maior % de artistas diferentes dentre as escolhidas.",
+    descricao:
+      "“Sempre trazendo algo novo.” — Maior % de artistas diferentes dentre as escolhidas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankBy(stats, (s) => s.chosenArtistsUniquePct).map(x => ({...x, value: pct(x.value)}));
+      return rankBy(stats, (s) => s.chosenArtistsUniquePct).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
     },
   },
   {
     id: "sempre-os-mesmos",
     categoria: "curadoria",
     nome: "Sempre os Mesmos",
-    descricao: "“Tem favoritos e não abre mão.” — Menor % de artistas diferentes dentre as escolhidas.",
+    descricao:
+      "“Tem favoritos e não abre mão.” — Menor % de artistas diferentes dentre as escolhidas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankByAsc(stats, (s) => s.chosenArtistsUniquePct).map(x => ({...x, value: pct(x.value)}));
+      return rankByAsc(stats, (s) => s.chosenArtistsUniquePct).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
     },
   },
 
@@ -179,7 +219,8 @@ const TITLES = [
     id: "camaleao-da-banda",
     categoria: "banda",
     nome: "Camaleão da Banda",
-    descricao: "“Se adapta a qualquer formação.” — Tocou com mais integrantes diferentes.",
+    descricao:
+      "“Se adapta a qualquer formação.” — Tocou com mais integrantes diferentes.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
       return rankBy(stats, (s) => s.partnersCount);
@@ -189,7 +230,8 @@ const TITLES = [
     id: "panelinha-fiel",
     categoria: "banda",
     nome: "Panelinha Fiel",
-    descricao: "“Sempre com os mesmos parceiros.” — Tocou com menos integrantes diferentes.",
+    descricao:
+      "“Sempre com os mesmos parceiros.” — Tocou com menos integrantes diferentes.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
       return rankByAsc(stats, (s) => s.partnersCount);
@@ -203,60 +245,84 @@ const TITLES = [
     id: "guardiao-dos-classicos",
     categoria: "popularidade",
     nome: "Guardião dos Clássicos",
-    descricao: "“Responsável por manter as favoritas vivas.” — Maior % de músicas clássicas entre as tocadas.",
+    descricao:
+      "“Responsável por manter as favoritas vivas.” — Maior % de músicas clássicas entre as tocadas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankBy(stats, (s) => s.popPct.classic).map(x => ({...x, value: pct(x.value)}));
+      return rankBy(stats, (s) => s.popPct.classic).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
     },
   },
   {
     id: "foge-dos-classicos",
     categoria: "popularidade",
     nome: "Foge dos Clássicos",
-    descricao: "“Prefere sempre algo diferente.” — Menor % de músicas clássicas entre as tocadas.",
+    descricao:
+      "“Prefere sempre algo diferente.” — Menor % de músicas clássicas entre as tocadas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankByAsc(stats, (s) => s.popPct.classic).map(x => ({...x, value: pct(x.value)}));
+      return rankByAsc(stats, (s) => s.popPct.classic).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
     },
   },
   {
     id: "zona-popular",
     categoria: "popularidade",
     nome: "Zona Popular",
-    descricao: "“Sempre no meio do caminho.” — Maior % de músicas comuns entre as tocadas.",
+    descricao:
+      "“Sempre no meio do caminho.” — Maior % de músicas comuns entre as tocadas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankBy(stats, (s) => s.popPct.common).map(x => ({...x, value: pct(x.value)}));
+      return rankBy(stats, (s) => s.popPct.common).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
     },
   },
   {
     id: "sempre-fora-da-curva",
     categoria: "popularidade",
     nome: "Sempre Fora da Curva",
-    descricao: "“Difícil cair no padrão.” — Menor % de músicas comuns entre as tocadas.",
+    descricao:
+      "“Difícil cair no padrão.” — Menor % de músicas comuns entre as tocadas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankByAsc(stats, (s) => s.popPct.common).map(x => ({...x, value: pct(x.value)}));
+      return rankByAsc(stats, (s) => s.popPct.common).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
     },
   },
   {
     id: "explorador-das-raras",
     categoria: "popularidade",
     nome: "Explorador das Raras",
-    descricao: "“Quando ninguém conhece, ele conhece.” — Maior % de músicas raras entre as tocadas.",
+    descricao:
+      "“Quando ninguém conhece, ele conhece.” — Maior % de músicas raras entre as tocadas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankBy(stats, (s) => s.popPct.rare).map(x => ({...x, value: pct(x.value)}));
+      return rankBy(stats, (s) => s.popPct.rare).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
     },
   },
   {
     id: "avesso-ao-inedito",
     categoria: "popularidade",
     nome: "Avesso ao Inédito",
-    descricao: "“Prefere o que já foi testado.” — Menor % de músicas raras entre as tocadas.",
+    descricao:
+      "“Prefere o que já foi testado.” — Menor % de músicas raras entre as tocadas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankByAsc(stats, (s) => s.popPct.rare).map(x => ({...x, value: pct(x.value)}));
+      return rankByAsc(stats, (s) => s.popPct.rare).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
     },
   },
 
@@ -267,7 +333,8 @@ const TITLES = [
     id: "aposta-arriscada",
     categoria: "curadoria",
     nome: "Aposta Arriscada",
-    descricao: "“Nem sempre dá certo… mas quando dá!” — Escolheu mais músicas raras.",
+    descricao:
+      "“Nem sempre dá certo… mas quando dá!” — Escolheu mais músicas raras.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
       // percentual de raras dentro das escolhidas
@@ -278,20 +345,21 @@ const TITLES = [
         if (!total) return;
         let rare = 0;
         s.chosenSongsSet.forEach((mid) => {
-          const tier = pop?.get ? (pop.get(mid)?.tier || "common") : "common";
+          const tier = pop?.get ? pop.get(mid)?.tier || "common" : "common";
           if (tier === "secret") rare += 1;
         });
         arr.push({ memberId: s.memberId, value: rare / total });
       });
       arr.sort((a, b) => b.value - a.value);
-      return arr.slice(0, 5).map(x => ({...x, value: pct(x.value)}));
+      return arr.slice(0, 5).map((x) => ({ ...x, value: pct(x.value) }));
     },
   },
   {
     id: "jogando-seguro",
     categoria: "curadoria",
     nome: "Jogando Seguro",
-    descricao: "“Prefere garantir que todo mundo cante.” — Escolheu menos músicas raras.",
+    descricao:
+      "“Prefere garantir que todo mundo cante.” — Escolheu menos músicas raras.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
       const pop = computePopularidadeCatalog?.();
@@ -301,13 +369,13 @@ const TITLES = [
         if (!total) return;
         let rare = 0;
         s.chosenSongsSet.forEach((mid) => {
-          const tier = pop?.get ? (pop.get(mid)?.tier || "common") : "common";
+          const tier = pop?.get ? pop.get(mid)?.tier || "common" : "common";
           if (tier === "secret") rare += 1;
         });
         arr.push({ memberId: s.memberId, value: rare / total });
       });
       arr.sort((a, b) => a.value - b.value);
-      return arr.slice(0, 5).map(x => ({...x, value: pct(x.value)}));
+      return arr.slice(0, 5).map((x) => ({ ...x, value: pct(x.value) }));
     },
   },
   {
@@ -324,20 +392,21 @@ const TITLES = [
         if (!total) return;
         let classic = 0;
         s.chosenSongsSet.forEach((mid) => {
-          const tier = pop?.get ? (pop.get(mid)?.tier || "common") : "common";
+          const tier = pop?.get ? pop.get(mid)?.tier || "common" : "common";
           if (tier === "classic") classic += 1;
         });
         arr.push({ memberId: s.memberId, value: classic / total });
       });
       arr.sort((a, b) => b.value - a.value);
-      return arr.slice(0, 5).map(x => ({...x, value: pct(x.value)}));
+      return arr.slice(0, 5).map((x) => ({ ...x, value: pct(x.value) }));
     },
   },
   {
     id: "sempre-em-busca-do-novo",
     categoria: "curadoria",
     nome: "Sempre em Busca do Novo",
-    descricao: "“Se for pra repetir, melhor nem tocar.” — Escolheu menos músicas clássicas.",
+    descricao:
+      "“Se for pra repetir, melhor nem tocar.” — Escolheu menos músicas clássicas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
       const pop = computePopularidadeCatalog?.();
@@ -347,13 +416,13 @@ const TITLES = [
         if (!total) return;
         let classic = 0;
         s.chosenSongsSet.forEach((mid) => {
-          const tier = pop?.get ? (pop.get(mid)?.tier || "common") : "common";
+          const tier = pop?.get ? pop.get(mid)?.tier || "common" : "common";
           if (tier === "classic") classic += 1;
         });
         arr.push({ memberId: s.memberId, value: classic / total });
       });
       arr.sort((a, b) => a.value - b.value);
-      return arr.slice(0, 5).map(x => ({...x, value: pct(x.value)}));
+      return arr.slice(0, 5).map((x) => ({ ...x, value: pct(x.value) }));
     },
   },
 
@@ -388,20 +457,28 @@ const TITLES = [
     id: "especialista",
     categoria: "perfil",
     nome: "Especialista",
-    descricao: "“Quando encontra um estilo, vai até o fim.” — Maior concentração em uma única categoria (nas tocadas).",
+    descricao:
+      "“Quando encontra um estilo, vai até o fim.” — Maior concentração em uma única categoria (nas tocadas).",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankBy(stats, (s) => s.categoryMaxShare).map(x => ({...x, value: pct(x.value)}));
+      return rankBy(stats, (s) => s.categoryMaxShare).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
     },
   },
   {
     id: "versatil",
     categoria: "perfil",
     nome: "Versátil",
-    descricao: "“Transita bem por qualquer clima.” — Maior versatilidade (categorias mais equilibradas nas tocadas).",
+    descricao:
+      "“Transita bem por qualquer clima.” — Maior versatilidade (categorias mais equilibradas nas tocadas).",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankBy(stats, (s) => s.versatility).map(x => ({...x, value: pct(x.value)}));
+      return rankBy(stats, (s) => s.versatility).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
     },
   },
 
@@ -412,7 +489,8 @@ const TITLES = [
     id: "maratonista",
     categoria: "presenca",
     nome: "Maratonista",
-    descricao: "“Uma verdadeira jornada musical.” — Maior sequência de cultos seguidos tocando.",
+    descricao:
+      "“Uma verdadeira jornada musical.” — Maior sequência de cultos seguidos tocando.",
     ranking: () => {
       const streak = computeLongestStreak(HISTORICO);
       return streak.slice(0, 5);
@@ -993,7 +1071,9 @@ function renderBandSection(events) {
             <div class="artist-row-main">
               <span class="rank rank-${rankNum}">#${rankNum}</span>
               <div class="artist-avatar artist-avatar-sm">
-                <img src="${imgSrc}" alt="${a.name}" onerror="this.style.display='none';" />
+                <img src="${imgSrc}" alt="${
+          a.name
+        }" onerror="this.style.display='none';" />
               </div>
               <span class="artist-row-name">${a.name}</span>
             </div>
@@ -1114,10 +1194,7 @@ function renderBandSection(events) {
 
   const leastArtistsCard = createCard(
     "Artistas menos tocados",
-    buildRankedArtistsList(
-      insights.leastArtists,
-      "Nenhum artista cadastrado."
-    )
+    buildRankedArtistsList(insights.leastArtists, "Nenhum artista cadastrado.")
   );
 
   const rowArtists = document.createElement("div");
@@ -1126,7 +1203,6 @@ function renderBandSection(events) {
   rowArtists.appendChild(leastArtistsCard);
   root.appendChild(rowArtists);
 }
-
 
 // ---------------------------
 // Render: Perfil do integrante
@@ -1211,7 +1287,8 @@ function renderMemberSection(events) {
 
   // ✅ Agora: sem “top 1 destacado”; + ícone de popularidade ao lado do nome; + 🎯 no contador
   function buildMusicBlock(musics, emptyMsg, countLabelFn) {
-    if (!musics || musics.length === 0) return `<p class="muted">${emptyMsg}</p>`;
+    if (!musics || musics.length === 0)
+      return `<p class="muted">${emptyMsg}</p>`;
     const html = musics
       .slice(0, 10)
       .map((m, idx) => {
@@ -1243,7 +1320,8 @@ function renderMemberSection(events) {
   }
 
   function buildArtistBlock(artists, emptyMsg) {
-    if (!artists || artists.length === 0) return `<p class="muted">${emptyMsg}</p>`;
+    if (!artists || artists.length === 0)
+      return `<p class="muted">${emptyMsg}</p>`;
     const html = artists
       .slice(0, 15)
       .map((a, idx) => {
@@ -1254,7 +1332,9 @@ function renderMemberSection(events) {
             <div class="artist-row-main">
               <span class="rank rank-${rankNum}">#${rankNum}</span>
               <div class="artist-avatar artist-avatar-sm">
-                <img src="${imgSrcA}" alt="${a.name}" onerror="this.style.display='none';" />
+                <img src="${imgSrcA}" alt="${
+          a.name
+        }" onerror="this.style.display='none';" />
               </div>
               <span class="artist-row-name">${a.name}</span>
             </div>
@@ -1358,7 +1438,6 @@ function renderMemberSection(events) {
 
   root.appendChild(grid);
 }
-
 
 // ---------------------------
 // Navegação entre visões
@@ -1556,94 +1635,100 @@ function renderTitles() {
 
   const integrantes = INTEGRANTES_RAW;
 
-  TITLES.forEach((title) => {
-    const rankingData =
-      typeof title.ranking === "function" ? title.ranking() : title.ranking;
+  // agrupar por categoria
+  const byCategory = {};
+  TITLES.forEach((t) => {
+    if (!byCategory[t.categoria]) byCategory[t.categoria] = [];
+    byCategory[t.categoria].push(t);
+  });
 
-    if (!Array.isArray(rankingData) || rankingData.length === 0) return;
+  Object.entries(byCategory).forEach(([catKey, titles]) => {
+    const meta = TITLE_CATEGORIES[catKey] || { icon: "🏷️", label: "Outros" };
 
-    const winner = rankingData[0];
-    if (!winner || winner.memberId == null) return;
+    // header da categoria
+    const header = document.createElement("div");
+    header.className = "titles-category-header";
+    header.textContent = `${meta.icon} ${meta.label}`;
+    grid.appendChild(header);
 
-    const winnerMember = integrantes.find((i) => i.id === winner.memberId);
-    if (!winnerMember) return;
+    titles.forEach((title) => {
+      const rankingData =
+        typeof title.ranking === "function" ? title.ranking() : title.ranking;
 
-    const card = document.createElement("div");
-    card.className = "title-card";
+      if (!Array.isArray(rankingData) || rankingData.length === 0) return;
 
-    // THUMB
-    const thumb = document.createElement("div");
-    thumb.className = "title-thumb";
+      const winner = rankingData[0];
+      if (!winner) return;
 
-    const img = document.createElement("img");
-    img.src = `integrantes/${slugify(winnerMember.nome)}.jpeg`;
-    img.onerror = () => (img.src = "integrantes/default.jpeg");
-    thumb.appendChild(img);
+      const winnerMember = integrantes.find((i) => i.id === winner.memberId);
+      if (!winnerMember) return;
 
-    // BODY
-    const body = document.createElement("div");
-    body.className = "title-body";
+      const card = document.createElement("div");
+      card.className = "title-card";
 
-    const name = document.createElement("div");
-    name.className = "title-name";
-    name.textContent = title.nome;
+      // THUMB
+      const thumb = document.createElement("div");
+      thumb.className = "title-thumb";
+      const img = document.createElement("img");
+      img.src = `integrantes/${slugify(winnerMember.nome)}.jpeg`;
+      img.onerror = () => (img.src = "integrantes/default.jpeg");
+      thumb.appendChild(img);
 
-    // categoria (badge)
-    const catMeta = TITLE_CATEGORIES[title.categoria] || { icon: "🏷️", label: "Outros" };
-    const cat = document.createElement("div");
-    cat.className = "title-category";
-    cat.textContent = `${catMeta.icon} ${catMeta.label}`;
+      // BODY
+      const body = document.createElement("div");
+      body.className = "title-body";
 
-    const desc = document.createElement("div");
-    desc.className = "title-description";
-    desc.textContent = title.descricao;
+      const name = document.createElement("div");
+      name.className = "title-name";
+      name.textContent = title.nome;
 
-    // RANKING
-    const ranking = document.createElement("div");
-    ranking.className = "title-ranking";
+      const cat = document.createElement("div");
+      cat.className = "title-category";
+      cat.textContent = `${meta.icon} ${meta.label}`;
 
-    rankingData.slice(0, 5).forEach((r, idx) => {
-      const member = integrantes.find((i) => i.id === r.memberId);
-      if (!member) return;
+      const desc = document.createElement("div");
+      desc.className = "title-description";
+      desc.textContent = title.descricao;
 
-      const item = document.createElement("div");
-      item.className = "title-ranking-item";
+      const ranking = document.createElement("div");
+      ranking.className = "title-ranking";
 
-      // medalha
-      const medal = document.createElement("span");
-      medal.className = "title-ranking-medal";
-      if (idx === 0) medal.textContent = "🥇";
-      else if (idx === 1) medal.textContent = "🥈";
-      else if (idx === 2) medal.textContent = "🥉";
-      else medal.textContent = "";
+      rankingData.slice(0, 5).forEach((r, idx) => {
+        const member = integrantes.find((i) => i.id === r.memberId);
+        if (!member) return;
 
-      // posição
-      const pos = document.createElement("span");
-      pos.className = "pos";
-      pos.textContent = `#${idx + 1}`;
+        const item = document.createElement("div");
+        item.className = "title-ranking-item";
 
-      // nome
-      const nome = document.createElement("span");
-      nome.className = "name";
-      nome.textContent = member.nome;
+        const medal = document.createElement("span");
+        medal.className = "title-ranking-medal";
+        medal.textContent =
+          idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : "";
 
-      // valor
-      const valor = document.createElement("span");
-      valor.className = "value";
-      valor.textContent = `${r.value}`;
+        const pos = document.createElement("span");
+        pos.className = "pos";
+        pos.textContent = `#${idx + 1}`;
 
-      // cores só no marcador
-      if (idx === 0) pos.style.color = "#facc15";
-      if (idx === 1) pos.style.color = "#e5e7eb";
-      if (idx === 2) pos.style.color = "#f59e0b";
+        const nome = document.createElement("span");
+        nome.className = "name";
+        nome.textContent = member.nome;
 
-      item.append(medal, pos, nome, valor);
-      ranking.appendChild(item);
+        const valor = document.createElement("span");
+        valor.className = "value";
+        valor.textContent = r.value;
+
+        if (idx === 0) pos.style.color = "#facc15";
+        if (idx === 1) pos.style.color = "#e5e7eb";
+        if (idx === 2) pos.style.color = "#f59e0b";
+
+        item.append(medal, pos, nome, valor);
+        ranking.appendChild(item);
+      });
+
+      body.append(name, cat, desc, ranking);
+      card.append(thumb, body);
+      grid.appendChild(card);
     });
-
-    body.append(name, cat, desc, ranking);
-    card.append(thumb, body);
-    grid.appendChild(card);
   });
 }
 
@@ -1700,15 +1785,24 @@ function parseEventDate(ev) {
 
 // ---- Util: pegar arrays com fallback
 function getEventMusicas(ev) {
-  return Array.isArray(ev?.musicas) ? ev.musicas : Array.isArray(ev?.repertorio) ? ev.repertorio : [];
+  return Array.isArray(ev?.musicas)
+    ? ev.musicas
+    : Array.isArray(ev?.repertorio)
+    ? ev.repertorio
+    : [];
 }
 function getEventIntegrantes(ev) {
-  return Array.isArray(ev?.integrantes) ? ev.integrantes : Array.isArray(ev?.membros) ? ev.membros : [];
+  return Array.isArray(ev?.integrantes)
+    ? ev.integrantes
+    : Array.isArray(ev?.membros)
+    ? ev.membros
+    : [];
 }
 
 // ---- Mapa rápido
 function buildMusicById() {
-  if (typeof MUSIC_BY_ID !== "undefined" && MUSIC_BY_ID?.get) return MUSIC_BY_ID;
+  if (typeof MUSIC_BY_ID !== "undefined" && MUSIC_BY_ID?.get)
+    return MUSIC_BY_ID;
   const m = new Map();
   (MUSICAS_RAW || []).forEach((x) => m.set(x.id, x));
   return m;
@@ -1717,8 +1811,10 @@ const _MUSIC_BY_ID_LOCAL = buildMusicById();
 
 // ---- Categorias da música (robusto)
 function normalizeCategoriasField(musica) {
-  const raw = musica?.categorias ?? musica?.categories ?? musica?.categoria ?? "";
-  if (Array.isArray(raw)) return raw.map((s) => String(s).trim()).filter(Boolean);
+  const raw =
+    musica?.categorias ?? musica?.categories ?? musica?.categoria ?? "";
+  if (Array.isArray(raw))
+    return raw.map((s) => String(s).trim()).filter(Boolean);
 
   if (typeof raw === "string") {
     return raw
@@ -1760,8 +1856,8 @@ function normalizeDifficultyValue(v) {
   if (!s) return null;
 
   // pt/br
-  if (s.includes("dif")) return "hard";      // difícil
-  if (s.includes("med")) return "medium";    // médio
+  if (s.includes("dif")) return "hard"; // difícil
+  if (s.includes("med")) return "medium"; // médio
   if (s.includes("fac") || s.includes("fác")) return "easy"; // fácil
 
   // en
@@ -1779,7 +1875,8 @@ function normalizeDifficultyValue(v) {
 function getSongDifficultyForInstrument(musica, instrument) {
   if (!musica || !instrument) return null;
 
-  const diff = musica?.dificuldades ?? musica?.dificuldade ?? musica?.difficulty ?? null;
+  const diff =
+    musica?.dificuldades ?? musica?.dificuldade ?? musica?.difficulty ?? null;
 
   // caso: objeto { guitarra: "Médio", bateria: "Difícil" }
   if (diff && typeof diff === "object" && !Array.isArray(diff)) {
@@ -1791,7 +1888,9 @@ function getSongDifficultyForInstrument(musica, instrument) {
   if (Array.isArray(diff)) {
     for (const obj of diff) {
       if (obj && typeof obj === "object") {
-        const key = Object.keys(obj).find((k) => k.toLowerCase() === instrument.toLowerCase());
+        const key = Object.keys(obj).find(
+          (k) => k.toLowerCase() === instrument.toLowerCase()
+        );
         if (key) return normalizeDifficultyValue(obj[key]);
       }
     }
@@ -1910,42 +2009,30 @@ function computeMemberStats(events) {
     // ev.escolhas: [{ memberId, musicId }] / [{ integranteId, musicaId }]
     // ev.escolhidas: [{ membro, musica }] / [{ integrante, musica }]
     // ev.choosers: { musicId: memberId } ou { musicId: [memberId,...] }
-    const choices = [];
+    // =========================================================
+    // ESCOLHAS — via "header" (array de IDs)
+    // =========================================================
+    const escolhidos = Array.isArray(ev?.header) ? ev.header : [];
 
-    if (Array.isArray(ev?.escolhas)) choices.push(...ev.escolhas);
-    if (Array.isArray(ev?.escolhidas)) choices.push(...ev.escolhidas);
-    if (Array.isArray(ev?.choices)) choices.push(...ev.choices);
+    if (escolhidos.length && musicas.length) {
+      escolhidos.forEach((memberId) => {
+        const st = getOrInit(memberId);
 
-    // object mapping
-    const chooserMap = ev?.choosers || ev?.escolhidoPor || ev?.chosenBy || null;
-    if (chooserMap && typeof chooserMap === "object" && !Array.isArray(chooserMap)) {
-      Object.entries(chooserMap).forEach(([musicIdKey, who]) => {
-        const musicId = isNaN(Number(musicIdKey)) ? musicIdKey : Number(musicIdKey);
-        if (Array.isArray(who)) {
-          who.forEach((w) => choices.push({ memberId: w, musicId }));
-        } else {
-          choices.push({ memberId: who, musicId });
-        }
+        musicas.forEach((mid) => {
+          st.chosenSongsCount += 1;
+          st.chosenSongsSet.add(mid);
+
+          const song = _MUSIC_BY_ID_LOCAL.get(mid);
+          if (song?.artista) st.chosenArtistsSet.add(song.artista);
+        });
       });
     }
-
-    choices.forEach((ch) => {
-      const memberId = ch.memberId ?? ch.integranteId ?? ch.integrante ?? ch.membro ?? ch.member ?? null;
-      const musicId = ch.musicId ?? ch.musicaId ?? ch.musica ?? ch.songId ?? ch.song ?? null;
-      if (memberId == null || musicId == null) return;
-
-      const st = getOrInit(memberId);
-      st.chosenSongsCount += 1;
-      st.chosenSongsSet.add(musicId);
-
-      const song = _MUSIC_BY_ID_LOCAL.get(musicId);
-      if (song?.artista) st.chosenArtistsSet.add(song.artista);
-    });
+    
   });
 
   // derivações prontas
   stats.forEach((st) => {
-    st.repertorioPct = (st.songsSet.size / totalCatalogSongs) || 0;
+    st.repertorioPct = st.songsSet.size / totalCatalogSongs || 0;
     st.artistsCount = st.artistsSet.size;
 
     st.diffPct = {
@@ -1960,13 +2047,18 @@ function computeMemberStats(events) {
       rare: st.pop.total ? st.pop.rare / st.pop.total : 0,
     };
 
-    st.chosenSongsUniquePct = st.chosenSongsCount ? (st.chosenSongsSet.size / st.chosenSongsCount) : 0;
-    st.chosenArtistsUniquePct = st.chosenSongsCount ? (st.chosenArtistsSet.size / st.chosenSongsCount) : 0;
+    st.chosenSongsUniquePct = st.chosenSongsCount
+      ? st.chosenSongsSet.size / st.chosenSongsCount
+      : 0;
+    st.chosenArtistsUniquePct = st.chosenSongsCount
+      ? st.chosenArtistsSet.size / st.chosenSongsCount
+      : 0;
 
     st.partnersCount = st.partnersSet.size;
 
     // Specialist / Versatile via categorias (nas músicas tocadas)
-    const totalCats = Array.from(st.categoriesCount.values()).reduce((a, b) => a + b, 0) || 0;
+    const totalCats =
+      Array.from(st.categoriesCount.values()).reduce((a, b) => a + b, 0) || 0;
     let maxShare = 0;
     if (totalCats) {
       st.categoriesCount.forEach((cnt) => {
@@ -1983,7 +2075,7 @@ function computeMemberStats(events) {
         if (p > 0) entropy += -p * Math.log(p);
       });
       const k = Math.max(1, st.categoriesCount.size);
-      st.versatility = k > 1 ? (entropy / Math.log(k)) : 0;
+      st.versatility = k > 1 ? entropy / Math.log(k) : 0;
     } else {
       st.versatility = 0;
     }
@@ -2003,7 +2095,9 @@ function computeLongestStreak(events) {
   const memberIds = (INTEGRANTES_RAW || []).map((m) => m.id);
   const streaks = new Map(); // memberId -> best
 
-  memberIds.forEach((id) => streaks.set(id, { best: 0, current: 0, lastDay: null }));
+  memberIds.forEach((id) =>
+    streaks.set(id, { best: 0, current: 0, lastDay: null })
+  );
 
   for (const { ev, d } of dated) {
     const dayKey = d.toISOString().slice(0, 10);
@@ -2060,5 +2154,5 @@ function rankByAsc(statsMap, valueFn, topN = 5, filterFn = null) {
 }
 
 function pct(v) {
-  return Math.round((v || 0) * 100);
+  return Math.round((v || 0) * 1000) / 10; // 1 casa decimal
 }

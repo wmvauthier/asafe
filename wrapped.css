@@ -1110,3 +1110,11 @@ body {
   background: rgba(2,6,23,0.35);
   color: var(--muted);
 }
+
+.titles-category-header {
+  grid-column: 1 / -1;
+  margin: 24px 0 8px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
