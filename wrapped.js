@@ -10,6 +10,416 @@ let MUSIC_BY_ID = new Map();
 let MEMBER_BY_ID = new Map();
 let CACHE_POPULARIDADE_WRAPPED = null;
 
+const TITLE_CATEGORIES = {
+  repertorio: { label: "Repertório", icon: "🎼" },
+  diversidade: { label: "Diversidade", icon: "🎧" },
+  tecnica: { label: "Técnica", icon: "🎸" },
+  curadoria: { label: "Curadoria", icon: "🎚️" },
+  popularidade: { label: "Popularidade", icon: "📊" },
+  banda: { label: "Banda", icon: "🤝" },
+  presenca: { label: "Presença", icon: "📅" },
+  perfil: { label: "Perfil", icon: "🧠" },
+};
+
+const TITLES = [
+  // =======================
+  // REPERTÓRIO & PARTICIPAÇÃO
+  // =======================
+  {
+    id: "onipresente-repertorio",
+    categoria: "repertorio",
+    nome: "Onipresente do Repertório",
+    descricao: "“Se essa música existe, ele provavelmente já tocou.” — Maior porcentagem do repertório tocado.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.repertorioPct).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+  {
+    id: "participacao-especial-repertorio",
+    categoria: "repertorio",
+    nome: "Participação Especial",
+    descricao: "“Aparece pouco, mas sempre deixa sua marca.” — Menor porcentagem do repertório tocado.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankByAsc(stats, (s) => s.repertorioPct).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+
+  // =======================
+  // DIVERSIDADE (ARTISTAS)
+  // =======================
+  {
+    id: "turista-musical",
+    categoria: "diversidade",
+    nome: "Turista Musical",
+    descricao: "“Cada culto, um destino novo.” — Tocou mais artistas diferentes.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.artistsCount);
+    },
+  },
+  {
+    id: "fiel-a-casa",
+    categoria: "diversidade",
+    nome: "Fiel à Casa",
+    descricao: "“Mudam-se os cultos, permanecem os artistas.” — Tocou menos artistas diferentes.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankByAsc(stats, (s) => s.artistsCount);
+    },
+  },
+
+  // =======================
+  // TÉCNICA (DIFICULDADE POR INSTRUMENTO)
+  // =======================
+  {
+    id: "modo-hardcore",
+    categoria: "tecnica",
+    nome: "Modo Hardcore",
+    descricao: "“Se tem acorde estranho, ele quer tocar.” — Maior % de músicas difíceis para seu instrumento (entre as tocadas).",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.diffPct.hard).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+  {
+    id: "zona-de-conforto-tecnica",
+    categoria: "tecnica",
+    nome: "Zona de Conforto",
+    descricao: "“Nem fácil demais, nem impossível.” — Maior % de músicas medianas para seu instrumento (entre as tocadas).",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.diffPct.medium).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+  {
+    id: "climinha-worship",
+    categoria: "tecnica",
+    nome: "Climinha Worship",
+    descricao: "“Quando começa o acorde aberto, ele já está pronto.” — Maior % de músicas fáceis para seu instrumento (entre as tocadas).",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.diffPct.easy).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+
+  // =======================
+  // CURADORIA (QUANTIDADE)
+  // =======================
+  {
+    id: "dj-do-culto",
+    categoria: "curadoria",
+    nome: "O DJ do Culto",
+    descricao: "“Se a playlist tá boa, alguém sabe quem foi.” — Escolheu mais músicas.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.chosenSongsCount);
+    },
+  },
+  {
+    id: "deixa-com-eles",
+    categoria: "curadoria",
+    nome: "Deixa com Eles",
+    descricao: "“Confia na galera e só aparece pra tocar.” — Escolheu menos músicas.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankByAsc(stats, (s) => s.chosenSongsCount);
+    },
+  },
+
+  // =======================
+  // CURADORIA (REPETIÇÃO vs VARIEDADE)
+  // =======================
+  {
+    id: "anti-repeticao",
+    categoria: "curadoria",
+    nome: "Anti-Repetição",
+    descricao: "“Repetir? Só se for MUITO bom.” — Maior % de músicas diferentes dentre as escolhidas.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.chosenSongsUniquePct).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+  {
+    id: "classicos-nunca-morrem",
+    categoria: "curadoria",
+    nome: "Clássicos Nunca Morrem",
+    descricao: "“Time que tá ganhando não se mexe.” — Menor % de músicas diferentes dentre as escolhidas.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankByAsc(stats, (s) => s.chosenSongsUniquePct).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+  {
+    id: "curador-ecletico",
+    categoria: "curadoria",
+    nome: "Curador Eclético",
+    descricao: "“Sempre trazendo algo novo.” — Maior % de artistas diferentes dentre as escolhidas.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.chosenArtistsUniquePct).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+  {
+    id: "sempre-os-mesmos",
+    categoria: "curadoria",
+    nome: "Sempre os Mesmos",
+    descricao: "“Tem favoritos e não abre mão.” — Menor % de artistas diferentes dentre as escolhidas.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankByAsc(stats, (s) => s.chosenArtistsUniquePct).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+
+  // =======================
+  // BANDA (DINÂMICA)
+  // =======================
+  {
+    id: "camaleao-da-banda",
+    categoria: "banda",
+    nome: "Camaleão da Banda",
+    descricao: "“Se adapta a qualquer formação.” — Tocou com mais integrantes diferentes.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.partnersCount);
+    },
+  },
+  {
+    id: "panelinha-fiel",
+    categoria: "banda",
+    nome: "Panelinha Fiel",
+    descricao: "“Sempre com os mesmos parceiros.” — Tocou com menos integrantes diferentes.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankByAsc(stats, (s) => s.partnersCount);
+    },
+  },
+
+  // =======================
+  // POPULARIDADE (TOCOU EM %)
+  // =======================
+  {
+    id: "guardiao-dos-classicos",
+    categoria: "popularidade",
+    nome: "Guardião dos Clássicos",
+    descricao: "“Responsável por manter as favoritas vivas.” — Maior % de músicas clássicas entre as tocadas.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.popPct.classic).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+  {
+    id: "foge-dos-classicos",
+    categoria: "popularidade",
+    nome: "Foge dos Clássicos",
+    descricao: "“Prefere sempre algo diferente.” — Menor % de músicas clássicas entre as tocadas.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankByAsc(stats, (s) => s.popPct.classic).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+  {
+    id: "zona-popular",
+    categoria: "popularidade",
+    nome: "Zona Popular",
+    descricao: "“Sempre no meio do caminho.” — Maior % de músicas comuns entre as tocadas.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.popPct.common).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+  {
+    id: "sempre-fora-da-curva",
+    categoria: "popularidade",
+    nome: "Sempre Fora da Curva",
+    descricao: "“Difícil cair no padrão.” — Menor % de músicas comuns entre as tocadas.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankByAsc(stats, (s) => s.popPct.common).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+  {
+    id: "explorador-das-raras",
+    categoria: "popularidade",
+    nome: "Explorador das Raras",
+    descricao: "“Quando ninguém conhece, ele conhece.” — Maior % de músicas raras entre as tocadas.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.popPct.rare).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+  {
+    id: "avesso-ao-inedito",
+    categoria: "popularidade",
+    nome: "Avesso ao Inédito",
+    descricao: "“Prefere o que já foi testado.” — Menor % de músicas raras entre as tocadas.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankByAsc(stats, (s) => s.popPct.rare).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+
+  // =======================
+  // CURADORIA (INTENÇÃO) — enxuto (4 títulos)
+  // =======================
+  {
+    id: "aposta-arriscada",
+    categoria: "curadoria",
+    nome: "Aposta Arriscada",
+    descricao: "“Nem sempre dá certo… mas quando dá!” — Escolheu mais músicas raras.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      // percentual de raras dentro das escolhidas
+      const pop = computePopularidadeCatalog?.();
+      const arr = [];
+      stats.forEach((s) => {
+        const total = s.chosenSongsCount || 0;
+        if (!total) return;
+        let rare = 0;
+        s.chosenSongsSet.forEach((mid) => {
+          const tier = pop?.get ? (pop.get(mid)?.tier || "common") : "common";
+          if (tier === "secret") rare += 1;
+        });
+        arr.push({ memberId: s.memberId, value: rare / total });
+      });
+      arr.sort((a, b) => b.value - a.value);
+      return arr.slice(0, 5).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+  {
+    id: "jogando-seguro",
+    categoria: "curadoria",
+    nome: "Jogando Seguro",
+    descricao: "“Prefere garantir que todo mundo cante.” — Escolheu menos músicas raras.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      const pop = computePopularidadeCatalog?.();
+      const arr = [];
+      stats.forEach((s) => {
+        const total = s.chosenSongsCount || 0;
+        if (!total) return;
+        let rare = 0;
+        s.chosenSongsSet.forEach((mid) => {
+          const tier = pop?.get ? (pop.get(mid)?.tier || "common") : "common";
+          if (tier === "secret") rare += 1;
+        });
+        arr.push({ memberId: s.memberId, value: rare / total });
+      });
+      arr.sort((a, b) => a.value - b.value);
+      return arr.slice(0, 5).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+  {
+    id: "guardiao-da-tradicao",
+    categoria: "curadoria",
+    nome: "Guardião da Tradição",
+    descricao: "“Mantendo a essência viva.” — Escolheu mais músicas clássicas.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      const pop = computePopularidadeCatalog?.();
+      const arr = [];
+      stats.forEach((s) => {
+        const total = s.chosenSongsCount || 0;
+        if (!total) return;
+        let classic = 0;
+        s.chosenSongsSet.forEach((mid) => {
+          const tier = pop?.get ? (pop.get(mid)?.tier || "common") : "common";
+          if (tier === "classic") classic += 1;
+        });
+        arr.push({ memberId: s.memberId, value: classic / total });
+      });
+      arr.sort((a, b) => b.value - a.value);
+      return arr.slice(0, 5).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+  {
+    id: "sempre-em-busca-do-novo",
+    categoria: "curadoria",
+    nome: "Sempre em Busca do Novo",
+    descricao: "“Se for pra repetir, melhor nem tocar.” — Escolheu menos músicas clássicas.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      const pop = computePopularidadeCatalog?.();
+      const arr = [];
+      stats.forEach((s) => {
+        const total = s.chosenSongsCount || 0;
+        if (!total) return;
+        let classic = 0;
+        s.chosenSongsSet.forEach((mid) => {
+          const tier = pop?.get ? (pop.get(mid)?.tier || "common") : "common";
+          if (tier === "classic") classic += 1;
+        });
+        arr.push({ memberId: s.memberId, value: classic / total });
+      });
+      arr.sort((a, b) => a.value - b.value);
+      return arr.slice(0, 5).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+
+  // =======================
+  // PRESENÇA
+  // =======================
+  {
+    id: "figura-carimbada",
+    categoria: "presenca",
+    nome: "Figura Carimbada",
+    descricao: "“Se tem culto, ele tá lá.” — Tocou em mais cultos.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.cultos);
+    },
+  },
+  {
+    id: "aparicao-especial",
+    categoria: "presenca",
+    nome: "Aparição Especial",
+    descricao: "“Poucas aparições, mas memoráveis.” — Tocou em menos cultos.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankByAsc(stats, (s) => s.cultos);
+    },
+  },
+
+  // =======================
+  // PERFIL (CATEGORIAS) — Especialista & Versátil
+  // =======================
+  {
+    id: "especialista",
+    categoria: "perfil",
+    nome: "Especialista",
+    descricao: "“Quando encontra um estilo, vai até o fim.” — Maior concentração em uma única categoria (nas tocadas).",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.categoryMaxShare).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+  {
+    id: "versatil",
+    categoria: "perfil",
+    nome: "Versátil",
+    descricao: "“Transita bem por qualquer clima.” — Maior versatilidade (categorias mais equilibradas nas tocadas).",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.versatility).map(x => ({...x, value: pct(x.value)}));
+    },
+  },
+
+  // =======================
+  // PRESENÇA/REGULARIDADE — Maratonista (streak)
+  // =======================
+  {
+    id: "maratonista",
+    categoria: "presenca",
+    nome: "Maratonista",
+    descricao: "“Uma verdadeira jornada musical.” — Maior sequência de cultos seguidos tocando.",
+    ranking: () => {
+      const streak = computeLongestStreak(HISTORICO);
+      return streak.slice(0, 5);
+    },
+  },
+];
+
 function parseBrDate(str) {
   const [d, m, y] = str.split("/").map(Number);
   return new Date(y, m - 1, d);
@@ -1144,17 +1554,24 @@ function renderTitles() {
   if (!grid) return;
   grid.innerHTML = "";
 
-  let integrantes = INTEGRANTES_RAW;
+  const integrantes = INTEGRANTES_RAW;
 
   TITLES.forEach((title) => {
-    const card = document.createElement("div");
-    card.className = "title-card";
+    const rankingData =
+      typeof title.ranking === "function" ? title.ranking() : title.ranking;
 
-    // THUMB = campeão
-    const winner = title.ranking[0];
+    if (!Array.isArray(rankingData) || rankingData.length === 0) return;
+
+    const winner = rankingData[0];
+    if (!winner || winner.memberId == null) return;
+
     const winnerMember = integrantes.find((i) => i.id === winner.memberId);
     if (!winnerMember) return;
 
+    const card = document.createElement("div");
+    card.className = "title-card";
+
+    // THUMB
     const thumb = document.createElement("div");
     thumb.className = "title-thumb";
 
@@ -1171,6 +1588,12 @@ function renderTitles() {
     name.className = "title-name";
     name.textContent = title.nome;
 
+    // categoria (badge)
+    const catMeta = TITLE_CATEGORIES[title.categoria] || { icon: "🏷️", label: "Outros" };
+    const cat = document.createElement("div");
+    cat.className = "title-category";
+    cat.textContent = `${catMeta.icon} ${catMeta.label}`;
+
     const desc = document.createElement("div");
     desc.className = "title-description";
     desc.textContent = title.descricao;
@@ -1179,14 +1602,14 @@ function renderTitles() {
     const ranking = document.createElement("div");
     ranking.className = "title-ranking";
 
-    title.ranking.slice(0, 5).forEach((r, idx) => {
+    rankingData.slice(0, 5).forEach((r, idx) => {
       const member = integrantes.find((i) => i.id === r.memberId);
       if (!member) return;
 
       const item = document.createElement("div");
       item.className = "title-ranking-item";
 
-      // medalha (só top 3)
+      // medalha
       const medal = document.createElement("span");
       medal.className = "title-ranking-medal";
       if (idx === 0) medal.textContent = "🥇";
@@ -1209,17 +1632,433 @@ function renderTitles() {
       valor.className = "value";
       valor.textContent = `${r.value}`;
 
-      // cores só no marcador de posição (pos), como você queria
-      if (idx === 0) pos.style.color = "#facc15"; // ouro
-      if (idx === 1) pos.style.color = "#e5e7eb"; // prata
-      if (idx === 2) pos.style.color = "#f59e0b"; // bronze
+      // cores só no marcador
+      if (idx === 0) pos.style.color = "#facc15";
+      if (idx === 1) pos.style.color = "#e5e7eb";
+      if (idx === 2) pos.style.color = "#f59e0b";
 
       item.append(medal, pos, nome, valor);
       ranking.appendChild(item);
     });
 
-    body.append(name, desc, ranking);
+    body.append(name, cat, desc, ranking);
     card.append(thumb, body);
     grid.appendChild(card);
   });
+}
+
+// =========================================================
+// RANKINGS POR POPULARIDADE (CLÁSSICOS / RAROS)
+// =========================================================
+function gerarRankingPorPopularidade(nivelDesejado) {
+  const popMap = computePopularidadeCatalog();
+  const contador = new Map();
+
+  HISTORICO.forEach((evento) => {
+    if (!Array.isArray(evento.musicas) || !Array.isArray(evento.integrantes))
+      return;
+
+    evento.musicas.forEach((mid) => {
+      const info = popMap.get(mid);
+      if (!info || info.tier !== nivelDesejado) return;
+
+      evento.integrantes.forEach((iid) => {
+        contador.set(iid, (contador.get(iid) || 0) + 1);
+      });
+    });
+  });
+
+  // SEMPRE retorna array
+  return Array.from(contador.entries())
+    .map(([memberId, value]) => ({ memberId, value }))
+    .filter((i) => i.value > 0)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5);
+}
+
+// =========================================================
+// TITLES ENGINE — métricas e rankings
+// =========================================================
+
+// ---- Util: data parsing (para streaks)
+function parseEventDate(ev) {
+  const raw = ev?.data || ev?.date || ev?.dia || ev?.quando || null;
+  if (!raw) return null;
+  // aceita "YYYY-MM-DD", "DD/MM/YYYY", ISO etc.
+  const d1 = new Date(raw);
+  if (!isNaN(d1.getTime())) return d1;
+
+  if (typeof raw === "string" && raw.includes("/")) {
+    const [dd, mm, yyyy] = raw.split("/").map((x) => parseInt(x, 10));
+    if (dd && mm && yyyy) {
+      const d2 = new Date(yyyy, mm - 1, dd);
+      if (!isNaN(d2.getTime())) return d2;
+    }
+  }
+  return null;
+}
+
+// ---- Util: pegar arrays com fallback
+function getEventMusicas(ev) {
+  return Array.isArray(ev?.musicas) ? ev.musicas : Array.isArray(ev?.repertorio) ? ev.repertorio : [];
+}
+function getEventIntegrantes(ev) {
+  return Array.isArray(ev?.integrantes) ? ev.integrantes : Array.isArray(ev?.membros) ? ev.membros : [];
+}
+
+// ---- Mapa rápido
+function buildMusicById() {
+  if (typeof MUSIC_BY_ID !== "undefined" && MUSIC_BY_ID?.get) return MUSIC_BY_ID;
+  const m = new Map();
+  (MUSICAS_RAW || []).forEach((x) => m.set(x.id, x));
+  return m;
+}
+const _MUSIC_BY_ID_LOCAL = buildMusicById();
+
+// ---- Categorias da música (robusto)
+function normalizeCategoriasField(musica) {
+  const raw = musica?.categorias ?? musica?.categories ?? musica?.categoria ?? "";
+  if (Array.isArray(raw)) return raw.map((s) => String(s).trim()).filter(Boolean);
+
+  if (typeof raw === "string") {
+    return raw
+      .split(";")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+// ---- Instrumento principal do integrante (robusto)
+function getPrimaryInstrument(member) {
+  // integrante.function pode ser array de objetos {instrumento: nivel}
+  const fn = member?.function ?? member?.funcoes ?? member?.funcao;
+  if (Array.isArray(fn) && fn.length) {
+    const firstObj = fn[0];
+    if (firstObj && typeof firstObj === "object") {
+      const k = Object.keys(firstObj)[0];
+      if (k) return k;
+    }
+  }
+  // fallback: string
+  if (typeof fn === "string" && fn.trim()) return fn.trim();
+  return null;
+}
+
+// ---- Dificuldade da música por instrumento (robusto)
+function normalizeDifficultyValue(v) {
+  if (v == null) return null;
+
+  // number scale
+  if (typeof v === "number") {
+    if (v >= 3) return "hard";
+    if (v === 2) return "medium";
+    if (v <= 1) return "easy";
+  }
+
+  const s = String(v).toLowerCase().trim();
+  if (!s) return null;
+
+  // pt/br
+  if (s.includes("dif")) return "hard";      // difícil
+  if (s.includes("med")) return "medium";    // médio
+  if (s.includes("fac") || s.includes("fác")) return "easy"; // fácil
+
+  // en
+  if (s.includes("hard")) return "hard";
+  if (s.includes("med")) return "medium";
+  if (s.includes("easy")) return "easy";
+
+  // numeric as string
+  const n = parseFloat(s);
+  if (!isNaN(n)) return normalizeDifficultyValue(n);
+
+  return null;
+}
+
+function getSongDifficultyForInstrument(musica, instrument) {
+  if (!musica || !instrument) return null;
+
+  const diff = musica?.dificuldades ?? musica?.dificuldade ?? musica?.difficulty ?? null;
+
+  // caso: objeto { guitarra: "Médio", bateria: "Difícil" }
+  if (diff && typeof diff === "object" && !Array.isArray(diff)) {
+    const v = diff[instrument] ?? diff[instrument.toLowerCase()] ?? null;
+    return normalizeDifficultyValue(v);
+  }
+
+  // caso: array de objetos [{guitarra:"Médio"},{bateria:"Fácil"}]
+  if (Array.isArray(diff)) {
+    for (const obj of diff) {
+      if (obj && typeof obj === "object") {
+        const key = Object.keys(obj).find((k) => k.toLowerCase() === instrument.toLowerCase());
+        if (key) return normalizeDifficultyValue(obj[key]);
+      }
+    }
+  }
+
+  return null;
+}
+
+// ---- Popularidade (tier) — usa seu computePopularidadeCatalog()
+function getTierForMusicId(mid) {
+  const pop = computePopularidadeCatalog?.();
+  if (pop?.get) return pop.get(mid)?.tier || "common";
+  return "common";
+}
+
+// ---- Execuções por música no período (histórico)
+function buildExecCountMap(events) {
+  const map = new Map();
+  (events || []).forEach((ev) => {
+    for (const mid of getEventMusicas(ev)) {
+      map.set(mid, (map.get(mid) || 0) + 1);
+    }
+  });
+  return map;
+}
+
+// ---- Métricas por integrante
+function computeMemberStats(events) {
+  const totalCatalogSongs = (MUSICAS_RAW || []).length || 1;
+
+  const memberById = new Map();
+  (INTEGRANTES_RAW || []).forEach((m) => memberById.set(m.id, m));
+
+  const stats = new Map(); // id -> stat object
+
+  function getOrInit(mid) {
+    if (!stats.has(mid)) {
+      stats.set(mid, {
+        memberId: mid,
+        cultos: 0,
+        songsSet: new Set(),
+        artistsSet: new Set(),
+        categoriesSet: new Set(),
+        categoriesCount: new Map(), // cat -> count
+        partnersSet: new Set(),
+        // difficulty counts for primary instrument
+        diff: { easy: 0, medium: 0, hard: 0, total: 0 },
+        // popularity counts
+        pop: { classic: 0, common: 0, rare: 0, total: 0 },
+        // choices
+        chosenSongsCount: 0,
+        chosenSongsSet: new Set(),
+        chosenArtistsSet: new Set(),
+      });
+    }
+    return stats.get(mid);
+  }
+
+  // Pré-process: para parcerias, precisamos do elenco do culto
+  (events || []).forEach((ev) => {
+    const integrantes = getEventIntegrantes(ev);
+    const musicas = getEventMusicas(ev);
+
+    // culto count
+    integrantes.forEach((iid) => {
+      getOrInit(iid).cultos += 1;
+    });
+
+    // partners
+    integrantes.forEach((iid) => {
+      const st = getOrInit(iid);
+      integrantes.forEach((other) => {
+        if (other !== iid) st.partnersSet.add(other);
+      });
+    });
+
+    // songs played / artists / categories / popularity / difficulty
+    integrantes.forEach((iid) => {
+      const st = getOrInit(iid);
+      const member = memberById.get(iid);
+      const instrument = getPrimaryInstrument(member);
+
+      for (const mid of musicas) {
+        const song = _MUSIC_BY_ID_LOCAL.get(mid);
+        if (!song) continue;
+
+        st.songsSet.add(mid);
+        if (song.artista) st.artistsSet.add(song.artista);
+
+        const cats = normalizeCategoriasField(song);
+        cats.forEach((c) => {
+          st.categoriesSet.add(c);
+          st.categoriesCount.set(c, (st.categoriesCount.get(c) || 0) + 1);
+        });
+
+        // popularidade
+        const tier = getTierForMusicId(mid);
+        st.pop.total += 1;
+        if (tier === "classic") st.pop.classic += 1;
+        else if (tier === "secret") st.pop.rare += 1;
+        else st.pop.common += 1;
+
+        // dificuldade por instrumento
+        if (instrument) {
+          const d = getSongDifficultyForInstrument(song, instrument);
+          if (d) {
+            st.diff.total += 1;
+            st.diff[d] += 1;
+          }
+        }
+      }
+    });
+
+    // choices (muitos formatos possíveis)
+    // suportes:
+    // ev.escolhas: [{ memberId, musicId }] / [{ integranteId, musicaId }]
+    // ev.escolhidas: [{ membro, musica }] / [{ integrante, musica }]
+    // ev.choosers: { musicId: memberId } ou { musicId: [memberId,...] }
+    const choices = [];
+
+    if (Array.isArray(ev?.escolhas)) choices.push(...ev.escolhas);
+    if (Array.isArray(ev?.escolhidas)) choices.push(...ev.escolhidas);
+    if (Array.isArray(ev?.choices)) choices.push(...ev.choices);
+
+    // object mapping
+    const chooserMap = ev?.choosers || ev?.escolhidoPor || ev?.chosenBy || null;
+    if (chooserMap && typeof chooserMap === "object" && !Array.isArray(chooserMap)) {
+      Object.entries(chooserMap).forEach(([musicIdKey, who]) => {
+        const musicId = isNaN(Number(musicIdKey)) ? musicIdKey : Number(musicIdKey);
+        if (Array.isArray(who)) {
+          who.forEach((w) => choices.push({ memberId: w, musicId }));
+        } else {
+          choices.push({ memberId: who, musicId });
+        }
+      });
+    }
+
+    choices.forEach((ch) => {
+      const memberId = ch.memberId ?? ch.integranteId ?? ch.integrante ?? ch.membro ?? ch.member ?? null;
+      const musicId = ch.musicId ?? ch.musicaId ?? ch.musica ?? ch.songId ?? ch.song ?? null;
+      if (memberId == null || musicId == null) return;
+
+      const st = getOrInit(memberId);
+      st.chosenSongsCount += 1;
+      st.chosenSongsSet.add(musicId);
+
+      const song = _MUSIC_BY_ID_LOCAL.get(musicId);
+      if (song?.artista) st.chosenArtistsSet.add(song.artista);
+    });
+  });
+
+  // derivações prontas
+  stats.forEach((st) => {
+    st.repertorioPct = (st.songsSet.size / totalCatalogSongs) || 0;
+    st.artistsCount = st.artistsSet.size;
+
+    st.diffPct = {
+      easy: st.diff.total ? st.diff.easy / st.diff.total : 0,
+      medium: st.diff.total ? st.diff.medium / st.diff.total : 0,
+      hard: st.diff.total ? st.diff.hard / st.diff.total : 0,
+    };
+
+    st.popPct = {
+      classic: st.pop.total ? st.pop.classic / st.pop.total : 0,
+      common: st.pop.total ? st.pop.common / st.pop.total : 0,
+      rare: st.pop.total ? st.pop.rare / st.pop.total : 0,
+    };
+
+    st.chosenSongsUniquePct = st.chosenSongsCount ? (st.chosenSongsSet.size / st.chosenSongsCount) : 0;
+    st.chosenArtistsUniquePct = st.chosenSongsCount ? (st.chosenArtistsSet.size / st.chosenSongsCount) : 0;
+
+    st.partnersCount = st.partnersSet.size;
+
+    // Specialist / Versatile via categorias (nas músicas tocadas)
+    const totalCats = Array.from(st.categoriesCount.values()).reduce((a, b) => a + b, 0) || 0;
+    let maxShare = 0;
+    if (totalCats) {
+      st.categoriesCount.forEach((cnt) => {
+        maxShare = Math.max(maxShare, cnt / totalCats);
+      });
+    }
+    st.categoryMaxShare = maxShare;
+
+    // Entropia normalizada como versatilidade (0..1)
+    let entropy = 0;
+    if (totalCats) {
+      st.categoriesCount.forEach((cnt) => {
+        const p = cnt / totalCats;
+        if (p > 0) entropy += -p * Math.log(p);
+      });
+      const k = Math.max(1, st.categoriesCount.size);
+      st.versatility = k > 1 ? (entropy / Math.log(k)) : 0;
+    } else {
+      st.versatility = 0;
+    }
+  });
+
+  return stats;
+}
+
+// ---- streak (maratonista)
+function computeLongestStreak(events) {
+  // streak de participação em datas ordenadas
+  const dated = (events || [])
+    .map((ev) => ({ ev, d: parseEventDate(ev) }))
+    .filter((x) => x.d)
+    .sort((a, b) => a.d - b.d);
+
+  const memberIds = (INTEGRANTES_RAW || []).map((m) => m.id);
+  const streaks = new Map(); // memberId -> best
+
+  memberIds.forEach((id) => streaks.set(id, { best: 0, current: 0, lastDay: null }));
+
+  for (const { ev, d } of dated) {
+    const dayKey = d.toISOString().slice(0, 10);
+    const present = new Set(getEventIntegrantes(ev));
+
+    memberIds.forEach((mid) => {
+      const s = streaks.get(mid);
+
+      if (present.has(mid)) {
+        if (s.lastDay == null) {
+          s.current = 1;
+        } else {
+          // se for próximo evento em sequência (não exigimos diário, só sequência de eventos)
+          // qualquer evento seguinte mantém streak
+          s.current = s.current + 1;
+        }
+        s.best = Math.max(s.best, s.current);
+      } else {
+        s.current = 0;
+      }
+      s.lastDay = dayKey;
+    });
+  }
+
+  const out = [];
+  streaks.forEach((v, mid) => out.push({ memberId: mid, value: v.best }));
+  out.sort((a, b) => b.value - a.value);
+  return out;
+}
+
+// ---- Helpers: ranking builder
+function rankBy(statsMap, valueFn, topN = 5, filterFn = null) {
+  const arr = [];
+  statsMap.forEach((st) => {
+    if (filterFn && !filterFn(st)) return;
+    const v = valueFn(st);
+    if (v == null || isNaN(v)) return;
+    arr.push({ memberId: st.memberId, value: v });
+  });
+  arr.sort((a, b) => b.value - a.value);
+  return arr.slice(0, topN);
+}
+
+function rankByAsc(statsMap, valueFn, topN = 5, filterFn = null) {
+  const arr = [];
+  statsMap.forEach((st) => {
+    if (filterFn && !filterFn(st)) return;
+    const v = valueFn(st);
+    if (v == null || isNaN(v)) return;
+    arr.push({ memberId: st.memberId, value: v });
+  });
+  arr.sort((a, b) => a.value - b.value);
+  return arr.slice(0, topN);
+}
+
+function pct(v) {
+  return Math.round((v || 0) * 100);
 }

@@ -899,7 +899,7 @@ body {
 
 .titles-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 16px;
 }
 
@@ -1091,4 +1091,22 @@ body {
 
 .popularity-chip.rare {
   color: #22c55e;
+}
+
+.title-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+
+  margin-top: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+
+  font-size: 0.65rem;
+  font-weight: 700;
+
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(2,6,23,0.35);
+  color: var(--muted);
 }
