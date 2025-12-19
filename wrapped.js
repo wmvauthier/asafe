@@ -30,7 +30,7 @@ const TITLES = [
     categoria: "repertorio",
     nome: "Onipresente do Repertório",
     descricao:
-      "“Se essa música existe, ele provavelmente já tocou.” — Maior porcentagem do repertório tocado.",
+      "“Se essa música existe, ele provavelmente já tocou.” — Maior (%) do repertório tocado.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
       return rankBy(stats, (s) => s.repertorioPct).map((x) => ({
@@ -44,7 +44,7 @@ const TITLES = [
     categoria: "repertorio",
     nome: "Participação Especial",
     descricao:
-      "“Aparece pouco, mas sempre deixa sua marca.” — Menor porcentagem do repertório tocado.",
+      "“Aparece pouco, mas sempre deixa sua marca.” — Menor (%) do repertório tocado.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
       return rankByAsc(stats, (s) => s.repertorioPct).map((x) => ({
@@ -131,24 +131,24 @@ const TITLES = [
   // =======================
   {
     id: "dj-do-culto",
-    categoria: "curadoria",
+    categoria: "repertorio",
     nome: "O DJ do Culto",
     descricao:
-      "“Se a playlist tá boa, alguém sabe quem foi.” — Escolheu mais músicas.",
+      "“Se a playlist tá boa (ou ruim), já sabemos quem foi.” — Foi o cabeça de repertório em mais cultos.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankByChosenOnly(stats, (s) => s.chosenSongsCount);
+      return rankByChosenDaysOnly(stats, (s) => s.chosenDaysCount);
     },
   },
   {
     id: "deixa-com-eles",
-    categoria: "curadoria",
+    categoria: "repertorio",
     nome: "Deixa com Eles",
     descricao:
-      "“Confia na galera e só aparece pra tocar.” — Escolheu menos músicas.",
+      "“Confia na galera e só aparece pra tocar.” — Foi o cabeça de repertório em menos cultos.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankByAscChosenOnly(stats, (s) => s.chosenSongsCount);
+      return rankByAscChosenDaysOnly(stats, (s) => s.chosenDaysCount);
     },
   },
 
@@ -1799,11 +1799,8 @@ function parseEventDate(ev) {
 function getEventMusicas(ev) {
   if (!ev || !Array.isArray(ev.musicas)) return [];
 
-  return ev.musicas
-    .map((id) => Number(id))
-    .filter((id) => Number.isFinite(id));
+  return ev.musicas.map((id) => Number(id)).filter((id) => Number.isFinite(id));
 }
-
 
 function getEventIntegrantes(ev) {
   if (!ev) return [];
@@ -1824,7 +1821,6 @@ function getEventIntegrantes(ev) {
 
   return [];
 }
-
 
 function buildMusicById() {
   // Se já existe um Map populado, usa ele.
@@ -1968,9 +1964,9 @@ function computeMemberStats(events) {
     });
   });
 
-const totalRepertorioSongs = Array.isArray(MUSICAS_RAW)
-  ? MUSICAS_RAW.length
-  : 0;
+  const totalRepertorioSongs = Array.isArray(MUSICAS_RAW)
+    ? MUSICAS_RAW.length
+    : 0;
 
   const memberById = new Map();
   (INTEGRANTES_RAW || []).forEach((m) => memberById.set(Number(m.id), m));
@@ -2001,6 +1997,9 @@ const totalRepertorioSongs = Array.isArray(MUSICAS_RAW)
         chosenSongsCount: 0,
         chosenSongsSet: new Set(),
         chosenArtistsSet: new Set(),
+
+        chosenDaysCount: 0,
+        chosenDaysSet: new Set(),
       });
     }
     return stats.get(id);
@@ -2008,8 +2007,12 @@ const totalRepertorioSongs = Array.isArray(MUSICAS_RAW)
 
   // Pré-process: para parcerias, precisamos do elenco do culto
   (events || []).forEach((ev) => {
-    const integrantes = (getEventIntegrantes(ev) || []).map((x) => Number(x)).filter(Number.isFinite);
-    const musicas = (getEventMusicas(ev) || []).map((x) => Number(x)).filter(Number.isFinite);
+    const integrantes = (getEventIntegrantes(ev) || [])
+      .map((x) => Number(x))
+      .filter(Number.isFinite);
+    const musicas = (getEventMusicas(ev) || [])
+      .map((x) => Number(x))
+      .filter(Number.isFinite);
 
     // culto count
     integrantes.forEach((iid) => {
@@ -2066,23 +2069,31 @@ const totalRepertorioSongs = Array.isArray(MUSICAS_RAW)
     // =========================================================
     // ESCOLHAS — via "header" (array de IDs)
     // =========================================================
-    const escolhidos = Array.isArray(ev?.header) ? ev.header.map(Number).filter(Number.isFinite) : [];
+const escolhidos = Array.isArray(ev?.header) ? ev.header : [];
+const dayKey = ev?.data; // no seu historico.json é "dd/mm/aaaa"
 
-    if (escolhidos.length && musicas.length) {
-      escolhidos.forEach((memberId) => {
-        const st = getOrInit(memberId);
+if (escolhidos.length && musicas.length && dayKey) {
+  escolhidos.forEach((memberId) => {
+    const st = getOrInit(memberId);
 
-        musicas.forEach((mid) => {
-          const song = musicById.get(mid);
-          if (!song) return;
-
-          st.chosenSongsCount += 1;
-          st.chosenSongsSet.add(mid);
-
-          if (song.artista) st.chosenArtistsSet.add(song.artista);
-        });
-      });
+    // ✅ conta 1 vez por culto (dia)
+    if (!st.chosenDaysSet.has(dayKey)) {
+      st.chosenDaysSet.add(dayKey);
+      st.chosenDaysCount += 1;
     }
+
+    // mantém as métricas por MÚSICA (usadas em outros títulos)
+    musicas.forEach((mid) => {
+      st.chosenSongsCount += 1;
+      st.chosenSongsSet.add(mid);
+
+      const song = _MUSIC_BY_ID_LOCAL.get(mid);
+      if (song?.artista) st.chosenArtistsSet.add(song.artista);
+    });
+  });
+}
+
+
   });
 
   // derivações prontas
@@ -2229,6 +2240,14 @@ function rankByAscChosenOnly(statsMap, valueFn, topN = 5) {
     topN,
     (s) => (s.chosenSongsCount || 0) > 0
   );
+}
+
+function rankByChosenDaysOnly(statsMap, valueFn, topN = 5) {
+  return rankBy(statsMap, valueFn, topN, (s) => (s.chosenDaysCount || 0) > 0);
+}
+
+function rankByAscChosenDaysOnly(statsMap, valueFn, topN = 5) {
+  return rankByAsc(statsMap, valueFn, topN, (s) => (s.chosenDaysCount || 0) > 0);
 }
 
 function pct(v) {
