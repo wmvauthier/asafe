@@ -137,7 +137,7 @@ const TITLES = [
       "“Se a playlist tá boa, alguém sabe quem foi.” — Escolheu mais músicas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankBy(stats, (s) => s.chosenSongsCount);
+      return rankByChosenOnly(stats, (s) => s.chosenSongsCount);
     },
   },
   {
@@ -148,7 +148,7 @@ const TITLES = [
       "“Confia na galera e só aparece pra tocar.” — Escolheu menos músicas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankByAsc(stats, (s) => s.chosenSongsCount);
+      return rankByAscChosenOnly(stats, (s) => s.chosenSongsCount);
     },
   },
 
@@ -163,10 +163,9 @@ const TITLES = [
       "“Repetir? Só se for MUITO bom.” — Maior % de músicas diferentes dentre as escolhidas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankBy(stats, (s) => s.chosenSongsUniquePct).map((x) => ({
-        ...x,
-        value: pct(x.value),
-      }));
+      return rankByChosenOnly(stats, (s) => s.chosenSongsUniquePct).map(
+        (x) => ({ ...x, value: pct(x.value) })
+      );
     },
   },
   {
@@ -177,10 +176,9 @@ const TITLES = [
       "“Time que tá ganhando não se mexe.” — Menor % de músicas diferentes dentre as escolhidas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankByAsc(stats, (s) => s.chosenSongsUniquePct).map((x) => ({
-        ...x,
-        value: pct(x.value),
-      }));
+      return rankByAscChosenOnly(stats, (s) => s.chosenSongsUniquePct).map(
+        (x) => ({ ...x, value: pct(x.value) })
+      );
     },
   },
   {
@@ -191,10 +189,9 @@ const TITLES = [
       "“Sempre trazendo algo novo.” — Maior % de artistas diferentes dentre as escolhidas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankBy(stats, (s) => s.chosenArtistsUniquePct).map((x) => ({
-        ...x,
-        value: pct(x.value),
-      }));
+      return rankByChosenOnly(stats, (s) => s.chosenArtistsUniquePct).map(
+        (x) => ({ ...x, value: pct(x.value) })
+      );
     },
   },
   {
@@ -205,10 +202,9 @@ const TITLES = [
       "“Tem favoritos e não abre mão.” — Menor % de artistas diferentes dentre as escolhidas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankByAsc(stats, (s) => s.chosenArtistsUniquePct).map((x) => ({
-        ...x,
-        value: pct(x.value),
-      }));
+      return rankByAscChosenOnly(stats, (s) => s.chosenArtistsUniquePct).map(
+        (x) => ({ ...x, value: pct(x.value) })
+      );
     },
   },
 
@@ -1635,100 +1631,116 @@ function renderTitles() {
 
   const integrantes = INTEGRANTES_RAW;
 
-  // agrupar por categoria
-  const byCategory = {};
-  TITLES.forEach((t) => {
-    if (!byCategory[t.categoria]) byCategory[t.categoria] = [];
-    byCategory[t.categoria].push(t);
+  // ordem fixa de categorias (agrupamento lógico sem separar visualmente)
+  const CATEGORY_ORDER = [
+    "repertorio",
+    "diversidade",
+    "tecnica",
+    "curadoria",
+    "popularidade",
+    "banda",
+    "presenca",
+    "perfil",
+  ];
+  const catIndex = (c) => {
+    const i = CATEGORY_ORDER.indexOf(c);
+    return i === -1 ? 999 : i;
+  };
+
+  // mantém complementaridade pela ordem do array TITLES dentro da categoria
+  const sortedTitles = [...TITLES].sort((a, b) => {
+    const da = catIndex(a.categoria);
+    const db = catIndex(b.categoria);
+    if (da !== db) return da - db;
+    return 0; // estável: respeita ordem original do TITLES
   });
 
-  Object.entries(byCategory).forEach(([catKey, titles]) => {
-    const meta = TITLE_CATEGORIES[catKey] || { icon: "🏷️", label: "Outros" };
+  sortedTitles.forEach((title) => {
+    const rankingData =
+      typeof title.ranking === "function" ? title.ranking() : title.ranking;
 
-    // header da categoria
-    const header = document.createElement("div");
-    header.className = "titles-category-header";
-    header.textContent = `${meta.icon} ${meta.label}`;
-    grid.appendChild(header);
+    if (!Array.isArray(rankingData) || rankingData.length === 0) return;
 
-    titles.forEach((title) => {
-      const rankingData =
-        typeof title.ranking === "function" ? title.ranking() : title.ranking;
+    const winner = rankingData[0];
+    if (!winner || winner.memberId == null) return;
 
-      if (!Array.isArray(rankingData) || rankingData.length === 0) return;
+    const winnerMember = integrantes.find((i) => i.id === winner.memberId);
+    if (!winnerMember) return;
 
-      const winner = rankingData[0];
-      if (!winner) return;
+    const card = document.createElement("div");
+    card.className = "title-card";
 
-      const winnerMember = integrantes.find((i) => i.id === winner.memberId);
-      if (!winnerMember) return;
+    // THUMB
+    const thumb = document.createElement("div");
+    thumb.className = "title-thumb";
 
-      const card = document.createElement("div");
-      card.className = "title-card";
+    const img = document.createElement("img");
+    img.src = `integrantes/${slugify(winnerMember.nome)}.jpeg`;
+    img.onerror = () => (img.src = "integrantes/default.jpeg");
+    thumb.appendChild(img);
 
-      // THUMB
-      const thumb = document.createElement("div");
-      thumb.className = "title-thumb";
-      const img = document.createElement("img");
-      img.src = `integrantes/${slugify(winnerMember.nome)}.jpeg`;
-      img.onerror = () => (img.src = "integrantes/default.jpeg");
-      thumb.appendChild(img);
+    // BODY
+    const body = document.createElement("div");
+    body.className = "title-body";
 
-      // BODY
-      const body = document.createElement("div");
-      body.className = "title-body";
+    const name = document.createElement("div");
+    name.className = "title-name";
+    name.textContent = title.nome;
 
-      const name = document.createElement("div");
-      name.className = "title-name";
-      name.textContent = title.nome;
+    // categoria (badge dentro do card)
+    const catMeta = TITLE_CATEGORIES[title.categoria] || {
+      icon: "🏷️",
+      label: "Outros",
+    };
+    const cat = document.createElement("div");
+    cat.className = "title-category";
+    cat.textContent = `${catMeta.icon} ${catMeta.label}`;
 
-      const cat = document.createElement("div");
-      cat.className = "title-category";
-      cat.textContent = `${meta.icon} ${meta.label}`;
+    const desc = document.createElement("div");
+    desc.className = "title-description";
+    desc.textContent = title.descricao;
 
-      const desc = document.createElement("div");
-      desc.className = "title-description";
-      desc.textContent = title.descricao;
+    // RANKING
+    const ranking = document.createElement("div");
+    ranking.className = "title-ranking";
 
-      const ranking = document.createElement("div");
-      ranking.className = "title-ranking";
+    rankingData.slice(0, 5).forEach((r, idx) => {
+      const member = integrantes.find((i) => i.id === r.memberId);
+      if (!member) return;
 
-      rankingData.slice(0, 5).forEach((r, idx) => {
-        const member = integrantes.find((i) => i.id === r.memberId);
-        if (!member) return;
+      const item = document.createElement("div");
+      item.className = "title-ranking-item";
 
-        const item = document.createElement("div");
-        item.className = "title-ranking-item";
+      const medal = document.createElement("span");
+      medal.className = "title-ranking-medal";
+      if (idx === 0) medal.textContent = "🥇";
+      else if (idx === 1) medal.textContent = "🥈";
+      else if (idx === 2) medal.textContent = "🥉";
+      else medal.textContent = "";
 
-        const medal = document.createElement("span");
-        medal.className = "title-ranking-medal";
-        medal.textContent =
-          idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : "";
+      const pos = document.createElement("span");
+      pos.className = "pos";
+      pos.textContent = `#${idx + 1}`;
 
-        const pos = document.createElement("span");
-        pos.className = "pos";
-        pos.textContent = `#${idx + 1}`;
+      const nome = document.createElement("span");
+      nome.className = "name";
+      nome.textContent = member.nome;
 
-        const nome = document.createElement("span");
-        nome.className = "name";
-        nome.textContent = member.nome;
+      const valor = document.createElement("span");
+      valor.className = "value";
+      valor.textContent = `${r.value}`;
 
-        const valor = document.createElement("span");
-        valor.className = "value";
-        valor.textContent = r.value;
+      if (idx === 0) pos.style.color = "#facc15";
+      if (idx === 1) pos.style.color = "#e5e7eb";
+      if (idx === 2) pos.style.color = "#f59e0b";
 
-        if (idx === 0) pos.style.color = "#facc15";
-        if (idx === 1) pos.style.color = "#e5e7eb";
-        if (idx === 2) pos.style.color = "#f59e0b";
-
-        item.append(medal, pos, nome, valor);
-        ranking.appendChild(item);
-      });
-
-      body.append(name, cat, desc, ranking);
-      card.append(thumb, body);
-      grid.appendChild(card);
+      item.append(medal, pos, nome, valor);
+      ranking.appendChild(item);
     });
+
+    body.append(name, cat, desc, ranking);
+    card.append(thumb, body);
+    grid.appendChild(card);
   });
 }
 
@@ -2027,7 +2039,6 @@ function computeMemberStats(events) {
         });
       });
     }
-    
   });
 
   // derivações prontas
@@ -2151,6 +2162,19 @@ function rankByAsc(statsMap, valueFn, topN = 5, filterFn = null) {
   });
   arr.sort((a, b) => a.value - b.value);
   return arr.slice(0, topN);
+}
+
+function rankByChosenOnly(statsMap, valueFn, topN = 5) {
+  return rankBy(statsMap, valueFn, topN, (s) => (s.chosenSongsCount || 0) > 0);
+}
+
+function rankByAscChosenOnly(statsMap, valueFn, topN = 5) {
+  return rankByAsc(
+    statsMap,
+    valueFn,
+    topN,
+    (s) => (s.chosenSongsCount || 0) > 0
+  );
 }
 
 function pct(v) {
