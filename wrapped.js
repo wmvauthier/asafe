@@ -1797,28 +1797,52 @@ function parseEventDate(ev) {
 
 // ---- Util: pegar arrays com fallback
 function getEventMusicas(ev) {
-  return Array.isArray(ev?.musicas)
-    ? ev.musicas
-    : Array.isArray(ev?.repertorio)
-    ? ev.repertorio
-    : [];
-}
-function getEventIntegrantes(ev) {
-  return Array.isArray(ev?.integrantes)
-    ? ev.integrantes
-    : Array.isArray(ev?.membros)
-    ? ev.membros
-    : [];
+  if (!ev || !Array.isArray(ev.musicas)) return [];
+
+  return ev.musicas
+    .map((id) => Number(id))
+    .filter((id) => Number.isFinite(id));
 }
 
-// ---- Mapa rápido
-function buildMusicById() {
-  if (typeof MUSIC_BY_ID !== "undefined" && MUSIC_BY_ID?.get)
-    return MUSIC_BY_ID;
-  const m = new Map();
-  (MUSICAS_RAW || []).forEach((x) => m.set(x.id, x));
-  return m;
+
+function getEventIntegrantes(ev) {
+  if (!ev) return [];
+
+  // formato oficial
+  if (Array.isArray(ev.integrantes)) {
+    return ev.integrantes.filter(Number.isFinite);
+  }
+
+  // fallbacks defensivos
+  if (Array.isArray(ev.integrantesIds)) {
+    return ev.integrantesIds.filter(Number.isFinite);
+  }
+
+  if (Array.isArray(ev.membros)) {
+    return ev.membros.filter(Number.isFinite);
+  }
+
+  return [];
 }
+
+
+function buildMusicById() {
+  // Se já existe um Map populado, usa ele.
+  if (MUSIC_BY_ID instanceof Map && MUSIC_BY_ID.size > 0) {
+    return MUSIC_BY_ID;
+  }
+
+  // Senão, tenta construir a partir do array cru (quando já estiver carregado)
+  const arr = Array.isArray(MUSICAS_RAW) ? MUSICAS_RAW : [];
+  const mp = new Map();
+  for (const s of arr) {
+    if (!s) continue;
+    const id = Number(s.id);
+    if (Number.isFinite(id)) mp.set(id, s);
+  }
+  return mp;
+}
+
 const _MUSIC_BY_ID_LOCAL = buildMusicById();
 
 // ---- Categorias da música (robusto)
@@ -1931,17 +1955,38 @@ function buildExecCountMap(events) {
 
 // ---- Métricas por integrante
 function computeMemberStats(events) {
-  const totalCatalogSongs = (MUSICAS_RAW || []).length || 1;
+  // garante que o map de músicas está OK (carregado / reconstruído)
+  const musicById = buildMusicById();
+
+  // total de músicas DIFERENTES que já foram tocadas no histórico
+  const touchedSongsSet = new Set();
+  (events || []).forEach((ev) => {
+    const mids = getEventMusicas(ev);
+    mids.forEach((mid) => {
+      const n = Number(mid);
+      if (Number.isFinite(n)) touchedSongsSet.add(n);
+    });
+  });
+
+const totalRepertorioSongs = Array.isArray(MUSICAS_RAW)
+  ? MUSICAS_RAW.length
+  : 0;
 
   const memberById = new Map();
-  (INTEGRANTES_RAW || []).forEach((m) => memberById.set(m.id, m));
+  (INTEGRANTES_RAW || []).forEach((m) => memberById.set(Number(m.id), m));
 
   const stats = new Map(); // id -> stat object
 
+  // garante que TODO mundo existe no Map, mesmo quem tocou 0 vezes
+  (INTEGRANTES_RAW || []).forEach((m) => {
+    getOrInit(Number(m.id));
+  });
+
   function getOrInit(mid) {
-    if (!stats.has(mid)) {
-      stats.set(mid, {
-        memberId: mid,
+    const id = Number(mid);
+    if (!stats.has(id)) {
+      stats.set(id, {
+        memberId: id,
         cultos: 0,
         songsSet: new Set(),
         artistsSet: new Set(),
@@ -1958,13 +2003,13 @@ function computeMemberStats(events) {
         chosenArtistsSet: new Set(),
       });
     }
-    return stats.get(mid);
+    return stats.get(id);
   }
 
   // Pré-process: para parcerias, precisamos do elenco do culto
   (events || []).forEach((ev) => {
-    const integrantes = getEventIntegrantes(ev);
-    const musicas = getEventMusicas(ev);
+    const integrantes = (getEventIntegrantes(ev) || []).map((x) => Number(x)).filter(Number.isFinite);
+    const musicas = (getEventMusicas(ev) || []).map((x) => Number(x)).filter(Number.isFinite);
 
     // culto count
     integrantes.forEach((iid) => {
@@ -1986,10 +2031,12 @@ function computeMemberStats(events) {
       const instrument = getPrimaryInstrument(member);
 
       for (const mid of musicas) {
-        const song = _MUSIC_BY_ID_LOCAL.get(mid);
+        const song = musicById.get(mid);
         if (!song) continue;
 
+        // ✅ agora soma repertório corretamente
         st.songsSet.add(mid);
+
         if (song.artista) st.artistsSet.add(song.artista);
 
         const cats = normalizeCategoriasField(song);
@@ -2016,26 +2063,23 @@ function computeMemberStats(events) {
       }
     });
 
-    // choices (muitos formatos possíveis)
-    // suportes:
-    // ev.escolhas: [{ memberId, musicId }] / [{ integranteId, musicaId }]
-    // ev.escolhidas: [{ membro, musica }] / [{ integrante, musica }]
-    // ev.choosers: { musicId: memberId } ou { musicId: [memberId,...] }
     // =========================================================
     // ESCOLHAS — via "header" (array de IDs)
     // =========================================================
-    const escolhidos = Array.isArray(ev?.header) ? ev.header : [];
+    const escolhidos = Array.isArray(ev?.header) ? ev.header.map(Number).filter(Number.isFinite) : [];
 
     if (escolhidos.length && musicas.length) {
       escolhidos.forEach((memberId) => {
         const st = getOrInit(memberId);
 
         musicas.forEach((mid) => {
+          const song = musicById.get(mid);
+          if (!song) return;
+
           st.chosenSongsCount += 1;
           st.chosenSongsSet.add(mid);
 
-          const song = _MUSIC_BY_ID_LOCAL.get(mid);
-          if (song?.artista) st.chosenArtistsSet.add(song.artista);
+          if (song.artista) st.chosenArtistsSet.add(song.artista);
         });
       });
     }
@@ -2043,7 +2087,15 @@ function computeMemberStats(events) {
 
   // derivações prontas
   stats.forEach((st) => {
-    st.repertorioPct = st.songsSet.size / totalCatalogSongs || 0;
+    const touched = st.songsSet.size;
+    const denom = totalRepertorioSongs;
+
+    // ✅ MÉTRICA DE REPERTÓRIO (CORRETA):
+    // músicas que tocou / músicas diferentes já tocadas no histórico
+    st.repertorioPct = denom > 0 ? touched / denom : 0;
+    st.repertorioTouchedCount = touched;
+    st.repertorioTotal = denom;
+
     st.artistsCount = st.artistsSet.size;
 
     st.diffPct = {
@@ -2061,6 +2113,7 @@ function computeMemberStats(events) {
     st.chosenSongsUniquePct = st.chosenSongsCount
       ? st.chosenSongsSet.size / st.chosenSongsCount
       : 0;
+
     st.chosenArtistsUniquePct = st.chosenSongsCount
       ? st.chosenArtistsSet.size / st.chosenSongsCount
       : 0;
@@ -2070,6 +2123,7 @@ function computeMemberStats(events) {
     // Specialist / Versatile via categorias (nas músicas tocadas)
     const totalCats =
       Array.from(st.categoriesCount.values()).reduce((a, b) => a + b, 0) || 0;
+
     let maxShare = 0;
     if (totalCats) {
       st.categoriesCount.forEach((cnt) => {
