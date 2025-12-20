@@ -2016,8 +2016,8 @@ function classificarNiveisDePopularidade(musicas) {
     const perc = index / total;
 
     let nivel;
-    if (perc <= 0.25) nivel = "classic";
-    else if (perc <= 0.75) nivel = "common";
+    if (perc <= 0.15) nivel = "classic";
+    else if (perc <= 0.60) nivel = "common";
     else nivel = "rare";
 
     mapa[item.id] = {

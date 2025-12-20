@@ -127,12 +127,12 @@
         "categorias": "Engrandecimento e Exaltação; Confiança e Esperança; Adoração Congregacional",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
+            "vocal": "easy",
             "guitarra": "easy",
             "baixo": "easy",
             "violao": "",
             "bateria": "easy",
-            "teclado": "easy",
+            "teclado": "medium",
             "sax": ""
         }
     },
@@ -1120,7 +1120,7 @@
         "categorias": "Morte e Ressurreição",
         "versiculos": "",
         "level": {
-            "vocal": "hard",
+            "vocal": "medium",
             "guitarra": "hard",
             "baixo": "medium",
             "violao": "",
@@ -1307,7 +1307,7 @@
         "categorias": "Glória de Deus; Intimidade com Deus; Adoração Congregacional",
         "versiculos": "",
         "level": {
-            "vocal": "hard",
+            "vocal": "medium",
             "guitarra": "hard",
             "baixo": "medium",
             "violao": "",
@@ -1358,7 +1358,7 @@
         "categorias": "Engrandecimento e Exaltação; Glória de Deus",
         "versiculos": "",
         "level": {
-            "vocal": "hard",
+            "vocal": "medium",
             "guitarra": "hard",
             "baixo": "hard",
             "violao": "",
@@ -1481,7 +1481,7 @@
             "guitarra": "easy",
             "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
+            "bateria": "easy",
             "teclado": "medium",
             "sax": ""
         }
@@ -1545,7 +1545,7 @@
         "categorias": "Engrandecimento e Exaltação; Intimidade com Deus",
         "versiculos": "",
         "level": {
-            "vocal": "hard",
+            "vocal": "medium",
             "guitarra": "medium",
             "baixo": "easy",
             "violao": "",
