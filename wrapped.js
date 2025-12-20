@@ -42,9 +42,9 @@ const TITLES = [
   {
     id: "participacao-especial-repertorio",
     categoria: "repertorio",
-    nome: "Feat Raro",
+    nome: "Diamante Bruto",
     descricao:
-      "“Chega, participa e já vira destaque.” — Menor (%) do repertório tocado.",
+      "“Os que ainda estão sendo trabalhados à perfeição.” — Menor (%) do repertório tocado.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
       return rankByAsc(stats, (s) => s.repertorioPct).map((x) => ({
@@ -132,9 +132,9 @@ const TITLES = [
   {
     id: "anti-repeticao",
     categoria: "diversidade",
-    nome: "Anti-Repetição",
+    nome: "Replay OFF",
     descricao:
-      "“Repetir? Só se for MUITO bom.” — Maior (%) de músicas diferentes dentre as escolhidas.",
+      "Replay? Só se for MUITO bom.” — Maior (%) de músicas diferentes dentre as escolhidas.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
       return rankByChosenOnly(stats, (s) => s.chosenSongsUniquePct).map(
@@ -145,7 +145,7 @@ const TITLES = [
   {
     id: "classicos-nunca-morrem",
     categoria: "diversidade",
-    nome: "Clássicos Nunca Morrem",
+    nome: "Replay ON",
     descricao:
       "“Time que tá ganhando não se mexe.” — Menor % de músicas diferentes dentre as escolhidas.",
     ranking: () => {
@@ -157,8 +157,41 @@ const TITLES = [
   },
 
   {
+  id: "pioneiro-do-repertorio",
+  categoria: "curadoria",
+  nome: "Pioneiro do Repertório",
+  descricao:
+    "“Alguém tinha que cantar primeiro.” — Aquele que, por mais vezes, escolheu primeiro uma música nova no repertório.",
+  ranking: () => {
+    const stats = computeMemberStats(HISTORICO);
+    return rankBy(
+      stats,
+      (s) => s.inauguratedSongsCount,
+      5,
+      (s) => s.inauguratedSongsCount > 0
+    );
+  },
+},
+{
+  id: "chega-depois",
+  categoria: "curadoria",
+  nome: "Chega Depois",
+  descricao:
+    "“Prefere quando já tá todo mundo cantando.” — Aquele que, por menos vezes, escolheu primeiro uma música nova no repertório.",
+  ranking: () => {
+    const stats = computeMemberStats(HISTORICO);
+    return rankByAsc(
+      stats,
+      (s) => s.inauguratedSongsCount,
+      5,
+      (s) => s.inauguratedSongsCount > 0
+    );
+  },
+},
+
+  {
     id: "curador-ecletico",
-    categoria: "curadoria",
+    categoria: "diversidade",
     nome: "Curador Eclético",
     descricao:
       "“Uma hora é Rock, outra hora é Pop.” — Maior (%) de artistas diferentes escolhidos dentre os disponíveis no repertório.",
@@ -177,7 +210,7 @@ const TITLES = [
   },
   {
     id: "sempre-os-mesmos",
-    categoria: "curadoria",
+    categoria: "diversidade",
     nome: "Sempre os Mesmos",
     descricao:
       "“Achou os artistas favoritos e nunca mais largou.” — Menor (%) de artistas diferentes escolhidos dentre os disponíveis no repertório.",
@@ -312,55 +345,7 @@ const TITLES = [
   // =======================
   // CURADORIA (INTENÇÃO) — enxuto (4 títulos)
   // =======================
-  {
-    id: "aposta-arriscada",
-    categoria: "curadoria",
-    nome: "Aposta Arriscada",
-    descricao:
-      "“Nem sempre dá certo… mas quando dá!” — Maior (%) de músicas incomuns entre as escolhidas.",
-    ranking: () => {
-      const stats = computeMemberStats(HISTORICO);
-      // percentual de incomuns dentro das escolhidas
-      const pop = computePopularidadeCatalog?.();
-      const arr = [];
-      stats.forEach((s) => {
-        const total = s.chosenSongsCount || 0;
-        if (!total) return;
-        let rare = 0;
-        s.chosenSongsSet.forEach((mid) => {
-          const tier = pop?.get ? pop.get(mid)?.tier || "common" : "common";
-          if (tier === "secret") rare += 1;
-        });
-        arr.push({ memberId: s.memberId, value: rare / total });
-      });
-      arr.sort((a, b) => b.value - a.value);
-      return arr.slice(0, 5).map((x) => ({ ...x, value: pct(x.value) }));
-    },
-  },
-  {
-    id: "jogando-seguro",
-    categoria: "curadoria",
-    nome: "Jogando Seguro",
-    descricao:
-      "“Prefere garantir que todo mundo cante.” — Menor (%) de músicas incomuns entre as escolhidas.",
-    ranking: () => {
-      const stats = computeMemberStats(HISTORICO);
-      const pop = computePopularidadeCatalog?.();
-      const arr = [];
-      stats.forEach((s) => {
-        const total = s.chosenSongsCount || 0;
-        if (!total) return;
-        let rare = 0;
-        s.chosenSongsSet.forEach((mid) => {
-          const tier = pop?.get ? pop.get(mid)?.tier || "common" : "common";
-          if (tier === "secret") rare += 1;
-        });
-        arr.push({ memberId: s.memberId, value: rare / total });
-      });
-      arr.sort((a, b) => a.value - b.value);
-      return arr.slice(0, 5).map((x) => ({ ...x, value: pct(x.value) }));
-    },
-  },
+
   {
     id: "guardiao-da-tradicao",
     categoria: "curadoria",
@@ -459,6 +444,56 @@ const TITLES = [
     },
   },
 
+    {
+    id: "aposta-arriscada",
+    categoria: "curadoria",
+    nome: "Aposta Arriscada",
+    descricao:
+      "“Nem sempre dá certo… mas quando dá!” — Maior (%) de músicas incomuns entre as escolhidas.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      // percentual de incomuns dentro das escolhidas
+      const pop = computePopularidadeCatalog?.();
+      const arr = [];
+      stats.forEach((s) => {
+        const total = s.chosenSongsCount || 0;
+        if (!total) return;
+        let rare = 0;
+        s.chosenSongsSet.forEach((mid) => {
+          const tier = pop?.get ? pop.get(mid)?.tier || "common" : "common";
+          if (tier === "secret") rare += 1;
+        });
+        arr.push({ memberId: s.memberId, value: rare / total });
+      });
+      arr.sort((a, b) => b.value - a.value);
+      return arr.slice(0, 5).map((x) => ({ ...x, value: pct(x.value) }));
+    },
+  },
+  {
+    id: "jogando-seguro",
+    categoria: "curadoria",
+    nome: "Jogando Seguro",
+    descricao:
+      "“Prefere garantir que todo mundo cante.” — Menor (%) de músicas incomuns entre as escolhidas.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      const pop = computePopularidadeCatalog?.();
+      const arr = [];
+      stats.forEach((s) => {
+        const total = s.chosenSongsCount || 0;
+        if (!total) return;
+        let rare = 0;
+        s.chosenSongsSet.forEach((mid) => {
+          const tier = pop?.get ? pop.get(mid)?.tier || "common" : "common";
+          if (tier === "secret") rare += 1;
+        });
+        arr.push({ memberId: s.memberId, value: rare / total });
+      });
+      arr.sort((a, b) => a.value - b.value);
+      return arr.slice(0, 5).map((x) => ({ ...x, value: pct(x.value) }));
+    },
+  },
+
   // =======================
   // PRESENÇA
   // =======================
@@ -476,7 +511,7 @@ const TITLES = [
   {
     id: "aparicao-especial",
     categoria: "presenca",
-    nome: "Aparição Especial",
+    nome: "Visita Ilustre",
     descricao:
       "“Poucas aparições, mas memoráveis.” — São os que tocam na menor quantidade de cultos.",
     ranking: () => {
@@ -658,7 +693,7 @@ function computePopularidadeCatalog() {
 
   const n = ranked.length || 1;
   const topCut = Math.max(1, Math.ceil(n * 0.15));
-  const midCut = Math.max(topCut + 1, Math.ceil(n * 0.60));
+  const midCut = Math.max(topCut + 1, Math.ceil(n * 0.6));
 
   const out = new Map();
   ranked.forEach(([mid], idx) => {
@@ -1637,7 +1672,7 @@ function classificarPopularidadeWrapped(musicas, historico) {
 
     let nivel;
     if (perc <= 0.15) nivel = "classic";
-    else if (perc <= 0.60) nivel = "common";
+    else if (perc <= 0.6) nivel = "common";
     else nivel = "rare";
 
     mapa[item.id] = {
@@ -1675,9 +1710,24 @@ function renderTitles() {
   if (!grid) return;
   grid.innerHTML = "";
 
-  const integrantes = INTEGRANTES_RAW;
+  // stats completos (não mexemos no compute)
+  const stats = computeMemberStats(HISTORICO);
 
-  // ordem fixa de categorias (agrupamento lógico sem separar visualmente)
+  // =========================
+  // REGRA: só entra em títulos quem tem 7+ cultos
+  // =========================
+  const eligibleIds = new Set(
+    Array.from(stats.values())
+      .filter((s) => s.cultos >= 7)
+      .map((s) => s.memberId)
+  );
+
+  // integrantes elegíveis para títulos
+  const integrantes = INTEGRANTES_RAW.filter((i) =>
+    eligibleIds.has(i.id)
+  );
+
+  // ordem fixa de categorias (agrupamento lógico)
   const CATEGORY_ORDER = [
     "presenca",
     "banda",
@@ -1688,29 +1738,40 @@ function renderTitles() {
     "curadoria",
     "popularidade",
   ];
+
   const catIndex = (c) => {
     const i = CATEGORY_ORDER.indexOf(c);
     return i === -1 ? 999 : i;
   };
 
-  // mantém complementaridade pela ordem do array TITLES dentro da categoria
   const sortedTitles = [...TITLES].sort((a, b) => {
     const da = catIndex(a.categoria);
     const db = catIndex(b.categoria);
     if (da !== db) return da - db;
-    return 0; // estável: respeita ordem original do TITLES
+    return 0;
   });
 
   sortedTitles.forEach((title) => {
     const rankingData =
-      typeof title.ranking === "function" ? title.ranking() : title.ranking;
+      typeof title.ranking === "function"
+        ? title.ranking()
+        : title.ranking;
 
-    if (!Array.isArray(rankingData) || rankingData.length === 0) return;
+    if (!Array.isArray(rankingData)) return;
 
-    const winner = rankingData[0];
+    // 🔽 filtra ranking para só integrantes elegíveis
+    const filteredRanking = rankingData.filter((r) =>
+      eligibleIds.has(r.memberId)
+    );
+
+    if (filteredRanking.length === 0) return;
+
+    const winner = filteredRanking[0];
     if (!winner || winner.memberId == null) return;
 
-    const winnerMember = integrantes.find((i) => i.id === winner.memberId);
+    const winnerMember = integrantes.find(
+      (i) => i.id === winner.memberId
+    );
     if (!winnerMember) return;
 
     const card = document.createElement("div");
@@ -1721,7 +1782,7 @@ function renderTitles() {
     thumb.className = "title-thumb";
 
     const img = document.createElement("img");
-    img.src = `integrantes/${slugify(winnerMember.nome)}.jpeg`;
+    img.src = `integrantes/${winnerMember.nome.toLowerCase()}.jpeg`;
     img.onerror = () => (img.src = "integrantes/default.jpeg");
     thumb.appendChild(img);
 
@@ -1733,11 +1794,11 @@ function renderTitles() {
     name.className = "title-name";
     name.textContent = title.nome;
 
-    // categoria (badge dentro do card)
     const catMeta = TITLE_CATEGORIES[title.categoria] || {
       icon: "🏷️",
       label: "Outros",
     };
+
     const cat = document.createElement("div");
     cat.className = "title-category";
     cat.textContent = `${catMeta.icon} ${catMeta.label}`;
@@ -1750,7 +1811,7 @@ function renderTitles() {
     const ranking = document.createElement("div");
     ranking.className = "title-ranking";
 
-    rankingData.slice(0, 5).forEach((r, idx) => {
+    filteredRanking.slice(0, 5).forEach((r, idx) => {
       const member = integrantes.find((i) => i.id === r.memberId);
       if (!member) return;
 
@@ -1762,7 +1823,6 @@ function renderTitles() {
       if (idx === 0) medal.textContent = "🥇";
       else if (idx === 1) medal.textContent = "🥈";
       else if (idx === 2) medal.textContent = "🥉";
-      else medal.textContent = "";
 
       const pos = document.createElement("span");
       pos.className = "pos";
@@ -2005,6 +2065,19 @@ function buildExecCountMap(events) {
 
 // ---- Métricas por integrante
 function computeMemberStats(events) {
+
+  const firstAppearanceBySong = new Map();
+
+// percorre o histórico em ordem cronológica
+(events || []).forEach((ev, index) => {
+  const musicas = getEventMusicas(ev);
+  musicas.forEach((mid) => {
+    if (!firstAppearanceBySong.has(mid)) {
+      firstAppearanceBySong.set(mid, index);
+    }
+  });
+});
+
   const totalArtistsSet = new Set();
   (MUSICAS_RAW || []).forEach((s) => {
     if (s?.artista) totalArtistsSet.add(s.artista);
@@ -2064,6 +2137,10 @@ function computeMemberStats(events) {
 
         formationsSet: new Set(), // todas as formações que ele já tocou
         formationsCount: 0,
+
+        inauguratedSongsSet: new Set(),
+inauguratedSongsCount: 0,
+
       });
     }
     return stats.get(id);
@@ -2185,6 +2262,19 @@ function computeMemberStats(events) {
         });
       });
     }
+
+    const eventIndex = events.indexOf(ev);
+
+escolhidos.forEach((memberId) => {
+  const st = getOrInit(memberId);
+
+  getEventMusicas(ev).forEach((mid) => {
+    if (firstAppearanceBySong.get(mid) === eventIndex) {
+      st.inauguratedSongsSet.add(mid);
+    }
+  });
+});
+
   });
 
   // derivações prontas
@@ -2254,6 +2344,9 @@ function computeMemberStats(events) {
       totalCatalogArtists > 0
         ? st.chosenArtistsCatalogCount / totalCatalogArtists
         : 0;
+
+        st.inauguratedSongsCount = st.inauguratedSongsSet.size;
+
   });
 
   return stats;
