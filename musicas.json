@@ -1067,15 +1067,14 @@
         "categorias": "Confiança e Esperança",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
+            "vocal": "easy",
             "guitarra": "medium",
             "baixo": "hard",
             "violao": "",
-            "bateria": "hard",
-            "teclado": "easy",
+            "bateria": "medium",
+            "teclado": "medium",
             "sax": ""
-        },
-        "ban": true
+        }
     },
     {
         "id": 64,

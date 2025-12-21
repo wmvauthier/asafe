@@ -2002,7 +2002,7 @@ function classificarNiveisDePopularidade(musicas) {
 
   const getCats = (m) => {
     if (!m?.categorias) return [];
-    return m.categorias
+    return m.categorias.toString().replaceAll(',',';')
       .split(";")
       .map((c) => c.trim())
       .filter(Boolean);
