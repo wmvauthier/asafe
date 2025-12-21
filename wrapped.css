@@ -1118,3 +1118,88 @@ body {
   font-size: 0.9rem;
   opacity: 0.85;
 }
+
+/* ===== MEMBER HEADER — SPOTIFY STYLE ===== */
+
+.member-header-main {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.member-header-text h2 {
+  font-size: 1.6rem;
+  margin: 0;
+}
+
+.member-summary-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  background: none;
+  font-size: 0.95em;
+  opacity: 0.9;
+}
+
+.chip-ico {
+  font-size: 1.1em;
+}
+
+/* ===== MINI WRAPPED BLOCK ===== */
+
+.member-miniwrap {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.miniwrap-block {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.02)
+  );
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.miniwrap-title {
+  font-size: 0.75em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 8px;
+}
+
+.miniwrap-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.95em;
+}
+
+.miniwrap-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mini-ico {
+  font-size: 1.05em;
+}
+
+/* Mobile */
+@media (max-width: 900px) {
+  .member-miniwrap {
+    grid-template-columns: 1fr;
+  }
+}

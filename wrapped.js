@@ -1342,6 +1342,22 @@ function renderMemberSection(events) {
     return;
   }
 
+    // Puxa métricas "do wrapped" (dificuldade, popularidade, repetição, curadoria, etc.)
+  const statsMap = computeMemberStats(events);
+  const st = statsMap.get(memberId);
+
+  // helpers rápidos
+  const fmtPct = (v) => `${Math.round((v || 0) * 100)}%`;
+  const safePct100 = (n, d) => (d ? Math.round((n / d) * 100) : 0);
+
+  const diffPct = st?.diffPct || { easy: 0, medium: 0, hard: 0 };
+  const popPct = st?.popPct || { classic: 0, common: 0, rare: 0 };
+
+  const hasCuradoria = (st?.chosenDaysCount || 0) > 0;
+  const repeticaoPct = hasCuradoria ? Math.round((1 - (st.chosenSongsUniquePct || 0)) * 100) : 0;
+
+  const dc = insights.difficultyCounts; // (contagens absolutas já existentes)
+
   const header = document.createElement("div");
   header.className = "member-header card";
   const imgSrc = integranteImg(insights.member);
@@ -1356,40 +1372,87 @@ function renderMemberSection(events) {
   const artDiff = insights.uniqueArtistsCount;
   const artDiffPct = insights.uniqueArtistsPercent;
 
-  const dc = insights.difficultyCounts;
-
   header.innerHTML = `
     <div class="member-header-main">
       <div class="avatar avatar-lg">
         <img src="${imgSrc}" alt="${insights.member.nome}" onerror="this.style.visibility='hidden';" />
       </div>
+
       <div class="member-header-text">
         <h2>${insights.member.nome}</h2>
-        <div class="member-badges">
-          <div class="member-badge member-badge-musicas">
-            <span class="member-badge-icon">🥁</span>
+
+        <div class="member-summary-chips">
+          <div class="chip">
+            <span class="chip-ico">🥁</span>
             <span>${funcao}</span>
           </div>
-          <div class="member-badge member-badge-musicas">
-            <span class="member-badge-icon">📅</span>
-            <span>${cultos} cultos (${perc}% do período)</span>
+
+          <div class="chip">
+            <span class="chip-ico">📅</span>
+            <span>${cultos} cultos • ${perc}%</span>
           </div>
-          <div class="member-badge member-badge-musicas">
-            <span class="member-badge-icon">🎵</span>
-            <span>${execs} músicas tocadas ( ​​🟢​ ${dc.easy} fáceis / 🟡 ${dc.medium} medianas / 🔴​${dc.hard} difíceis )</span>
+
+          <div class="chip">
+            <span class="chip-ico">🎵</span>
+            <span>${execs} execuções</span>
           </div>
-          <div class="member-badge member-badge-musicas">
-            <span class="member-badge-icon">🎼</span>
-            <span>${musDiff} músicas diferentes (${musDiffPct}% do repertório)</span>
-          </div>
-          <div class="member-badge member-badge-musicas">
-            <span class="member-badge-icon">👥</span>
-            <span>${artDiff} artistas diferentes (${artDiffPct}% do total)</span>
+
+          <div class="chip">
+            <span class="chip-ico">🎼</span>
+            <span>${musDiff} únicas • ${musDiffPct}% do catálogo</span>
           </div>
         </div>
+
+        <div class="member-miniwrap">
+          <div class="miniwrap-block">
+            <div class="miniwrap-title">🎸 Dificuldade</div>
+            <div class="miniwrap-row">
+              <span class="mini-ico">🟢</span><span>${fmtPct(diffPct.easy)}</span>
+              <span class="mini-ico">🟡</span><span>${fmtPct(diffPct.medium)}</span>
+              <span class="mini-ico">🔴</span><span>${fmtPct(diffPct.hard)}</span>
+            </div>
+          </div>
+
+          <div class="miniwrap-block">
+            <div class="miniwrap-title">📊 Popularidade</div>
+            <div class="miniwrap-row">
+              <span class="mini-ico">🏆</span><span>${fmtPct(popPct.classic)}</span>
+              <span class="mini-ico">🎧</span><span>${fmtPct(popPct.common)}</span>
+              <span class="mini-ico">🕵️</span><span>${fmtPct(popPct.rare)}</span>
+            </div>
+          </div>
+
+          ${
+            hasCuradoria
+              ? `
+          <div class="miniwrap-block">
+            <div class="miniwrap-title">🎚️ Curadoria</div>
+            <div class="miniwrap-row">
+              <span class="mini-ico">🗓️</span><span>${st.chosenDaysCount} dias</span>
+              <span class="mini-ico">🎯</span><span>${st.chosenSongsSet.size} únicas</span>
+              <span class="mini-ico">🔁</span><span>${repeticaoPct}% repetição</span>
+            </div>
+          </div>
+          `
+              : `
+          <div class="miniwrap-block">
+            <div class="miniwrap-title">🎚️ Curadoria</div>
+            <div class="miniwrap-row">
+              <span class="muted">Sem escolhas de repertório no período</span>
+            </div>
+          </div>
+          `
+          }
+        </div>
+
+        <div class="member-header-footnote muted">
+          🎵 ${dc.easy} fáceis • ${dc.medium} médias • ${dc.hard} difíceis
+        </div>
+
       </div>
     </div>
   `;
+  
   root.appendChild(header);
 
   const grid = document.createElement("div");
