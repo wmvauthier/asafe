@@ -2000,16 +2000,43 @@ function getNivelPopularidadeMusica(idMusica) {
 function classificarNiveisDePopularidade(musicas) {
   if (!Array.isArray(musicas) || !musicas.length) return {};
 
-  // cria lista com execuções
+  const getCats = (m) => {
+    if (!m?.categorias) return [];
+    return m.categorias
+      .split(";")
+      .map((c) => c.trim())
+      .filter(Boolean);
+  };
+
+  // 1) Base
   const lista = musicas.map((m) => ({
     id: m.id,
     exec: getTotalExecucoes(m.id),
+    titulo: m.titulo || "",
+    cats: getCats(m),
   }));
 
-  // ordena por execuções (desc)
-  lista.sort((a, b) => b.exec - a.exec);
+  // 2) Popularidade das categorias (via execuções das músicas)
+  const catCount = new Map();
+  lista.forEach((item) => {
+    item.cats.forEach((c) => {
+      catCount.set(c, (catCount.get(c) || 0) + item.exec);
+    });
+  });
 
-  const total = lista.length;
+  // 3) Score por música
+  lista.forEach((item) => {
+    item.catScore = item.cats.reduce((s, c) => s + (catCount.get(c) || 0), 0);
+  });
+
+  // 4) Ordenação
+  lista.sort((a, b) => {
+    if (b.exec !== a.exec) return b.exec - a.exec;
+    if (b.catScore !== a.catScore) return b.catScore - a.catScore;
+    return a.titulo.localeCompare(b.titulo);
+  });
+
+  const total = lista.length || 1;
   const mapa = {};
 
   lista.forEach((item, index) => {
@@ -2017,7 +2044,7 @@ function classificarNiveisDePopularidade(musicas) {
 
     let nivel;
     if (perc <= 0.15) nivel = "classic";
-    else if (perc <= 0.60) nivel = "common";
+    else if (perc <= 0.6) nivel = "common";
     else nivel = "rare";
 
     mapa[item.id] = {

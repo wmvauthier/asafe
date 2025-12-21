@@ -157,37 +157,37 @@ const TITLES = [
   },
 
   {
-  id: "pioneiro-do-repertorio",
-  categoria: "curadoria",
-  nome: "Pioneiro do Repertório",
-  descricao:
-    "“Alguém tinha que cantar primeiro.” — Aquele que, por mais vezes, escolheu primeiro uma música nova no repertório.",
-  ranking: () => {
-    const stats = computeMemberStats(HISTORICO);
-    return rankBy(
-      stats,
-      (s) => s.inauguratedSongsCount,
-      5,
-      (s) => s.inauguratedSongsCount > 0
-    );
+    id: "pioneiro-do-repertorio",
+    categoria: "curadoria",
+    nome: "Pioneiro do Repertório",
+    descricao:
+      "“Alguém tinha que cantar primeiro.” — Aquele que, por mais vezes, escolheu primeiro uma música nova no repertório.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(
+        stats,
+        (s) => s.inauguratedSongsCount,
+        10,
+        (s) => s.inauguratedSongsCount > 0
+      );
+    },
   },
-},
-{
-  id: "chega-depois",
-  categoria: "curadoria",
-  nome: "Chega Depois",
-  descricao:
-    "“Prefere quando já tá todo mundo cantando.” — Aquele que, por menos vezes, escolheu primeiro uma música nova no repertório.",
-  ranking: () => {
-    const stats = computeMemberStats(HISTORICO);
-    return rankByAsc(
-      stats,
-      (s) => s.inauguratedSongsCount,
-      5,
-      (s) => s.inauguratedSongsCount > 0
-    );
+  {
+    id: "chega-depois",
+    categoria: "curadoria",
+    nome: "Chega Depois",
+    descricao:
+      "“Prefere quando já tá todo mundo cantando.” — Aquele que, por menos vezes, escolheu primeiro uma música nova no repertório.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankByAsc(
+        stats,
+        (s) => s.inauguratedSongsCount,
+        10,
+        (s) => s.inauguratedSongsCount > 0
+      );
+    },
   },
-},
 
   {
     id: "curador-ecletico",
@@ -200,7 +200,7 @@ const TITLES = [
       return rankBy(
         stats,
         (s) => s.chosenArtistsCatalogPct,
-        5,
+        10,
         (s) => (s.chosenDaysCount || 0) > 0
       ).map((x) => ({
         ...x,
@@ -219,7 +219,7 @@ const TITLES = [
       return rankByAsc(
         stats,
         (s) => s.chosenArtistsCatalogPct,
-        5,
+        10,
         (s) => (s.chosenDaysCount || 0) > 0
       ).map((x) => ({
         ...x,
@@ -367,7 +367,7 @@ const TITLES = [
         arr.push({ memberId: s.memberId, value: classic / total });
       });
       arr.sort((a, b) => b.value - a.value);
-      return arr.slice(0, 5).map((x) => ({ ...x, value: pct(x.value) }));
+      return arr.slice(0, 10).map((x) => ({ ...x, value: pct(x.value) }));
     },
   },
   {
@@ -391,7 +391,7 @@ const TITLES = [
         arr.push({ memberId: s.memberId, value: classic / total });
       });
       arr.sort((a, b) => a.value - b.value);
-      return arr.slice(0, 5).map((x) => ({ ...x, value: pct(x.value) }));
+      return arr.slice(0, 10).map((x) => ({ ...x, value: pct(x.value) }));
     },
   },
 
@@ -416,7 +416,7 @@ const TITLES = [
         arr.push({ memberId: s.memberId, value: common / total });
       });
       arr.sort((a, b) => b.value - a.value);
-      return arr.slice(0, 5).map((x) => ({ ...x, value: pct(x.value) }));
+      return arr.slice(0, 10).map((x) => ({ ...x, value: pct(x.value) }));
     },
   },
   {
@@ -440,11 +440,11 @@ const TITLES = [
         arr.push({ memberId: s.memberId, value: common / total });
       });
       arr.sort((a, b) => a.value - b.value);
-      return arr.slice(0, 5).map((x) => ({ ...x, value: pct(x.value) }));
+      return arr.slice(0, 10).map((x) => ({ ...x, value: pct(x.value) }));
     },
   },
 
-    {
+  {
     id: "aposta-arriscada",
     categoria: "curadoria",
     nome: "Aposta Arriscada",
@@ -466,7 +466,7 @@ const TITLES = [
         arr.push({ memberId: s.memberId, value: rare / total });
       });
       arr.sort((a, b) => b.value - a.value);
-      return arr.slice(0, 5).map((x) => ({ ...x, value: pct(x.value) }));
+      return arr.slice(0, 10).map((x) => ({ ...x, value: pct(x.value) }));
     },
   },
   {
@@ -490,7 +490,7 @@ const TITLES = [
         arr.push({ memberId: s.memberId, value: rare / total });
       });
       arr.sort((a, b) => a.value - b.value);
-      return arr.slice(0, 5).map((x) => ({ ...x, value: pct(x.value) }));
+      return arr.slice(0, 10).map((x) => ({ ...x, value: pct(x.value) }));
     },
   },
 
@@ -563,7 +563,7 @@ const TITLES = [
       "“Uma verdadeira jornada musical.” — Os que tem a maior sequência de cultos seguidos tocando.",
     ranking: () => {
       const streak = computeLongestStreak(HISTORICO);
-      return streak.slice(0, 5);
+      return streak.slice(0, 10);
     },
   },
 ];
@@ -673,22 +673,54 @@ function artistImg(name) {
 // ---------------------------
 
 function computePopularidadeCatalog() {
-  // Cache: Map<musicId, { tier, icon, label }>
   if (CACHE_POPULARIDADE_WRAPPED) return CACHE_POPULARIDADE_WRAPPED;
 
-  const counts = new Map();
-  for (const m of MUSICAS_RAW) counts.set(m.id, 0);
-  for (const ev of HISTORICO) {
-    if (!Array.isArray(ev.musicas)) continue;
-    for (const mid of ev.musicas) counts.set(mid, (counts.get(mid) || 0) + 1);
-  }
+  const getCats = (m) => {
+    if (!m?.categorias) return [];
+    return m.categorias
+      .split(";")
+      .map((c) => c.trim())
+      .filter(Boolean);
+  };
 
+  // 1) Execuções por música
+  const counts = new Map();
+  MUSICAS_RAW.forEach((m) => counts.set(m.id, 0));
+
+  HISTORICO.forEach((ev) => {
+    ev.musicas?.forEach((mid) => {
+      counts.set(mid, (counts.get(mid) || 0) + 1);
+    });
+  });
+
+  // 2) Popularidade das categorias
+  const catCount = new Map();
+  HISTORICO.forEach((ev) => {
+    ev.musicas?.forEach((mid) => {
+      const m = MUSIC_BY_ID.get(mid);
+      if (!m) return;
+      getCats(m).forEach((cat) => {
+        catCount.set(cat, (catCount.get(cat) || 0) + 1);
+      });
+    });
+  });
+
+  // 3) Ranking
   const ranked = Array.from(counts.entries());
+
   ranked.sort((a, b) => {
-    if (b[1] !== a[1]) return b[1] - a[1];
-    const ta = MUSIC_BY_ID.get(a[0])?.titulo || "";
-    const tb = MUSIC_BY_ID.get(b[0])?.titulo || "";
-    return ta.localeCompare(tb);
+    const execA = a[1];
+    const execB = b[1];
+    if (execB !== execA) return execB - execA;
+
+    const ma = MUSIC_BY_ID.get(a[0]);
+    const mb = MUSIC_BY_ID.get(b[0]);
+
+    const scoreA = getCats(ma).reduce((s, c) => s + (catCount.get(c) || 0), 0);
+    const scoreB = getCats(mb).reduce((s, c) => s + (catCount.get(c) || 0), 0);
+
+    if (scoreB !== scoreA) return scoreB - scoreA;
+    return (ma?.titulo || "").localeCompare(mb?.titulo || "");
   });
 
   const n = ranked.length || 1;
@@ -696,6 +728,7 @@ function computePopularidadeCatalog() {
   const midCut = Math.max(topCut + 1, Math.ceil(n * 0.6));
 
   const out = new Map();
+
   ranked.forEach(([mid], idx) => {
     let tier = "common";
     let icon = "🎧";
@@ -1647,24 +1680,59 @@ document.addEventListener("DOMContentLoaded", () => {
 // =========================================================
 
 function classificarPopularidadeWrapped(musicas, historico) {
-  if (!musicas || !historico) return {};
+  if (!Array.isArray(musicas) || !Array.isArray(historico)) return {};
 
+  // --- helpers ---
+  const getCats = (m) => {
+    if (!m?.categorias) return [];
+    return m.categorias
+      .split(";")
+      .map((c) => c.trim())
+      .filter(Boolean);
+  };
+
+  const musicById = new Map(musicas.map((m) => [m.id, m]));
+
+  // 1) Execuções por música
   const execMap = {};
-
   historico.forEach((h) => {
     h.musicas?.forEach((id) => {
       execMap[id] = (execMap[id] || 0) + 1;
     });
   });
 
-  const lista = musicas.map((m) => ({
-    id: m.id,
-    exec: execMap[m.id] || 0,
-  }));
+  // 2) Popularidade das categorias (execuções totais)
+  const catCount = new Map();
+  historico.forEach((h) => {
+    if (!Array.isArray(h.musicas)) return;
+    h.musicas.forEach((mid) => {
+      const m = musicById.get(mid);
+      if (!m) return;
+      getCats(m).forEach((cat) => {
+        catCount.set(cat, (catCount.get(cat) || 0) + 1);
+      });
+    });
+  });
 
-  lista.sort((a, b) => b.exec - a.exec);
+  // 3) Lista base
+  const lista = musicas.map((m) => {
+    const cats = getCats(m);
+    return {
+      id: m.id,
+      exec: execMap[m.id] || 0,
+      catScore: cats.reduce((s, c) => s + (catCount.get(c) || 0), 0),
+      titulo: m.titulo || "",
+    };
+  });
 
-  const total = lista.length;
+  // 4) Ordenação final
+  lista.sort((a, b) => {
+    if (b.exec !== a.exec) return b.exec - a.exec;
+    if (b.catScore !== a.catScore) return b.catScore - a.catScore;
+    return a.titulo.localeCompare(b.titulo);
+  });
+
+  const total = lista.length || 1;
   const mapa = {};
 
   lista.forEach((item, index) => {
@@ -1723,9 +1791,7 @@ function renderTitles() {
   );
 
   // integrantes elegíveis para títulos
-  const integrantes = INTEGRANTES_RAW.filter((i) =>
-    eligibleIds.has(i.id)
-  );
+  const integrantes = INTEGRANTES_RAW.filter((i) => eligibleIds.has(i.id));
 
   // ordem fixa de categorias (agrupamento lógico)
   const CATEGORY_ORDER = [
@@ -1753,9 +1819,7 @@ function renderTitles() {
 
   sortedTitles.forEach((title) => {
     const rankingData =
-      typeof title.ranking === "function"
-        ? title.ranking()
-        : title.ranking;
+      typeof title.ranking === "function" ? title.ranking() : title.ranking;
 
     if (!Array.isArray(rankingData)) return;
 
@@ -1769,9 +1833,7 @@ function renderTitles() {
     const winner = filteredRanking[0];
     if (!winner || winner.memberId == null) return;
 
-    const winnerMember = integrantes.find(
-      (i) => i.id === winner.memberId
-    );
+    const winnerMember = integrantes.find((i) => i.id === winner.memberId);
     if (!winnerMember) return;
 
     const card = document.createElement("div");
@@ -1811,7 +1873,7 @@ function renderTitles() {
     const ranking = document.createElement("div");
     ranking.className = "title-ranking";
 
-    filteredRanking.slice(0, 5).forEach((r, idx) => {
+    filteredRanking.slice(0, 10).forEach((r, idx) => {
       const member = integrantes.find((i) => i.id === r.memberId);
       if (!member) return;
 
@@ -1871,12 +1933,11 @@ function gerarRankingPorPopularidade(nivelDesejado) {
     });
   });
 
-  // SEMPRE retorna array
   return Array.from(contador.entries())
     .map(([memberId, value]) => ({ memberId, value }))
     .filter((i) => i.value > 0)
     .sort((a, b) => b.value - a.value)
-    .slice(0, 5);
+    .slice(0, 10);
 }
 
 // =========================================================
@@ -2065,18 +2126,17 @@ function buildExecCountMap(events) {
 
 // ---- Métricas por integrante
 function computeMemberStats(events) {
-
   const firstAppearanceBySong = new Map();
 
-// percorre o histórico em ordem cronológica
-(events || []).forEach((ev, index) => {
-  const musicas = getEventMusicas(ev);
-  musicas.forEach((mid) => {
-    if (!firstAppearanceBySong.has(mid)) {
-      firstAppearanceBySong.set(mid, index);
-    }
+  // percorre o histórico em ordem cronológica
+  (events || []).forEach((ev, index) => {
+    const musicas = getEventMusicas(ev);
+    musicas.forEach((mid) => {
+      if (!firstAppearanceBySong.has(mid)) {
+        firstAppearanceBySong.set(mid, index);
+      }
+    });
   });
-});
 
   const totalArtistsSet = new Set();
   (MUSICAS_RAW || []).forEach((s) => {
@@ -2139,8 +2199,7 @@ function computeMemberStats(events) {
         formationsCount: 0,
 
         inauguratedSongsSet: new Set(),
-inauguratedSongsCount: 0,
-
+        inauguratedSongsCount: 0,
       });
     }
     return stats.get(id);
@@ -2265,16 +2324,15 @@ inauguratedSongsCount: 0,
 
     const eventIndex = events.indexOf(ev);
 
-escolhidos.forEach((memberId) => {
-  const st = getOrInit(memberId);
+    escolhidos.forEach((memberId) => {
+      const st = getOrInit(memberId);
 
-  getEventMusicas(ev).forEach((mid) => {
-    if (firstAppearanceBySong.get(mid) === eventIndex) {
-      st.inauguratedSongsSet.add(mid);
-    }
-  });
-});
-
+      getEventMusicas(ev).forEach((mid) => {
+        if (firstAppearanceBySong.get(mid) === eventIndex) {
+          st.inauguratedSongsSet.add(mid);
+        }
+      });
+    });
   });
 
   // derivações prontas
@@ -2345,8 +2403,7 @@ escolhidos.forEach((memberId) => {
         ? st.chosenArtistsCatalogCount / totalCatalogArtists
         : 0;
 
-        st.inauguratedSongsCount = st.inauguratedSongsSet.size;
-
+    st.inauguratedSongsCount = st.inauguratedSongsSet.size;
   });
 
   return stats;
@@ -2397,7 +2454,7 @@ function computeLongestStreak(events) {
 }
 
 // ---- Helpers: ranking builder
-function rankBy(statsMap, valueFn, topN = 5, filterFn = null) {
+function rankBy(statsMap, valueFn, topN = 10, filterFn = null) {
   const arr = [];
   statsMap.forEach((st) => {
     if (filterFn && !filterFn(st)) return;
@@ -2409,7 +2466,7 @@ function rankBy(statsMap, valueFn, topN = 5, filterFn = null) {
   return arr.slice(0, topN);
 }
 
-function rankByAsc(statsMap, valueFn, topN = 5, filterFn = null) {
+function rankByAsc(statsMap, valueFn, topN = 10, filterFn = null) {
   const arr = [];
   statsMap.forEach((st) => {
     if (filterFn && !filterFn(st)) return;
@@ -2421,11 +2478,11 @@ function rankByAsc(statsMap, valueFn, topN = 5, filterFn = null) {
   return arr.slice(0, topN);
 }
 
-function rankByChosenOnly(statsMap, valueFn, topN = 5) {
+function rankByChosenOnly(statsMap, valueFn, topN = 10) {
   return rankBy(statsMap, valueFn, topN, (s) => (s.chosenSongsCount || 0) > 0);
 }
 
-function rankByAscChosenOnly(statsMap, valueFn, topN = 5) {
+function rankByAscChosenOnly(statsMap, valueFn, topN = 10) {
   return rankByAsc(
     statsMap,
     valueFn,
@@ -2434,11 +2491,11 @@ function rankByAscChosenOnly(statsMap, valueFn, topN = 5) {
   );
 }
 
-function rankByChosenDaysOnly(statsMap, valueFn, topN = 5) {
+function rankByChosenDaysOnly(statsMap, valueFn, topN = 10) {
   return rankBy(statsMap, valueFn, topN, (s) => (s.chosenDaysCount || 0) > 0);
 }
 
-function rankByAscChosenDaysOnly(statsMap, valueFn, topN = 5) {
+function rankByAscChosenDaysOnly(statsMap, valueFn, topN = 10) {
   return rankByAsc(
     statsMap,
     valueFn,
