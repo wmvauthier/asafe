@@ -464,6 +464,8 @@ function carregarEscalaAtual() {
   if (!historico.length) return;
 
   const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
   const futuras = historico
     .map((d) => ({ ...d, dataObj: parseDate(d.data) }))
     .filter((d) => d.dataObj >= hoje)
@@ -863,7 +865,7 @@ function renderEscalaAtualIntegrantes(escala) {
     const img = document.createElement("img");
     img.className = "member-avatar";
     const slug = slugify(membro.nome || "");
-    img.src = `integrantes/${slug}.jpeg`;
+    img.src = `integrantes/${membro.nome.toLowerCase()}.jpeg`;
     img.onerror = function () {
       this.onerror = null;
       this.src = "integrantes/default.jpeg";
@@ -970,7 +972,7 @@ function renderEscalaAtualMusicas(escala) {
 
     const execBadge = document.createElement("div");
     execBadge.className = "song-overlay song-exec-info";
-    execBadge.innerHTML = totalExec > 0 ? `🎯 Tocada ${totalExec}x` : `🆕 Nova`;
+    execBadge.innerHTML = totalExec > 0 ? `🎯 Tocada ${totalExec}x` : `✨ Nova`;
 
     thumbWrapper.appendChild(execBadge);
 
@@ -1043,6 +1045,8 @@ function carregarEscalasFuturas() {
   if (!historico.length) return;
 
   const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
   const futuras = historico
     .map((d) => ({ ...d, dataObj: parseDate(d.data) }))
     .filter((d) => d.dataObj && d.dataObj > hoje)
@@ -1081,7 +1085,7 @@ function renderEscalasFuturas(lista) {
 
     const title = document.createElement("div");
     title.className = "escala-title";
-    title.textContent = '📆 '+formatarData(escala.dataObj);
+    title.textContent = "📆 " + formatarData(escala.dataObj);
 
     // const dateSub = document.createElement("div");
     // dateSub.className = "escala-date-sub";
@@ -1157,7 +1161,7 @@ function renderEscalasFuturas(lista) {
       const avatar = document.createElement("img");
       avatar.className = "escala-integrante-avatar";
       const slug = slugify(membro.nome || "");
-      avatar.src = `integrantes/${slug}.jpeg`;
+      avatar.src = `integrantes/${membro.nome.toLowerCase()}.jpeg`;
       avatar.onerror = function () {
         this.onerror = null;
         this.src = "integrantes/default.jpeg";
@@ -1294,7 +1298,7 @@ function renderEscalasFuturas(lista) {
       const execBadge = document.createElement("div");
       execBadge.className = "song-overlay song-exec-info";
       execBadge.innerHTML =
-        totalExec > 0 ? `🎯 Tocada ${totalExec}x` : `🆕 Nova`;
+        totalExec > 0 ? `🎯 Tocada ${totalExec}x` : `✨ Nova`;
 
       thumbWrapper.appendChild(execBadge);
 
@@ -1955,16 +1959,27 @@ function criarCardMusicaRepertorio(
 function getTotalExecucoes(idMusica) {
   if (!idMusica || !Array.isArray(historico)) return 0;
 
+  const hoje = getHojeZerado();
   let total = 0;
 
   historico.forEach((culto) => {
-    if (!Array.isArray(culto.musicas)) return;
+    if (!culto.data || !Array.isArray(culto.musicas)) return;
+
+    const dataCulto = parseDate(culto.data);
+    if (!dataCulto || dataCulto >= hoje) return; // ignora hoje e futuro
+
     culto.musicas.forEach((id) => {
       if (id === idMusica) total++;
     });
   });
 
   return total;
+}
+
+function getHojeZerado() {
+  const h = new Date();
+  h.setHours(0, 0, 0, 0);
+  return h;
 }
 
 function getStatusMusicaRepertorio(idMusica) {
@@ -2002,7 +2017,9 @@ function classificarNiveisDePopularidade(musicas) {
 
   const getCats = (m) => {
     if (!m?.categorias) return [];
-    return m.categorias.toString().replaceAll(',',';')
+    return m.categorias
+      .toString()
+      .replaceAll(",", ";")
       .split(";")
       .map((c) => c.trim())
       .filter(Boolean);
