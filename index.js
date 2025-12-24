@@ -1402,7 +1402,9 @@ function renderEscalasFuturas(lista) {
 function copiarEscala(escala) {
   const catDom = calcularCategoriaDominanteDaEscala(escala);
   const stats = calcularStatsRepertorioDaEscala(escala);
-  const cats = calcularIntensidadeCategorias(escala);
+  const cats = calcularIntensidadeCategorias(escala).filter(
+    (c) => c.percentual >= 60
+  );
 
   const corPorNivel = (nivel) =>
     nivel === "easy"
@@ -1416,31 +1418,43 @@ function copiarEscala(escala) {
   const corDominancia = (i) =>
     i === "strong" ? "🟢" : i === "medium" ? "🟡" : "🔴";
 
-  let texto = `📅 *Escala do dia* — ${formatarData(escala.dataObj)}\n`;
+  let texto = "";
+
+  // =========================
+  // CABEÇALHO
+  // =========================
+  texto += `📅 *Escala do dia*\n`;
+  texto += `_${formatarData(escala.dataObj)}_\n`;
 
   if (catDom?.categoria) {
-    texto += `${corDominancia(catDom.intensidade)} *Categoria predominante:* ${
-      catDom.categoria
-    } (${catDom.percentual.toFixed(0)}%)\n`;
-  }
-  if (stats?.dificuldadeGeralNivel) {
-    texto += `${corPorNivel(
-      stats.dificuldadeGeralNivel
-    )} *Dificuldade média:* ${nivelLabel(stats.dificuldadeGeralNivel)}\n`;
+    texto += `\n${corDominancia(catDom.intensidade)} *Categoria predominante*\n`;
+    texto += `• ${catDom.categoria} (${catDom.percentual.toFixed(0)}%)\n`;
   }
 
-  // Categorias do repertório (ordenadas)
+  if (stats?.dificuldadeGeralNivel) {
+    texto += `\n${corPorNivel(
+      stats.dificuldadeGeralNivel
+    )} *Dificuldade média*\n`;
+    texto += `• ${nivelLabel(stats.dificuldadeGeralNivel)}\n`;
+  }
+
+  // =========================
+  // CATEGORIAS
+  // =========================
   if (cats.length) {
     texto += `\n🏷️ *Categorias do repertório*\n`;
     cats.forEach((c) => {
-      texto += `- ${corDominancia(c.intensidade)} ${
-        c.categoria
-      } (${c.percentual.toFixed(0)}%)\n`;
+      texto += `• ${corDominancia(c.intensidade)} ${c.categoria} (${c.percentual.toFixed(
+        0
+      )}%)\n`;
     });
   }
 
-  // Integrantes
+  // =========================
+  // INTEGRANTES
+  // =========================
   texto += `\n🎤 *Integrantes*\n`;
+
   const ints = Array.isArray(escala.integrantes) ? escala.integrantes : [];
   ints.forEach((iobj) => {
     const membro =
@@ -1458,56 +1472,48 @@ function copiarEscala(escala) {
         : iobj.funcao) ||
       "função";
 
-    texto += `- *${nome}* — ${func}\n`;
-
-    // Expertise (se existir)
-    if (Array.isArray(membro.function)) {
-      membro.function.forEach((obj) => {
-        const inst = Object.keys(obj)[0];
-        const nivel = obj[inst];
-        texto += `   ${corPorNivel(nivel)} ${inst}\n`;
-      });
-    }
+    texto += `• *${nome}* — ${func}\n`;
   });
 
-  // Músicas
+  // =========================
+  // MÚSICAS
+  // =========================
   texto += `\n🎧 *Músicas*\n`;
+
   const ids = Array.isArray(escala.musicas) ? escala.musicas : [];
-  ids.forEach((id) => {
+  ids.forEach((id, idx) => {
     const musica = musicas.find((m) => m.id === id);
     if (!musica) return;
 
     const yt = musica.referLink
       ? `https://www.youtube.com/watch?v=${musica.referLink}`
-      : "(sem link)";
+      : "";
 
-    // Categorias da música
-    const catsMus = Array.isArray(musica.categorias)
-      ? musica.categorias
-      : typeof musica.categorias === "string"
-      ? musica.categorias
-          .split(";")
-          .map((s) => s.trim())
-          .filter(Boolean)
-      : [];
+    const catsMus =
+      typeof musica.categorias === "string"
+        ? musica.categorias
+            .split(";")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [];
 
-    // Dificuldades por instrumento
-    const lvl = musica.level || {};
-    const diffs = Object.entries(lvl)
+    const diffs = Object.entries(musica.level || {})
       .filter(([, v]) => v)
       .map(([inst, v]) => `${corPorNivel(v)} ${inst}`)
       .join(" · ");
 
-    texto += `\n• *${musica.titulo}* — ${musica.artista}\n`;
-    texto += `  🔗 ${yt}\n`;
-    if (catsMus.length) texto += `  🏷️ ${catsMus.join(" · ")}\n`;
-    if (diffs) texto += `  🎚️ ${diffs}\n`;
+    texto += `\n${idx + 1}. *${musica.titulo}* — ${musica.artista}\n`;
+    if (yt) texto += `🔗 ${yt}\n`;
+    if (catsMus.length)
+      texto += `🏷️ ${catsMus.join(" · ")}\n`;
+    if (diffs) texto += `🎚️ ${diffs}\n`;
   });
 
   navigator.clipboard.writeText(texto).then(() => {
     alert("Escala copiada para a área de transferência!");
   });
 }
+
 
 // =========================================================
 // REPERTÓRIO — RENDERIZAÇÃO COMPLETA
