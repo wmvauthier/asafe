@@ -1035,6 +1035,25 @@ body {
   z-index: 1; /* garante que NÃO sobe */
 }
 
+.member-avatar-wrap,
+.escala-integrante-avatar-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.member-avatar-wrap.has-crown::after,
+.escala-integrante-avatar-wrap.has-crown::after {
+  content: "👑";
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  font-size: 1.05em;
+  background: rgba(0,0,0,0.85);
+  border-radius: 999px;
+  padding: 2px 5px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+
 /* ==========================
    RESPONSIVIDADE
    ========================== */

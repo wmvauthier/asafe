@@ -848,6 +848,9 @@ function renderEscalaAtualIntegrantes(escala) {
     return;
   }
 
+  // 👑 ids de quem escolhe o repertório nesse culto
+  const headerIds = getHeaderIdsFromEscala(escala);
+
   ids.forEach((id) => {
     let membro = null;
 
@@ -862,14 +865,22 @@ function renderEscalaAtualIntegrantes(escala) {
     const card = document.createElement("div");
     card.className = "member-card";
 
+    // wrapper do avatar pra permitir overlay da coroa sem mexer no layout existente
+    const avatarWrap = document.createElement("div");
+    avatarWrap.className = "member-avatar-wrap";
+
+    const isHeader = headerIds.includes(membro.id);
+    if (isHeader) avatarWrap.classList.add("has-crown");
+
     const img = document.createElement("img");
     img.className = "member-avatar";
-    const slug = slugify(membro.nome || "");
     img.src = `integrantes/${membro.nome.toLowerCase()}.jpeg`;
     img.onerror = function () {
       this.onerror = null;
       this.src = "integrantes/default.jpeg";
     };
+
+    avatarWrap.appendChild(img);
 
     const info = document.createElement("div");
 
@@ -879,8 +890,7 @@ function renderEscalaAtualIntegrantes(escala) {
 
     const papel = document.createElement("div");
     papel.className = "member-role";
-    const funcaoReal = extrairFuncaoPrincipal(membro) || "Função não definida";
-    papel.textContent = funcaoReal;
+    papel.textContent = formatFunctions(membro.function);
 
     const expertiseDiv = document.createElement("div");
     expertiseDiv.className = "member-expertise";
@@ -909,7 +919,10 @@ function renderEscalaAtualIntegrantes(escala) {
     }
 
     info.append(nome, papel, expertiseDiv);
-    card.append(img, info);
+
+    // antes era: card.append(img, info);
+    card.append(avatarWrap, info);
+
     container.appendChild(card);
   });
 }
@@ -1087,10 +1100,6 @@ function renderEscalasFuturas(lista) {
     title.className = "escala-title";
     title.textContent = "📆 " + formatarData(escala.dataObj);
 
-    // const dateSub = document.createElement("div");
-    // dateSub.className = "escala-date-sub";
-    // dateSub.textContent = formatarData(escala.dataObj);
-
     left.append(title);
 
     // badges do header (somente predominante + dificuldade)
@@ -1149,6 +1158,10 @@ function renderEscalasFuturas(lista) {
     intContainer.className = "escala-integrantes";
 
     const ids = Array.isArray(escala.integrantes) ? escala.integrantes : [];
+
+    // 👑 quem escolhe repertório nesta escala
+    const headerIds = getHeaderIdsFromEscala(escala);
+
     ids.forEach((id) => {
       const membro =
         (typeof id === "object" ? id : integrantes.find((i) => i.id === id)) ||
@@ -1157,6 +1170,13 @@ function renderEscalasFuturas(lista) {
 
       const chip = document.createElement("div");
       chip.className = "escala-integrante-chip";
+
+      // === wrapper para permitir a coroa sobre o avatar ===
+      const avatarWrap = document.createElement("div");
+      avatarWrap.className = "escala-integrante-avatar-wrap";
+
+      const isHeader = headerIds.includes(membro.id);
+      if (isHeader) avatarWrap.classList.add("has-crown");
 
       const avatar = document.createElement("img");
       avatar.className = "escala-integrante-avatar";
@@ -1167,11 +1187,14 @@ function renderEscalasFuturas(lista) {
         this.src = "integrantes/default.jpeg";
       };
 
+      avatarWrap.appendChild(avatar);
+
       const nome = document.createElement("span");
       nome.className = "escala-integrante-nome";
       nome.textContent = membro.nome || "Integrante";
 
-      chip.append(avatar, nome);
+      // antes: chip.append(avatar, nome);
+      chip.append(avatarWrap, nome);
       intContainer.appendChild(chip);
     });
 
@@ -1999,6 +2022,67 @@ function getStatusMusicaRepertorio(idMusica) {
   if (diasDesde <= TOCADA_NOS_ULTIMOS_X_DIAS) return "recent";
 
   return "available";
+}
+
+function getHeaderIdsFromEscala(escala) {
+  // tenta vários nomes possíveis de campo, mas o principal é "header"
+  const raw =
+    escala?.header ??
+    escala?.headers ??
+    escala?.escolhedores ??
+    escala?.escolhedor ??
+    escala?.choosers ??
+    escala?.chooser ??
+    null;
+
+  if (!raw) return [];
+
+  const normalizeId = (x) => {
+    if (x == null) return null;
+    if (typeof x === "object") {
+      const v = x.id ?? x.integranteId ?? x.memberId ?? null;
+      return v == null ? null : v;
+    }
+    // se vier string numérica, converte
+    if (typeof x === "string") {
+      const s = x.trim();
+      if (!s) return null;
+      const n = Number(s);
+      return Number.isFinite(n) ? n : s;
+    }
+    return x; // number, etc
+  };
+
+  if (Array.isArray(raw)) {
+    return raw.map(normalizeId).filter((v) => v != null);
+  }
+
+  if (typeof raw === "string") {
+    return raw
+      .split(/[;,]/g)
+      .map((s) => normalizeId(s))
+      .filter((v) => v != null);
+  }
+
+  const one = normalizeId(raw);
+  return one != null ? [one] : [];
+}
+
+function formatFunctions(functions) {
+  if (!functions) return "";
+
+  // se já for string
+  if (typeof functions === "string") return functions;
+
+  // formato comum: [{ bateria: "medium" }, { vocal: "easy" }]
+  if (Array.isArray(functions)) {
+    return functions
+      .map((obj) => Object.keys(obj)[0])
+      .map((inst) => formatInstrumentName(inst))
+      .join(", ");
+  }
+
+  return "";
 }
 
 // =========================================================
