@@ -9,7 +9,7 @@
         "level": {
             "vocal": "easy",
             "guitarra": "hard",
-            "baixo": "medium",
+            "baixo": "hard",
             "violao": "",
             "bateria": "medium",
             "teclado": "medium",
@@ -356,7 +356,7 @@
         "level": {
             "vocal": "easy",
             "guitarra": "hard",
-            "baixo": "medium",
+            "baixo": "hard",
             "violao": "",
             "bateria": "hard",
             "teclado": "easy",
@@ -374,7 +374,7 @@
         "level": {
             "vocal": "medium",
             "guitarra": "medium",
-            "baixo": "easy",
+            "baixo": "medium",
             "violao": "",
             "bateria": "medium",
             "teclado": "medium",
@@ -580,10 +580,10 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "guitarra": "hard",
+            "baixo": "hard",
             "violao": "",
-            "bateria": "medium",
+            "bateria": "hard",
             "teclado": "hard",
             "sax": ""
         },
