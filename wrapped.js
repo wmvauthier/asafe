@@ -6,6 +6,7 @@ let MUSICAS_RAW = [];
 let INTEGRANTES_RAW = [];
 let HISTORICO_RAW = [];
 let HISTORICO = [];
+let HISTORICO_ORIGINAL = [];
 let MUSIC_BY_ID = new Map();
 let MEMBER_BY_ID = new Map();
 let CACHE_POPULARIDADE_WRAPPED = null;
@@ -569,8 +570,12 @@ const TITLES = [
 ];
 
 function parseBrDate(str) {
+  if (!str || typeof str !== "string") return null;
   const [d, m, y] = str.split("/").map(Number);
-  return new Date(y, m - 1, d);
+  if (!y || !m || !d) return null;
+  const dt = new Date(y, m - 1, d);
+  dt.setHours(0, 0, 0, 0);
+  return dt;
 }
 
 async function loadData() {
@@ -591,6 +596,8 @@ async function loadData() {
     ...ev,
     dateObj: parseBrDate(ev.data),
   }));
+
+  HISTORICO_ORIGINAL = HISTORICO;
 }
 
 function isValidEvent(ev) {
@@ -619,6 +626,53 @@ function filterEvents() {
     if (end && ev.dateObj > end) return false;
     return true;
   });
+}
+
+function aplicarFiltroDeDatasNoHistorico() {
+  const startVal = document.getElementById("startDate")?.value || "";
+  const endVal = document.getElementById("endDate")?.value || "";
+
+  // inputs do type="date" -> YYYY-MM-DD
+  const start = startVal ? parseDate(startVal) : null;
+
+  // end inclusivo: fim do dia
+  const end = endVal ? parseDate(endVal) : null;
+  if (end) end.setHours(23, 59, 59, 999);
+
+  HISTORICO = (Array.isArray(HISTORICO_ORIGINAL) ? HISTORICO_ORIGINAL : [])
+    .map((ev) => {
+      // garante dateObj mesmo se algum item antigo não tiver
+      if (ev?.dateObj instanceof Date && !isNaN(ev.dateObj)) return ev;
+      const d = parseBrDate(ev?.data);
+      return { ...ev, dateObj: d };
+    })
+    .filter((ev) => {
+      if (!(ev?.dateObj instanceof Date) || isNaN(ev.dateObj)) return false;
+      if (start && ev.dateObj < start) return false;
+      if (end && ev.dateObj > end) return false;
+      return true;
+    });
+}
+
+function setFiltroAnoAtual() {
+  const ano = new Date().getFullYear();
+
+  const startEl = document.getElementById("startDate");
+  const endEl = document.getElementById("endDate");
+
+  if (startEl) startEl.value = `${ano}-01-01`;
+  if (endEl) endEl.value = `${ano}-12-31`;
+}
+
+function rerenderWrapped() {
+  aplicarFiltroDeDatasNoHistorico();
+
+  // (opcional, mas ajuda muito a confirmar que o filtro não zerou)
+  console.log("HISTORICO filtrado:", HISTORICO.length);
+
+  renderBandSection(HISTORICO);
+  renderMemberSection(HISTORICO);
+  renderTitles(HISTORICO);
 }
 
 // ---------------------------
@@ -1342,7 +1396,7 @@ function renderMemberSection(events) {
     return;
   }
 
-    // Puxa métricas "do wrapped" (dificuldade, popularidade, repetição, curadoria, etc.)
+  // Puxa métricas "do wrapped" (dificuldade, popularidade, repetição, curadoria, etc.)
   const statsMap = computeMemberStats(events);
   const st = statsMap.get(memberId);
 
@@ -1354,7 +1408,9 @@ function renderMemberSection(events) {
   const popPct = st?.popPct || { classic: 0, common: 0, rare: 0 };
 
   const hasCuradoria = (st?.chosenDaysCount || 0) > 0;
-  const repeticaoPct = hasCuradoria ? Math.round((1 - (st.chosenSongsUniquePct || 0)) * 100) : 0;
+  const repeticaoPct = hasCuradoria
+    ? Math.round((1 - (st.chosenSongsUniquePct || 0)) * 100)
+    : 0;
 
   const dc = insights.difficultyCounts; // (contagens absolutas já existentes)
 
@@ -1375,7 +1431,9 @@ function renderMemberSection(events) {
   header.innerHTML = `
     <div class="member-header-main">
       <div class="avatar avatar-lg">
-        <img src="${imgSrc}" alt="${insights.member.nome}" onerror="this.style.visibility='hidden';" />
+        <img src="${imgSrc}" alt="${
+    insights.member.nome
+  }" onerror="this.style.visibility='hidden';" />
       </div>
 
       <div class="member-header-text">
@@ -1407,18 +1465,30 @@ function renderMemberSection(events) {
           <div class="miniwrap-block">
             <div class="miniwrap-title">🎸 Dificuldade</div>
             <div class="miniwrap-row">
-              <span class="mini-ico">🟢</span><span>${fmtPct(diffPct.easy)}</span>
-              <span class="mini-ico">🟡</span><span>${fmtPct(diffPct.medium)}</span>
-              <span class="mini-ico">🔴</span><span>${fmtPct(diffPct.hard)}</span>
+              <span class="mini-ico">🟢</span><span>${fmtPct(
+                diffPct.easy
+              )}</span>
+              <span class="mini-ico">🟡</span><span>${fmtPct(
+                diffPct.medium
+              )}</span>
+              <span class="mini-ico">🔴</span><span>${fmtPct(
+                diffPct.hard
+              )}</span>
             </div>
           </div>
 
           <div class="miniwrap-block">
             <div class="miniwrap-title">📊 Popularidade</div>
             <div class="miniwrap-row">
-              <span class="mini-ico">🏆</span><span>${fmtPct(popPct.classic)}</span>
-              <span class="mini-ico">🎧</span><span>${fmtPct(popPct.common)}</span>
-              <span class="mini-ico">🕵️</span><span>${fmtPct(popPct.rare)}</span>
+              <span class="mini-ico">🏆</span><span>${fmtPct(
+                popPct.classic
+              )}</span>
+              <span class="mini-ico">🎧</span><span>${fmtPct(
+                popPct.common
+              )}</span>
+              <span class="mini-ico">🕵️</span><span>${fmtPct(
+                popPct.rare
+              )}</span>
             </div>
           </div>
 
@@ -1452,7 +1522,7 @@ function renderMemberSection(events) {
       </div>
     </div>
   `;
-  
+
   root.appendChild(header);
 
   const grid = document.createElement("div");
@@ -1727,6 +1797,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       applyFiltersAndRender();
       setActiveView("band");
+
+      document
+        .getElementById("startDate")
+        .addEventListener("change", rerenderWrapped);
+      document
+        .getElementById("endDate")
+        .addEventListener("change", rerenderWrapped);
+
+      setFiltroAnoAtual();
+
     })
     .catch((err) => {
       console.error("Erro carregando dados:", err);
@@ -2570,3 +2650,13 @@ function rankByAscChosenDaysOnly(statsMap, valueFn, topN = 10) {
 function pct(v) {
   return Math.round((v || 0) * 1000) / 10; // 1 casa decimal
 }
+
+function parseDate(str) {
+  if (!str || typeof str !== "string") return null;
+  const [y, m, d] = str.split("-").map(Number);
+  if (!y || !m || !d) return null;
+  const dt = new Date(y, m - 1, d);
+  dt.setHours(0, 0, 0, 0);
+  return dt;
+}
+
