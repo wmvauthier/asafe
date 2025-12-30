@@ -6,10 +6,10 @@ let MUSICAS_RAW = [];
 let INTEGRANTES_RAW = [];
 let HISTORICO_RAW = [];
 let HISTORICO = [];
-let HISTORICO_ORIGINAL = [];
 let MUSIC_BY_ID = new Map();
 let MEMBER_BY_ID = new Map();
 let CACHE_POPULARIDADE_WRAPPED = null;
+let HISTORICO_FILTRADO = [];
 
 const TITLE_CATEGORIES = {
   repertorio: { label: "Repertório", icon: "🎼" },
@@ -23,9 +23,6 @@ const TITLE_CATEGORIES = {
 };
 
 const TITLES = [
-  // =======================
-  // REPERTÓRIO & PARTICIPAÇÃO
-  // =======================
   {
     id: "onipresente-repertorio",
     categoria: "repertorio",
@@ -54,19 +51,43 @@ const TITLES = [
       }));
     },
   },
-
-  // =======================
-  // TÉCNICA (DIFICULDADE POR INSTRUMENTO)
-  // =======================
+  {
+    id: "avesso-a-zona-de-conforto",
+    categoria: "tecnica",
+    nome: "Avesso à Zona de Conforto",
+    descricao:
+      "Maior (%) das músicas que escolheu são difíceis (pela dificuldade média da música).",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.chosenDiffPct.hard).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
+    },
+  },
   {
     id: "modo-hardcore",
     categoria: "tecnica",
-    nome: "Modo Hardcore",
+    nome: "O Diplomata do Groove",
     descricao:
       "“Se tem acorde estranho, contratempo e melisma, é essa que ele quer tocar.” — Maior (%) das músicas que tocou é considerada como tendo um nível difícil.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
       return rankBy(stats, (s) => s.diffPct.hard).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
+    },
+  },
+  {
+    id: "equilibrador-de-repertorio",
+    categoria: "tecnica",
+    nome: "Equilibrador de Repertório",
+    descricao:
+      "Maior (%) das músicas que escolheu são médias (pela dificuldade média da música).",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.chosenDiffPct.medium).map((x) => ({
         ...x,
         value: pct(x.value),
       }));
@@ -81,6 +102,20 @@ const TITLES = [
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
       return rankBy(stats, (s) => s.diffPct.medium).map((x) => ({
+        ...x,
+        value: pct(x.value),
+      }));
+    },
+  },
+  {
+    id: "curador-do-conforto",
+    categoria: "tecnica",
+    nome: "Curador do Conforto",
+    descricao:
+      "Maior (%) das músicas que escolheu são fáceis (pela dificuldade média da música).",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.chosenDiffPct.easy).map((x) => ({
         ...x,
         value: pct(x.value),
       }));
@@ -102,6 +137,11 @@ const TITLES = [
   },
 
   // =======================
+
+  // =======================
+  // CURADORIA (DIFICULDADE MÉDIA DAS MÚSICAS)
+  // =======================
+
   // CURADORIA (QUANTIDADE)
   // =======================
   {
@@ -124,6 +164,32 @@ const TITLES = [
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
       return rankByAscChosenDaysOnly(stats, (s) => s.chosenDaysCount);
+    },
+  },
+
+  // =======================
+  // BANDA (DINÂMICA)
+  // =======================
+  {
+    id: "camaleao-da-banda",
+    categoria: "diversidade",
+    nome: "Camaleão da Banda",
+    descricao:
+      "“Se adapta a qualquer formação.” — Tocou com o maior número de formações diferentes.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankBy(stats, (s) => s.formationsCount);
+    },
+  },
+  {
+    id: "panelinha-fiel",
+    categoria: "diversidade",
+    nome: "Panelinha Fiel",
+    descricao:
+      "“Sempre com os mesmos parceiros.” — Tocou com o menor número de formações diferentes.",
+    ranking: () => {
+      const stats = computeMemberStats(HISTORICO);
+      return rankByAsc(stats, (s) => s.formationsCount);
     },
   },
 
@@ -159,8 +225,8 @@ const TITLES = [
 
   {
     id: "pioneiro-do-repertorio",
-    categoria: "curadoria",
-    nome: "Pioneiro do Repertório",
+    categoria: "repertorio",
+    nome: "Desbravador de Refrão",
     descricao:
       "“Alguém tinha que cantar primeiro.” — Aquele que, por mais vezes, escolheu primeiro uma música nova no repertório.",
     ranking: () => {
@@ -175,8 +241,8 @@ const TITLES = [
   },
   {
     id: "chega-depois",
-    categoria: "curadoria",
-    nome: "Chega Depois",
+    categoria: "repertorio",
+    nome: "Só Depois Que Virou Hino",
     descricao:
       "“Prefere quando já tá todo mundo cantando.” — Aquele que, por menos vezes, escolheu primeiro uma música nova no repertório.",
     ranking: () => {
@@ -193,7 +259,7 @@ const TITLES = [
   {
     id: "curador-ecletico",
     categoria: "diversidade",
-    nome: "Curador Eclético",
+    nome: "O Eclético",
     descricao:
       "“Uma hora é Rock, outra hora é Pop.” — Maior (%) de artistas diferentes escolhidos dentre os disponíveis no repertório.",
     ranking: () => {
@@ -212,7 +278,7 @@ const TITLES = [
   {
     id: "sempre-os-mesmos",
     categoria: "diversidade",
-    nome: "Sempre os Mesmos",
+    nome: "O Tradicional",
     descricao:
       "“Achou os artistas favoritos e nunca mais largou.” — Menor (%) de artistas diferentes escolhidos dentre os disponíveis no repertório.",
     ranking: () => {
@@ -230,38 +296,12 @@ const TITLES = [
   },
 
   // =======================
-  // BANDA (DINÂMICA)
-  // =======================
-  {
-    id: "camaleao-da-banda",
-    categoria: "banda",
-    nome: "Camaleão da Banda",
-    descricao:
-      "“Se adapta a qualquer formação.” — Tocou com o maior número de formações diferentes.",
-    ranking: () => {
-      const stats = computeMemberStats(HISTORICO);
-      return rankBy(stats, (s) => s.formationsCount);
-    },
-  },
-  {
-    id: "panelinha-fiel",
-    categoria: "banda",
-    nome: "Panelinha Fiel",
-    descricao:
-      "“Sempre com os mesmos parceiros.” — Tocou com o menor número de formações diferentes.",
-    ranking: () => {
-      const stats = computeMemberStats(HISTORICO);
-      return rankByAsc(stats, (s) => s.formationsCount);
-    },
-  },
-
-  // =======================
   // POPULARIDADE (TOCOU EM %)
   // =======================
   {
     id: "guardiao-dos-classicos",
     categoria: "popularidade",
-    nome: "Guardião dos Clássicos",
+    nome: "O Museu dos Hits",
     descricao:
       "“Alguém precisa manter as favoritas vivas.” — Maior (%) de músicas clássicas entre as tocadas.",
     ranking: () => {
@@ -556,26 +596,51 @@ const TITLES = [
   // =======================
   // PRESENÇA/REGULARIDADE — Maratonista (streak)
   // =======================
-  {
-    id: "maratonista",
-    categoria: "presenca",
-    nome: "Maratonista",
-    descricao:
-      "“Uma verdadeira jornada musical.” — Os que tem a maior sequência de cultos seguidos tocando.",
-    ranking: () => {
-      const streak = computeLongestStreak(HISTORICO);
-      return streak.slice(0, 10);
-    },
-  },
+
+  // {
+  //   id: "maratonista",
+  //   categoria: "presenca",
+  //   nome: "Maratonista",
+  //   descricao:
+  //     "“Uma verdadeira jornada musical.” — Os que tem a maior sequência de cultos seguidos tocando.",
+  //   ranking: () => {
+  //     const streak = computeLongestStreak(HISTORICO);
+  //     return streak.slice(0, 10);
+  //   },
+  // },
 ];
 
+function aplicarFiltroDeDatas() {
+  const startInput = document.getElementById("startDate")?.value;
+  const endInput = document.getElementById("endDate")?.value;
+
+  const start = startInput ? parseDateSafe(startInput) : null;
+  const end = endInput ? parseDateSafe(endInput) : null;
+
+  HISTORICO_FILTRADO = historico.filter((ev) => {
+    const d = parseDateSafe(ev.data);
+    if (!d) return false;
+    if (start && d < start) return false;
+    if (end && d > end) return false;
+    return true;
+  });
+}
+
+function setFiltroAnoAtual() {
+  const year = new Date().getFullYear();
+  const start = `${year}-01-01`;
+  const end = `${year}-12-31`;
+
+  const startEl = document.getElementById("startDate");
+  const endEl = document.getElementById("endDate");
+
+  if (startEl) startEl.value = start;
+  if (endEl) endEl.value = end;
+}
+
 function parseBrDate(str) {
-  if (!str || typeof str !== "string") return null;
   const [d, m, y] = str.split("/").map(Number);
-  if (!y || !m || !d) return null;
-  const dt = new Date(y, m - 1, d);
-  dt.setHours(0, 0, 0, 0);
-  return dt;
+  return new Date(y, m - 1, d);
 }
 
 async function loadData() {
@@ -596,8 +661,6 @@ async function loadData() {
     ...ev,
     dateObj: parseBrDate(ev.data),
   }));
-
-  HISTORICO_ORIGINAL = HISTORICO;
 }
 
 function isValidEvent(ev) {
@@ -626,53 +689,6 @@ function filterEvents() {
     if (end && ev.dateObj > end) return false;
     return true;
   });
-}
-
-function aplicarFiltroDeDatasNoHistorico() {
-  const startVal = document.getElementById("startDate")?.value || "";
-  const endVal = document.getElementById("endDate")?.value || "";
-
-  // inputs do type="date" -> YYYY-MM-DD
-  const start = startVal ? parseDate(startVal) : null;
-
-  // end inclusivo: fim do dia
-  const end = endVal ? parseDate(endVal) : null;
-  if (end) end.setHours(23, 59, 59, 999);
-
-  HISTORICO = (Array.isArray(HISTORICO_ORIGINAL) ? HISTORICO_ORIGINAL : [])
-    .map((ev) => {
-      // garante dateObj mesmo se algum item antigo não tiver
-      if (ev?.dateObj instanceof Date && !isNaN(ev.dateObj)) return ev;
-      const d = parseBrDate(ev?.data);
-      return { ...ev, dateObj: d };
-    })
-    .filter((ev) => {
-      if (!(ev?.dateObj instanceof Date) || isNaN(ev.dateObj)) return false;
-      if (start && ev.dateObj < start) return false;
-      if (end && ev.dateObj > end) return false;
-      return true;
-    });
-}
-
-function setFiltroAnoAtual() {
-  const ano = new Date().getFullYear();
-
-  const startEl = document.getElementById("startDate");
-  const endEl = document.getElementById("endDate");
-
-  if (startEl) startEl.value = `${ano}-01-01`;
-  if (endEl) endEl.value = `${ano}-12-31`;
-}
-
-function rerenderWrapped() {
-  aplicarFiltroDeDatasNoHistorico();
-
-  // (opcional, mas ajuda muito a confirmar que o filtro não zerou)
-  console.log("HISTORICO filtrado:", HISTORICO.length);
-
-  renderBandSection(HISTORICO);
-  renderMemberSection(HISTORICO);
-  renderTitles(HISTORICO);
 }
 
 // ---------------------------
@@ -1797,16 +1813,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       applyFiltersAndRender();
       setActiveView("band");
-
-      document
-        .getElementById("startDate")
-        .addEventListener("change", rerenderWrapped);
-      document
-        .getElementById("endDate")
-        .addEventListener("change", rerenderWrapped);
-
-      setFiltroAnoAtual();
-
     })
     .catch((err) => {
       console.error("Erro carregando dados:", err);
@@ -2269,284 +2275,353 @@ function buildExecCountMap(events) {
 
 // ---- Métricas por integrante
 function computeMemberStats(events) {
-  const firstAppearanceBySong = new Map();
+  const stats = new Map();
 
-  // percorre o histórico em ordem cronológica
-  (events || []).forEach((ev, index) => {
-    const musicas = getEventMusicas(ev);
-    musicas.forEach((mid) => {
-      if (!firstAppearanceBySong.has(mid)) {
-        firstAppearanceBySong.set(mid, index);
-      }
+  // -------- init (garante contrato completo) --------
+  const initStats = (memberId) => ({
+    memberId,
+    cultos: 0,
+
+    // Presença
+    attendanceCount: 0,
+
+    // Popularidade
+    pop: { classic: 0, common: 0, rare: 0, total: 0 },
+    popPct: { classic: 0, common: 0, rare: 0 },
+
+    // Técnica (híbrida por instrumento)
+    diff: { easy: 0, medium: 0, hard: 0, total: 0 },
+    diffPct: { easy: 0, medium: 0, hard: 0 },
+
+    // Curadoria (geral)
+    chosenSongsCount: 0,
+    chosenDaysCount: 0,
+    chosenArtistsCatalogPct: 0,
+
+    // Curadoria por dificuldade (média da música)
+    chosenDiff: { easy: 0, medium: 0, hard: 0, total: 0 },
+    chosenDiffPct: { easy: 0, medium: 0, hard: 0 },
+
+    // Diversidade
+    formationsCount: 0,
+    uniqueSongsPct: 0,
+    inauguratedSongsCount: 0,
+
+    // ---- internos/derivados (não usados diretamente por títulos, mas úteis p/ cálculo)
+    _repertorioSet: new Set(),
+    _formationsSet: new Set(),
+    _chosenSongsSet: new Set(),
+    _chosenDaysSet: new Set(),
+    _chosenArtistsSet: new Set(),
+    _inauguratedSongsSet: new Set(),
+    _chosenSongsUniquePct: 0,
+  });
+
+  const getOrInit = (memberIdRaw) => {
+    const memberId = Number(memberIdRaw);
+    if (!Number.isFinite(memberId)) return null;
+    if (!stats.has(memberId)) stats.set(memberId, initStats(memberId));
+    return stats.get(memberId);
+  };
+
+  const evs = Array.isArray(events) ? events : [];
+
+  // catálogo (p/ %)
+  const totalSongsCatalog = Array.isArray(MUSICAS_RAW) ? MUSICAS_RAW.length : 0;
+
+  const totalArtistsCatalog = (() => {
+    const s = new Set();
+    (Array.isArray(MUSICAS_RAW) ? MUSICAS_RAW : []).forEach((m) => {
+      const a = (m?.artista || "").trim();
+      if (a) s.add(a);
     });
+    return s.size || 0;
+  })();
+
+  // inaugurações: precisa ser cronológico
+  const ordered = [...evs].sort((a, b) => {
+    const da = parseEventDate(a);
+    const db = parseEventDate(b);
+    return (da ? da.getTime() : 0) - (db ? db.getTime() : 0);
   });
 
-  const totalArtistsSet = new Set();
-  (MUSICAS_RAW || []).forEach((s) => {
-    if (s?.artista) totalArtistsSet.add(s.artista);
-  });
-  const totalCatalogArtists = totalArtistsSet.size;
+  const firstSeenSong = new Set();
 
-  // garante que o map de músicas está OK (carregado / reconstruído)
-  const musicById = buildMusicById();
+  // -------- loop principal --------
+  ordered.forEach((ev) => {
+    const musicas =
+      typeof getEventMusicas === "function"
+        ? getEventMusicas(ev)
+        : Array.isArray(ev?.musicas)
+        ? ev.musicas
+        : [];
 
-  // total de músicas DIFERENTES que já foram tocadas no histórico
-  const touchedSongsSet = new Set();
-  (events || []).forEach((ev) => {
-    const mids = getEventMusicas(ev);
-    mids.forEach((mid) => {
-      const n = Number(mid);
-      if (Number.isFinite(n)) touchedSongsSet.add(n);
-    });
-  });
+    const integrantesEv =
+      typeof getEventIntegrantes === "function"
+        ? getEventIntegrantes(ev)
+        : Array.isArray(ev?.integrantes)
+        ? ev.integrantes
+        : [];
 
-  const totalRepertorioSongs = Array.isArray(MUSICAS_RAW)
-    ? MUSICAS_RAW.length
-    : 0;
+    // formações (por culto)
+    if (integrantesEv.length) {
+      const formationKey = [...integrantesEv]
+        .map((x) => String(Number(x)))
+        .sort()
+        .join("|");
 
-  const memberById = new Map();
-  (INTEGRANTES_RAW || []).forEach((m) => memberById.set(Number(m.id), m));
-
-  const stats = new Map(); // id -> stat object
-
-  // garante que TODO mundo existe no Map, mesmo quem tocou 0 vezes
-  (INTEGRANTES_RAW || []).forEach((m) => {
-    getOrInit(Number(m.id));
-  });
-
-  function getOrInit(mid) {
-    const id = Number(mid);
-    if (!stats.has(id)) {
-      stats.set(id, {
-        memberId: id,
-        cultos: 0,
-        songsSet: new Set(),
-        artistsSet: new Set(),
-        categoriesSet: new Set(),
-        categoriesCount: new Map(), // cat -> count
-        partnersSet: new Set(),
-        // difficulty counts for primary instrument
-        diff: { easy: 0, medium: 0, hard: 0, total: 0 },
-        // popularity counts
-        pop: { classic: 0, common: 0, rare: 0, total: 0 },
-        // choices
-        chosenSongsCount: 0,
-        chosenSongsSet: new Set(),
-        chosenArtistsSet: new Set(),
-        chosenArtistsCount: 0,
-
-        chosenDaysCount: 0,
-        chosenDaysSet: new Set(),
-
-        formationsSet: new Set(), // todas as formações que ele já tocou
-        formationsCount: 0,
-
-        inauguratedSongsSet: new Set(),
-        inauguratedSongsCount: 0,
+      integrantesEv.forEach((mid) => {
+        const st = getOrInit(mid);
+        if (!st) return;
+        st._formationsSet.add(formationKey);
       });
     }
-    return stats.get(id);
-  }
 
-  // Pré-process: para parcerias, precisamos do elenco do culto
-  (events || []).forEach((ev) => {
-    const integrantes = (getEventIntegrantes(ev) || [])
-      .map((x) => Number(x))
-      .filter(Number.isFinite);
+    // execução (tocadas): técnica + popularidade + repertório + presença
+    integrantesEv.forEach((mid) => {
+      const st = getOrInit(mid);
+      if (!st) return;
 
-    const musicas = (getEventMusicas(ev) || [])
-      .map((x) => Number(x))
-      .filter(Number.isFinite);
+      st.cultos++;
+      st.attendanceCount = st.cultos;
 
-    const musicById = new Map();
-    (MUSICAS_RAW || []).forEach((m) => {
-      musicById.set(String(m.id), m);
-    });
-
-    // =============================
-    // CAMALeÃO / PANELINHA — formações inéditas
-    // =============================
-    const formationKey = integrantes
-      .slice()
-      .sort((a, b) => a - b)
-      .join("-");
-
-    integrantes.forEach((memberId) => {
-      const st = getOrInit(memberId);
-      if (!st.formationsSet.has(formationKey)) {
-        st.formationsSet.add(formationKey);
-        st.formationsCount += 1;
-      }
-    });
-
-    // culto count
-    integrantes.forEach((iid) => {
-      getOrInit(iid).cultos += 1;
-    });
-
-    // partners
-    integrantes.forEach((iid) => {
-      const st = getOrInit(iid);
-      integrantes.forEach((other) => {
-        if (other !== iid) st.partnersSet.add(other);
-      });
-    });
-
-    // songs played / artists / categories / popularity / difficulty
-    integrantes.forEach((iid) => {
-      const st = getOrInit(iid);
-      const member = memberById.get(iid);
+      const member = MEMBER_BY_ID.get(Number(mid)) || null;
       const instrument = getPrimaryInstrument(member);
 
-      for (const mid of musicas) {
-        const song = musicById.get(String(mid));
-        if (!song) continue;
+      musicas.forEach((songIdRaw) => {
+        const songId = Number(songIdRaw);
+        if (!Number.isFinite(songId)) return;
 
-        // ✅ agora soma repertório corretamente
-        st.songsSet.add(mid);
+        const musica = MUSIC_BY_ID.get(songId) || null;
+        if (!musica) return;
 
-        if (song.artista) st.artistsSet.add(song.artista);
+        // repertório (diversidade)
+        st._repertorioSet.add(songId);
 
-        const cats = normalizeCategoriasField(song);
-        cats.forEach((c) => {
-          st.categoriesSet.add(c);
-          st.categoriesCount.set(c, (st.categoriesCount.get(c) || 0) + 1);
-        });
-
-        // popularidade
-        const tier = getTierForMusicId(mid);
-        st.pop.total += 1;
-        if (tier === "classic") st.pop.classic += 1;
-        else if (tier === "secret") st.pop.rare += 1;
-        else st.pop.common += 1;
-
-        // dificuldade por instrumento
-        if (instrument) {
-          const d = getSongDifficultyForInstrument(song, instrument);
-          if (d) {
-            st.diff.total += 1;
-            st.diff[d] += 1;
-          }
+        // técnica híbrida já definida: por instrumento
+        const tier = getSongDifficultyForInstrument(musica, instrument);
+        if (tier === "easy" || tier === "medium" || tier === "hard") {
+          st.diff[tier]++;
+          st.diff.total++;
         }
-      }
+
+        // popularidade (usa computePopularidadeCatalog)
+        // tiers do catálogo: classic/common/secret -> mapear secret => rare
+        const rawTier = getTierForMusicId(songId);
+        const popTier = rawTier === "secret" ? "rare" : rawTier;
+
+        if (
+          popTier === "classic" ||
+          popTier === "common" ||
+          popTier === "rare"
+        ) {
+          st.pop[popTier]++;
+          st.pop.total++;
+        }
+      });
     });
 
-    // =========================================================
-    // ESCOLHAS — via "header" (array de IDs)
-    // =========================================================
-    const escolhidos = Array.isArray(ev?.header) ? ev.header : [];
-    const dayKey = ev?.data; // no seu historico.json é "dd/mm/aaaa"
+    // escolhas (curadoria) via header
+    const headerRaw =
+      ev?.header ??
+      ev?.cabeca ??
+      ev?.curador ??
+      ev?.escolhedor ??
+      ev?.escolhidos ??
+      null;
 
-    if (escolhidos.length && musicas.length && dayKey) {
-      escolhidos.forEach((memberId) => {
-        const st = getOrInit(memberId);
+    const escolhidos = Array.isArray(headerRaw)
+      ? headerRaw
+      : headerRaw != null
+      ? [headerRaw]
+      : [];
 
-        // ✅ conta 1 vez por culto (dia)
-        if (!st.chosenDaysSet.has(dayKey)) {
-          st.chosenDaysSet.add(dayKey);
-          st.chosenDaysCount += 1;
+    const d = parseEventDate(ev);
+    const dayKey = d
+      ? d.toISOString().slice(0, 10)
+      : ev?.data
+      ? String(ev.data)
+      : null;
+
+    if (escolhidos.length && musicas.length) {
+      escolhidos.forEach((mid) => {
+        const st = getOrInit(mid);
+        if (!st) return;
+
+        // dia escolhido (1x por culto)
+        if (dayKey && !st._chosenDaysSet.has(dayKey)) {
+          st._chosenDaysSet.add(dayKey);
+          st.chosenDaysCount++;
         }
 
-        // mantém as métricas por MÚSICA (usadas em outros títulos)
-        musicas.forEach((mid) => {
-          st.chosenSongsCount += 1;
-          st.chosenSongsSet.add(mid);
+        musicas.forEach((songIdRaw) => {
+          const songId = Number(songIdRaw);
+          if (!Number.isFinite(songId)) return;
 
-          const song = musicById.get(String(mid));
+          const musica = MUSIC_BY_ID.get(songId) || null;
+          if (!musica) return;
+
+          // contagem de escolhas (com repetição)
+          st.chosenSongsCount++;
+
+          // únicas
+          st._chosenSongsSet.add(songId);
+
+          // artistas únicos
+          const art = (musica.artista || "").trim();
+          if (art) st._chosenArtistsSet.add(art);
+
+          // curadoria por dificuldade: média da música (sem mexer na regra híbrida de execução)
+          // usa os mesmos campos do JSON já suportados
+          const diffRaw =
+            musica?.level ??
+            musica?.dificuldades ??
+            musica?.dificuldade ??
+            musica?.difficulty ??
+            null;
+
+          const vals = [];
 
           if (
-            song &&
-            typeof song.artista === "string" &&
-            song.artista.trim() !== ""
+            diffRaw &&
+            typeof diffRaw === "object" &&
+            !Array.isArray(diffRaw)
           ) {
-            st.chosenArtistsSet.add(song.artista.trim());
+            Object.values(diffRaw).forEach((v) => vals.push(v));
+          } else if (Array.isArray(diffRaw)) {
+            diffRaw.forEach((obj) => {
+              if (obj && typeof obj === "object")
+                Object.values(obj).forEach((v) => vals.push(v));
+            });
+          } else if (diffRaw != null) {
+            vals.push(diffRaw);
+          }
+
+          const nums = vals
+            .map((v) => {
+              const t = normalizeDifficultyValue(v);
+              if (t === "easy") return 1;
+              if (t === "medium") return 2;
+              if (t === "hard") return 3;
+              return null;
+            })
+            .filter((x) => x != null);
+
+          if (nums.length) {
+            const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
+            let tier = "easy";
+            if (avg >= 2.5) tier = "hard";
+            else if (avg >= 1.5) tier = "medium";
+
+            st.chosenDiff[tier]++;
+            st.chosenDiff.total++;
           }
         });
       });
     }
 
-    const eventIndex = events.indexOf(ev);
+    // inaugurações (primeira vez no período)
+    if (escolhidos.length && musicas.length) {
+      musicas.forEach((songIdRaw) => {
+        const songId = Number(songIdRaw);
+        if (!Number.isFinite(songId)) return;
 
-    escolhidos.forEach((memberId) => {
-      const st = getOrInit(memberId);
+        if (firstSeenSong.has(songId)) return;
+        firstSeenSong.add(songId);
 
-      getEventMusicas(ev).forEach((mid) => {
-        if (firstAppearanceBySong.get(mid) === eventIndex) {
-          st.inauguratedSongsSet.add(mid);
-        }
+        escolhidos.forEach((mid) => {
+          const st = getOrInit(mid);
+          if (!st) return;
+          st._inauguratedSongsSet.add(songId);
+        });
       });
-    });
+    }
   });
 
-  // derivações prontas
+  // -------- pós-processamento / contrato --------
   stats.forEach((st) => {
-    const touched = st.songsSet.size;
-    const denom = totalRepertorioSongs;
+    // diversidade: formações
+    st.formationsCount = st._formationsSet.size;
 
-    // ✅ MÉTRICA DE REPERTÓRIO (CORRETA):
-    // músicas que tocou / músicas diferentes já tocadas no histórico
-    st.repertorioPct = denom > 0 ? touched / denom : 0;
-    st.repertorioTouchedCount = touched;
-    st.repertorioTotal = denom;
-
-    st.artistsCount = st.artistsSet.size;
-
-    st.diffPct = {
-      easy: st.diff.total ? st.diff.easy / st.diff.total : 0,
-      medium: st.diff.total ? st.diff.medium / st.diff.total : 0,
-      hard: st.diff.total ? st.diff.hard / st.diff.total : 0,
-    };
-
-    st.popPct = {
-      classic: st.pop.total ? st.pop.classic / st.pop.total : 0,
-      common: st.pop.total ? st.pop.common / st.pop.total : 0,
-      rare: st.pop.total ? st.pop.rare / st.pop.total : 0,
-    };
-
-    st.chosenSongsUniquePct = st.chosenSongsCount
-      ? st.chosenSongsSet.size / st.chosenSongsCount
+    // diversidade: % de músicas únicas do catálogo
+    st.uniqueSongsPct = totalSongsCatalog
+      ? st._repertorioSet.size / totalSongsCatalog
       : 0;
 
-    st.chosenArtistsUniquePct = st.chosenArtistsCount
-      ? st.chosenArtistsSet.size / st.chosenArtistsCount
+    // inaugurações
+    st.inauguratedSongsCount = st._inauguratedSongsSet.size;
+
+    // curadoria: artistas / catálogo
+    st.chosenArtistsCatalogPct = totalArtistsCatalog
+      ? st._chosenArtistsSet.size / totalArtistsCatalog
       : 0;
 
-    st.partnersCount = st.partnersSet.size;
+    // repetição (interno, mas usado em renderMemberSection)
+    st._chosenSongsUniquePct = st.chosenSongsCount
+      ? st._chosenSongsSet.size / st.chosenSongsCount
+      : 0;
 
-    // Specialist / Versatile via categorias (nas músicas tocadas)
-    const totalCats =
-      Array.from(st.categoriesCount.values()).reduce((a, b) => a + b, 0) || 0;
-
-    let maxShare = 0;
-    if (totalCats) {
-      st.categoriesCount.forEach((cnt) => {
-        maxShare = Math.max(maxShare, cnt / totalCats);
-      });
-    }
-    st.categoryMaxShare = maxShare;
-
-    // Entropia normalizada como versatilidade (0..1)
-    let entropy = 0;
-    if (totalCats) {
-      st.categoriesCount.forEach((cnt) => {
-        const p = cnt / totalCats;
-        if (p > 0) entropy += -p * Math.log(p);
-      });
-      const k = Math.max(1, st.categoriesCount.size);
-      st.versatility = k > 1 ? entropy / Math.log(k) : 0;
+    // diff %
+    if (st.diff.total > 0) {
+      st.diffPct.easy = st.diff.easy / st.diff.total;
+      st.diffPct.medium = st.diff.medium / st.diff.total;
+      st.diffPct.hard = st.diff.hard / st.diff.total;
     } else {
-      st.versatility = 0;
+      st.diffPct.easy = 0;
+      st.diffPct.medium = 0;
+      st.diffPct.hard = 0;
     }
 
-    // % de artistas do CATÁLOGO que a pessoa já escolheu (via header)
-    st.chosenArtistsCatalogCount = st.chosenArtistsSet.size;
-    st.chosenArtistsCatalogTotal = totalCatalogArtists;
-    st.chosenArtistsCatalogPct =
-      totalCatalogArtists > 0
-        ? st.chosenArtistsCatalogCount / totalCatalogArtists
-        : 0;
+    // pop %
+    if (st.pop.total > 0) {
+      st.popPct.classic = st.pop.classic / st.pop.total;
+      st.popPct.common = st.pop.common / st.pop.total;
+      st.popPct.rare = st.pop.rare / st.pop.total;
+    } else {
+      st.popPct.classic = 0;
+      st.popPct.common = 0;
+      st.popPct.rare = 0;
+    }
 
-    st.inauguratedSongsCount = st.inauguratedSongsSet.size;
+    // chosen diff %
+    if (st.chosenDiff.total > 0) {
+      st.chosenDiffPct.easy = st.chosenDiff.easy / st.chosenDiff.total;
+      st.chosenDiffPct.medium = st.chosenDiff.medium / st.chosenDiff.total;
+      st.chosenDiffPct.hard = st.chosenDiff.hard / st.chosenDiff.total;
+    } else {
+      st.chosenDiffPct.easy = 0;
+      st.chosenDiffPct.medium = 0;
+      st.chosenDiffPct.hard = 0;
+    }
+
+    // ---- aliases p/ compatibilidade com o resto do arquivo ----
+    // (renderMemberSection usa st.chosenSongsSet.size e st.chosenSongsUniquePct)
+    st.chosenSongsSet = st._chosenSongsSet;
+    st.chosenSongsUniquePct = st._chosenSongsUniquePct;
+
+    // campos sempre numéricos
+    st.cultos = Number.isFinite(st.cultos) ? st.cultos : 0;
+    st.attendanceCount = Number.isFinite(st.attendanceCount)
+      ? st.attendanceCount
+      : 0;
+    st.chosenSongsCount = Number.isFinite(st.chosenSongsCount)
+      ? st.chosenSongsCount
+      : 0;
+    st.chosenDaysCount = Number.isFinite(st.chosenDaysCount)
+      ? st.chosenDaysCount
+      : 0;
+    st.chosenArtistsCatalogPct = Number.isFinite(st.chosenArtistsCatalogPct)
+      ? st.chosenArtistsCatalogPct
+      : 0;
+    st.formationsCount = Number.isFinite(st.formationsCount)
+      ? st.formationsCount
+      : 0;
+    st.uniqueSongsPct = Number.isFinite(st.uniqueSongsPct)
+      ? st.uniqueSongsPct
+      : 0;
+    st.inauguratedSongsCount = Number.isFinite(st.inauguratedSongsCount)
+      ? st.inauguratedSongsCount
+      : 0;
   });
 
   return stats;
@@ -2647,16 +2722,20 @@ function rankByAscChosenDaysOnly(statsMap, valueFn, topN = 10) {
   );
 }
 
+function getHojeZerado() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function parseDateSafe(str) {
+  if (!str) return null;
+  const d = parseDate(str);
+  if (!d || isNaN(d)) return null;
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 function pct(v) {
   return Math.round((v || 0) * 1000) / 10; // 1 casa decimal
 }
-
-function parseDate(str) {
-  if (!str || typeof str !== "string") return null;
-  const [y, m, d] = str.split("-").map(Number);
-  if (!y || !m || !d) return null;
-  const dt = new Date(y, m - 1, d);
-  dt.setHours(0, 0, 0, 0);
-  return dt;
-}
-
