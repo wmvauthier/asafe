@@ -1951,7 +1951,7 @@ function renderTitles() {
   // =========================
   const eligibleIds = new Set(
     Array.from(stats.values())
-      .filter((s) => s.cultos >= 7)
+      .filter((s) => s.cultos >= 1)
       .map((s) => s.memberId)
   );
 
