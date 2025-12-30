@@ -617,7 +617,7 @@ function aplicarFiltroDeDatas() {
   const start = startInput ? parseDateSafe(startInput) : null;
   const end = endInput ? parseDateSafe(endInput) : null;
 
-  HISTORICO_FILTRADO = historico.filter((ev) => {
+  HISTORICO_FILTRADO = HISTORICO.filter((ev) => {
     const d = parseDateSafe(ev.data);
     if (!d) return false;
     if (start && d < start) return false;
@@ -1753,8 +1753,15 @@ function populateMemberFilter() {
 
 function applyFiltersAndRender() {
   const events = filterEvents();
+
+  // Fonte única do período ativo (títulos + visões)
+  HISTORICO_FILTRADO = events;
+
   renderBandSection(events);
   renderMemberSection(events);
+
+  // Render de títulos deve respeitar o mesmo período filtrado
+  renderTitles();
 }
 
 // ---------------------------
@@ -1798,6 +1805,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .then(() => {
       populateMemberFilter();
       initDateRangeFromHistorico();
+      setFiltroAnoAtual();
 
       // Restaurar integrante salvo
       const savedMember = localStorage.getItem("selectedMember");
@@ -1927,10 +1935,18 @@ function renderTitles() {
   if (!grid) return;
   grid.innerHTML = "";
 
-  // stats completos (não mexemos no compute)
-  const stats = computeMemberStats(HISTORICO);
+  const hist = HISTORICO_FILTRADO.length ? HISTORICO_FILTRADO : HISTORICO;
 
-  // =========================
+  // Garantir que todos os rankings que usam computeMemberStats(HISTORICO)
+  // respeitem o período filtrado, sem precisar alterar cada título.
+  const __HIST_ORIG = HISTORICO;
+  HISTORICO = hist;
+
+  try {
+    // stats completos (não mexemos no compute)
+    const stats = computeMemberStats(hist);
+
+// =========================
   // REGRA: só entra em títulos quem tem 7+ cultos
   // =========================
   const eligibleIds = new Set(
@@ -2059,6 +2075,9 @@ function renderTitles() {
     card.append(thumb, body);
     grid.appendChild(card);
   });
+  } finally {
+    HISTORICO = __HIST_ORIG;
+  }
 }
 
 // =========================================================
@@ -2730,7 +2749,7 @@ function getHojeZerado() {
 
 function parseDateSafe(str) {
   if (!str) return null;
-  const d = parseDate(str);
+  const d = parseEventDate(str);
   if (!d || isNaN(d)) return null;
   d.setHours(0, 0, 0, 0);
   return d;
