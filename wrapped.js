@@ -1947,7 +1947,7 @@ function renderTitles() {
     const stats = computeMemberStats(hist);
 
     // =========================
-    // REGRA: só entra em títulos quem tem 7+ cultos
+    // REGRA: só entra em títulos quem tem 1+ cultos
     // =========================
     const eligibleIds = new Set(
       Array.from(stats.values())
@@ -2351,6 +2351,11 @@ function computeMemberStats(events) {
     if (!nums.length) return null;
 
     const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
+
+    if (avg >= 2.5) {
+      console.log(musica.titulo);
+      console.log(avg);
+    }
 
     // thresholds atuais do projeto (mantidos)
     if (avg >= 2.5) return "hard";

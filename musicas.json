@@ -7,7 +7,7 @@
         "categorias": "Morte e Ressurreição",
         "versiculos": "",
         "level": {
-            "vocal": "easy",
+            "vocal": "medium",
             "guitarra": "hard",
             "baixo": "hard",
             "violao": "",
@@ -38,7 +38,7 @@
         "titulo": "Senhor e Rei",
         "artista": "Davi Sacer",
         "referLink": "zPD2W9WEm8s",
-        "categorias": "Engrandecimento e Exaltação; Adoração Congregacional",
+        "categorias": "Engrandecimento e Exaltação; Adoração Congregacional; Glória de Deus",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -93,7 +93,7 @@
         "categorias": "Intimidade com Deus; Confiança e Esperança; Amor de Deus",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
+            "vocal": "easy",
             "guitarra": "easy",
             "baixo": "easy",
             "violao": "",
@@ -115,7 +115,7 @@
             "baixo": "easy",
             "violao": "",
             "bateria": "easy",
-            "teclado": "easy",
+            "teclado": "medium",
             "sax": ""
         }
     },
@@ -146,7 +146,7 @@
         "level": {
             "vocal": "medium",
             "guitarra": "medium",
-            "baixo": "medium",
+            "baixo": "easy",
             "violao": "",
             "bateria": "easy",
             "teclado": "medium",
@@ -175,15 +175,15 @@
         "titulo": "Depois da Cruz",
         "artista": "Aline Barros",
         "referLink": "BcX-KWrsSYk",
-        "categorias": "Morte e Ressurreição",
+        "categorias": "Morte e Ressurreição; Amor de Deus",
         "versiculos": "",
         "level": {
             "vocal": "medium",
             "guitarra": "medium",
-            "baixo": "easy",
+            "baixo": "hard",
             "violao": "",
-            "bateria": "easy",
-            "teclado": "easy",
+            "bateria": "medium",
+            "teclado": "medium",
             "sax": ""
         },
         "ban": true
@@ -1497,7 +1497,7 @@
             "guitarra": "medium",
             "baixo": "easy",
             "violao": "",
-            "bateria": "easy",
+            "bateria": "medium",
             "teclado": "easy",
             "sax": ""
         }
