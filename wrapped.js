@@ -1347,7 +1347,7 @@ function renderBandSection(events) {
     buildRankedMusicsList(
       insights.topMusics,
       "Nenhuma música no período.",
-      (m) => `${m.count}x no período`
+      (m) => `${m.count}x`
     )
   );
 
@@ -1356,7 +1356,7 @@ function renderBandSection(events) {
     buildRankedMusicsList(
       insights.raridades,
       "Não há músicas Incomums no período.",
-      (m) => `${m.count}x no período`
+      (m) => `${m.count}x`
     )
   );
 
@@ -1946,135 +1946,135 @@ function renderTitles() {
     // stats completos (não mexemos no compute)
     const stats = computeMemberStats(hist);
 
-// =========================
-  // REGRA: só entra em títulos quem tem 7+ cultos
-  // =========================
-  const eligibleIds = new Set(
-    Array.from(stats.values())
-      .filter((s) => s.cultos >= 1)
-      .map((s) => s.memberId)
-  );
-
-  // integrantes elegíveis para títulos
-  const integrantes = INTEGRANTES_RAW.filter((i) => eligibleIds.has(i.id));
-
-  // ordem fixa de categorias (agrupamento lógico)
-  const CATEGORY_ORDER = [
-    "presenca",
-    "banda",
-    "repertorio",
-    "diversidade",
-    "perfil",
-    "tecnica",
-    "curadoria",
-    "popularidade",
-  ];
-
-  const catIndex = (c) => {
-    const i = CATEGORY_ORDER.indexOf(c);
-    return i === -1 ? 999 : i;
-  };
-
-  const sortedTitles = [...TITLES].sort((a, b) => {
-    const da = catIndex(a.categoria);
-    const db = catIndex(b.categoria);
-    if (da !== db) return da - db;
-    return 0;
-  });
-
-  sortedTitles.forEach((title) => {
-    const rankingData =
-      typeof title.ranking === "function" ? title.ranking() : title.ranking;
-
-    if (!Array.isArray(rankingData)) return;
-
-    // 🔽 filtra ranking para só integrantes elegíveis
-    const filteredRanking = rankingData.filter((r) =>
-      eligibleIds.has(r.memberId)
+    // =========================
+    // REGRA: só entra em títulos quem tem 7+ cultos
+    // =========================
+    const eligibleIds = new Set(
+      Array.from(stats.values())
+        .filter((s) => s.cultos >= 1)
+        .map((s) => s.memberId)
     );
 
-    if (filteredRanking.length === 0) return;
+    // integrantes elegíveis para títulos
+    const integrantes = INTEGRANTES_RAW.filter((i) => eligibleIds.has(i.id));
 
-    const winner = filteredRanking[0];
-    if (!winner || winner.memberId == null) return;
+    // ordem fixa de categorias (agrupamento lógico)
+    const CATEGORY_ORDER = [
+      "presenca",
+      "banda",
+      "repertorio",
+      "diversidade",
+      "perfil",
+      "tecnica",
+      "curadoria",
+      "popularidade",
+    ];
 
-    const winnerMember = integrantes.find((i) => i.id === winner.memberId);
-    if (!winnerMember) return;
-
-    const card = document.createElement("div");
-    card.className = "title-card";
-
-    // THUMB
-    const thumb = document.createElement("div");
-    thumb.className = "title-thumb";
-
-    const img = document.createElement("img");
-    img.src = `integrantes/${winnerMember.nome.toLowerCase()}.jpeg`;
-    img.onerror = () => (img.src = "integrantes/default.jpeg");
-    thumb.appendChild(img);
-
-    // BODY
-    const body = document.createElement("div");
-    body.className = "title-body";
-
-    const name = document.createElement("div");
-    name.className = "title-name";
-    name.textContent = title.nome;
-
-    const catMeta = TITLE_CATEGORIES[title.categoria] || {
-      icon: "🏷️",
-      label: "Outros",
+    const catIndex = (c) => {
+      const i = CATEGORY_ORDER.indexOf(c);
+      return i === -1 ? 999 : i;
     };
 
-    const cat = document.createElement("div");
-    cat.className = "title-category";
-    cat.textContent = `${catMeta.icon} ${catMeta.label}`;
-
-    const desc = document.createElement("div");
-    desc.className = "title-description";
-    desc.textContent = title.descricao;
-
-    // RANKING
-    const ranking = document.createElement("div");
-    ranking.className = "title-ranking";
-
-    filteredRanking.slice(0, 10).forEach((r, idx) => {
-      const member = integrantes.find((i) => i.id === r.memberId);
-      if (!member) return;
-
-      const item = document.createElement("div");
-      item.className = "title-ranking-item";
-
-      const medal = document.createElement("span");
-      medal.className = "title-ranking-medal";
-      if (idx === 0) medal.textContent = "🥇";
-      else if (idx === 1) medal.textContent = "🥈";
-      else if (idx === 2) medal.textContent = "🥉";
-
-      const pos = document.createElement("span");
-      pos.className = "pos";
-      pos.textContent = `#${idx + 1}`;
-
-      const nome = document.createElement("span");
-      nome.className = "name";
-      nome.textContent = member.nome;
-
-      const valor = document.createElement("span");
-      valor.className = "value";
-      valor.textContent = `${r.value}`;
-
-      if (idx === 0) pos.style.color = "#facc15";
-      if (idx === 1) pos.style.color = "#e5e7eb";
-      if (idx === 2) pos.style.color = "#f59e0b";
-
-      item.append(medal, pos, nome, valor);
-      ranking.appendChild(item);
+    const sortedTitles = [...TITLES].sort((a, b) => {
+      const da = catIndex(a.categoria);
+      const db = catIndex(b.categoria);
+      if (da !== db) return da - db;
+      return 0;
     });
 
-    body.append(name, cat, desc, ranking);
-    card.append(thumb, body);
-    grid.appendChild(card);
-  });
+    sortedTitles.forEach((title) => {
+      const rankingData =
+        typeof title.ranking === "function" ? title.ranking() : title.ranking;
+
+      if (!Array.isArray(rankingData)) return;
+
+      // 🔽 filtra ranking para só integrantes elegíveis
+      const filteredRanking = rankingData.filter((r) =>
+        eligibleIds.has(r.memberId)
+      );
+
+      if (filteredRanking.length === 0) return;
+
+      const winner = filteredRanking[0];
+      if (!winner || winner.memberId == null) return;
+
+      const winnerMember = integrantes.find((i) => i.id === winner.memberId);
+      if (!winnerMember) return;
+
+      const card = document.createElement("div");
+      card.className = "title-card";
+
+      // THUMB
+      const thumb = document.createElement("div");
+      thumb.className = "title-thumb";
+
+      const img = document.createElement("img");
+      img.src = `integrantes/${winnerMember.nome.toLowerCase()}.jpeg`;
+      img.onerror = () => (img.src = "integrantes/default.jpeg");
+      thumb.appendChild(img);
+
+      // BODY
+      const body = document.createElement("div");
+      body.className = "title-body";
+
+      const name = document.createElement("div");
+      name.className = "title-name";
+      name.textContent = title.nome;
+
+      const catMeta = TITLE_CATEGORIES[title.categoria] || {
+        icon: "🏷️",
+        label: "Outros",
+      };
+
+      const cat = document.createElement("div");
+      cat.className = "title-category";
+      cat.textContent = `${catMeta.icon} ${catMeta.label}`;
+
+      const desc = document.createElement("div");
+      desc.className = "title-description";
+      desc.textContent = title.descricao;
+
+      // RANKING
+      const ranking = document.createElement("div");
+      ranking.className = "title-ranking";
+
+      filteredRanking.slice(0, 10).forEach((r, idx) => {
+        const member = integrantes.find((i) => i.id === r.memberId);
+        if (!member) return;
+
+        const item = document.createElement("div");
+        item.className = "title-ranking-item";
+
+        const medal = document.createElement("span");
+        medal.className = "title-ranking-medal";
+        if (idx === 0) medal.textContent = "🥇";
+        else if (idx === 1) medal.textContent = "🥈";
+        else if (idx === 2) medal.textContent = "🥉";
+
+        const pos = document.createElement("span");
+        pos.className = "pos";
+        pos.textContent = `#${idx + 1}`;
+
+        const nome = document.createElement("span");
+        nome.className = "name";
+        nome.textContent = member.nome;
+
+        const valor = document.createElement("span");
+        valor.className = "value";
+        valor.textContent = `${r.value}`;
+
+        if (idx === 0) pos.style.color = "#facc15";
+        if (idx === 1) pos.style.color = "#e5e7eb";
+        if (idx === 2) pos.style.color = "#f59e0b";
+
+        item.append(medal, pos, nome, valor);
+        ranking.appendChild(item);
+      });
+
+      body.append(name, cat, desc, ranking);
+      card.append(thumb, body);
+      grid.appendChild(card);
+    });
   } finally {
     HISTORICO = __HIST_ORIG;
   }
@@ -2239,41 +2239,6 @@ function normalizeDifficultyValue(v) {
   return null;
 }
 
-function getSongDifficultyForInstrument(musica, instrument) {
-  if (!musica || !instrument) return null;
-
-  // ✅ seu musicas.json usa "level"
-  const diff =
-    musica?.level ??
-    musica?.dificuldades ??
-    musica?.dificuldade ??
-    musica?.difficulty ??
-    null;
-
-  // objeto por instrumento: { guitarra:"hard", baixo:"medium", ... }
-  if (diff && typeof diff === "object" && !Array.isArray(diff)) {
-    const v = diff[instrument] ?? diff[instrument.toLowerCase()] ?? null;
-    return normalizeDifficultyValue(v); // já converte "" -> null
-  }
-
-  // array de objetos (fallback)
-  if (Array.isArray(diff)) {
-    for (const obj of diff) {
-      if (obj && typeof obj === "object") {
-        const key = Object.keys(obj).find(
-          (k) => k.toLowerCase() === instrument.toLowerCase()
-        );
-        if (key) return normalizeDifficultyValue(obj[key]);
-      }
-    }
-  }
-
-  // string única (fallback)
-  if (typeof diff === "string") return normalizeDifficultyValue(diff);
-
-  return null;
-}
-
 // ---- Popularidade (tier) — usa seu computePopularidadeCatalog()
 function getTierForMusicId(mid) {
   const pop = computePopularidadeCatalog?.();
@@ -2296,7 +2261,6 @@ function buildExecCountMap(events) {
 function computeMemberStats(events) {
   const stats = new Map();
 
-  // -------- init (garante contrato completo) --------
   const initStats = (memberId) => ({
     memberId,
     cultos: 0,
@@ -2304,36 +2268,43 @@ function computeMemberStats(events) {
     // Presença
     attendanceCount: 0,
 
-    // Popularidade
-    pop: { classic: 0, common: 0, rare: 0, total: 0 },
-    popPct: { classic: 0, common: 0, rare: 0 },
+    // Repertório tocado pelo integrante
+    repertorioSet: new Set(),
+    repertorioPct: 0,
 
-    // Técnica (híbrida por instrumento)
+    // Alias (contrato)
+    uniqueSongsPct: 0,
+
+    // Parceiros / formações
+    formationsSet: new Set(),
+    formationsCount: 0,
+
+    // Técnica (padronizada pela dificuldade média da música)
     diff: { easy: 0, medium: 0, hard: 0, total: 0 },
     diffPct: { easy: 0, medium: 0, hard: 0 },
 
+    // Popularidade (tocadas)
+    pop: { classic: 0, common: 0, rare: 0, total: 0 },
+    popPct: { classic: 0, common: 0, rare: 0 },
+
     // Curadoria (geral)
     chosenSongsCount: 0,
-    chosenDaysCount: 0,
+    chosenSongsSet: new Set(),
+    chosenSongsUniquePct: 0,
+
+    chosenArtistsSet: new Set(),
     chosenArtistsCatalogPct: 0,
 
-    // Curadoria por dificuldade (média da música)
+    chosenDaysSet: new Set(),
+    chosenDaysCount: 0,
+
+    // Curadoria por dificuldade (padronizada pela dificuldade média da música)
     chosenDiff: { easy: 0, medium: 0, hard: 0, total: 0 },
     chosenDiffPct: { easy: 0, medium: 0, hard: 0 },
 
-    // Diversidade
-    formationsCount: 0,
-    uniqueSongsPct: 0,
+    // Inaugurações
+    inauguratedSongsSet: new Set(),
     inauguratedSongsCount: 0,
-
-    // ---- internos/derivados (não usados diretamente por títulos, mas úteis p/ cálculo)
-    _repertorioSet: new Set(),
-    _formationsSet: new Set(),
-    _chosenSongsSet: new Set(),
-    _chosenDaysSet: new Set(),
-    _chosenArtistsSet: new Set(),
-    _inauguratedSongsSet: new Set(),
-    _chosenSongsUniquePct: 0,
   });
 
   const getOrInit = (memberIdRaw) => {
@@ -2343,11 +2314,8 @@ function computeMemberStats(events) {
     return stats.get(memberId);
   };
 
-  const evs = Array.isArray(events) ? events : [];
-
-  // catálogo (p/ %)
+  // --------- catálogo (para percentuais) ----------
   const totalSongsCatalog = Array.isArray(MUSICAS_RAW) ? MUSICAS_RAW.length : 0;
-
   const totalArtistsCatalog = (() => {
     const s = new Set();
     (Array.isArray(MUSICAS_RAW) ? MUSICAS_RAW : []).forEach((m) => {
@@ -2357,7 +2325,41 @@ function computeMemberStats(events) {
     return s.size || 0;
   })();
 
-  // inaugurações: precisa ser cronológico
+  // --------- tier de dificuldade média da música (única régua) ----------
+  const getAverageMusicTier = (musica) => {
+    if (!musica) return null;
+
+    const diffRaw =
+      musica?.level ??
+      musica?.dificuldades ??
+      musica?.dificuldade ??
+      musica?.difficulty ??
+      null;
+
+    if (!diffRaw || typeof diffRaw !== "object") return null;
+
+    const nums = Object.values(diffRaw)
+      .map((v) => {
+        const t = normalizeDifficultyValue(v);
+        if (t === "easy") return 1;
+        if (t === "medium") return 2;
+        if (t === "hard") return 3;
+        return null;
+      })
+      .filter((x) => x != null);
+
+    if (!nums.length) return null;
+
+    const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
+
+    // thresholds atuais do projeto (mantidos)
+    if (avg >= 2.5) return "hard";
+    if (avg >= 1.5) return "medium";
+    return "easy";
+  };
+
+  // --------- ordenar eventos para inaugurações ----------
+  const evs = Array.isArray(events) ? events : [];
   const ordered = [...evs].sort((a, b) => {
     const da = parseEventDate(a);
     const db = parseEventDate(b);
@@ -2366,7 +2368,6 @@ function computeMemberStats(events) {
 
   const firstSeenSong = new Set();
 
-  // -------- loop principal --------
   ordered.forEach((ev) => {
     const musicas =
       typeof getEventMusicas === "function"
@@ -2382,30 +2383,26 @@ function computeMemberStats(events) {
         ? ev.integrantes
         : [];
 
-    // formações (por culto)
+    // ---------- formações ----------
     if (integrantesEv.length) {
       const formationKey = [...integrantesEv]
         .map((x) => String(Number(x)))
         .sort()
         .join("|");
-
       integrantesEv.forEach((mid) => {
         const st = getOrInit(mid);
         if (!st) return;
-        st._formationsSet.add(formationKey);
+        st.formationsSet.add(formationKey);
       });
     }
 
-    // execução (tocadas): técnica + popularidade + repertório + presença
+    // ---------- execução (tocadas) ----------
     integrantesEv.forEach((mid) => {
       const st = getOrInit(mid);
       if (!st) return;
 
       st.cultos++;
       st.attendanceCount = st.cultos;
-
-      const member = MEMBER_BY_ID.get(Number(mid)) || null;
-      const instrument = getPrimaryInstrument(member);
 
       musicas.forEach((songIdRaw) => {
         const songId = Number(songIdRaw);
@@ -2414,33 +2411,31 @@ function computeMemberStats(events) {
         const musica = MUSIC_BY_ID.get(songId) || null;
         if (!musica) return;
 
-        // repertório (diversidade)
-        st._repertorioSet.add(songId);
+        // repertório
+        st.repertorioSet.add(songId);
 
-        // técnica híbrida já definida: por instrumento
-        const tier = getSongDifficultyForInstrument(musica, instrument);
-        if (tier === "easy" || tier === "medium" || tier === "hard") {
-          st.diff[tier]++;
+        // técnica (média da música)
+        const tier = getAverageMusicTier(musica);
+        if (tier) {
+          st.diff[tier] = (st.diff[tier] || 0) + 1;
           st.diff.total++;
         }
 
-        // popularidade (usa computePopularidadeCatalog)
-        // tiers do catálogo: classic/common/secret -> mapear secret => rare
+        // popularidade (classic/common/secret -> rare)
         const rawTier = getTierForMusicId(songId);
         const popTier = rawTier === "secret" ? "rare" : rawTier;
-
         if (
           popTier === "classic" ||
           popTier === "common" ||
           popTier === "rare"
         ) {
-          st.pop[popTier]++;
+          st.pop[popTier] = (st.pop[popTier] || 0) + 1;
           st.pop.total++;
         }
       });
     });
 
-    // escolhas (curadoria) via header
+    // ---------- curadoria (cabeça) ----------
     const headerRaw =
       ev?.header ??
       ev?.cabeca ??
@@ -2467,9 +2462,9 @@ function computeMemberStats(events) {
         const st = getOrInit(mid);
         if (!st) return;
 
-        // dia escolhido (1x por culto)
-        if (dayKey && !st._chosenDaysSet.has(dayKey)) {
-          st._chosenDaysSet.add(dayKey);
+        // 1x por culto
+        if (dayKey && !st.chosenDaysSet.has(dayKey)) {
+          st.chosenDaysSet.add(dayKey);
           st.chosenDaysCount++;
         }
 
@@ -2480,66 +2475,27 @@ function computeMemberStats(events) {
           const musica = MUSIC_BY_ID.get(songId) || null;
           if (!musica) return;
 
-          // contagem de escolhas (com repetição)
+          // contagem de músicas escolhidas (com repetição)
           st.chosenSongsCount++;
 
           // únicas
-          st._chosenSongsSet.add(songId);
+          st.chosenSongsSet.add(songId);
 
           // artistas únicos
           const art = (musica.artista || "").trim();
-          if (art) st._chosenArtistsSet.add(art);
+          if (art) st.chosenArtistsSet.add(art);
 
-          // curadoria por dificuldade: média da música (sem mexer na regra híbrida de execução)
-          // usa os mesmos campos do JSON já suportados
-          const diffRaw =
-            musica?.level ??
-            musica?.dificuldades ??
-            musica?.dificuldade ??
-            musica?.difficulty ??
-            null;
-
-          const vals = [];
-
-          if (
-            diffRaw &&
-            typeof diffRaw === "object" &&
-            !Array.isArray(diffRaw)
-          ) {
-            Object.values(diffRaw).forEach((v) => vals.push(v));
-          } else if (Array.isArray(diffRaw)) {
-            diffRaw.forEach((obj) => {
-              if (obj && typeof obj === "object")
-                Object.values(obj).forEach((v) => vals.push(v));
-            });
-          } else if (diffRaw != null) {
-            vals.push(diffRaw);
-          }
-
-          const nums = vals
-            .map((v) => {
-              const t = normalizeDifficultyValue(v);
-              if (t === "easy") return 1;
-              if (t === "medium") return 2;
-              if (t === "hard") return 3;
-              return null;
-            })
-            .filter((x) => x != null);
-
-          if (nums.length) {
-            const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
-            let tier = "easy";
-            if (avg >= 2.5) tier = "hard";
-            else if (avg >= 1.5) tier = "medium";
-
-            st.chosenDiff[tier]++;
+          // curadoria por dificuldade (média da música — mesma régua da execução)
+          const tier = getAverageMusicTier(musica);
+          if (tier) {
+            st.chosenDiff[tier] = (st.chosenDiff[tier] || 0) + 1;
             st.chosenDiff.total++;
           }
         });
       });
     }
 
-    // inaugurações (primeira vez no período)
+    // ---------- inaugurações ----------
     if (escolhidos.length && musicas.length) {
       musicas.forEach((songIdRaw) => {
         const songId = Number(songIdRaw);
@@ -2551,34 +2507,29 @@ function computeMemberStats(events) {
         escolhidos.forEach((mid) => {
           const st = getOrInit(mid);
           if (!st) return;
-          st._inauguratedSongsSet.add(songId);
+          st.inauguratedSongsSet.add(songId);
         });
       });
     }
   });
 
-  // -------- pós-processamento / contrato --------
+  // ---------- pós-processamento ----------
   stats.forEach((st) => {
-    // diversidade: formações
-    st.formationsCount = st._formationsSet.size;
+    const uniqSongs = st.repertorioSet.size;
 
-    // diversidade: % de músicas únicas do catálogo
-    st.uniqueSongsPct = totalSongsCatalog
-      ? st._repertorioSet.size / totalSongsCatalog
+    st.repertorioPct = totalSongsCatalog ? uniqSongs / totalSongsCatalog : 0;
+    st.uniqueSongsPct = st.repertorioPct;
+
+    st.chosenSongsUniquePct = st.chosenSongsCount
+      ? st.chosenSongsSet.size / st.chosenSongsCount
       : 0;
 
-    // inaugurações
-    st.inauguratedSongsCount = st._inauguratedSongsSet.size;
-
-    // curadoria: artistas / catálogo
     st.chosenArtistsCatalogPct = totalArtistsCatalog
-      ? st._chosenArtistsSet.size / totalArtistsCatalog
+      ? st.chosenArtistsSet.size / totalArtistsCatalog
       : 0;
 
-    // repetição (interno, mas usado em renderMemberSection)
-    st._chosenSongsUniquePct = st.chosenSongsCount
-      ? st._chosenSongsSet.size / st.chosenSongsCount
-      : 0;
+    st.formationsCount = st.formationsSet.size;
+    st.inauguratedSongsCount = st.inauguratedSongsSet.size;
 
     // diff %
     if (st.diff.total > 0) {
@@ -2589,17 +2540,6 @@ function computeMemberStats(events) {
       st.diffPct.easy = 0;
       st.diffPct.medium = 0;
       st.diffPct.hard = 0;
-    }
-
-    // pop %
-    if (st.pop.total > 0) {
-      st.popPct.classic = st.pop.classic / st.pop.total;
-      st.popPct.common = st.pop.common / st.pop.total;
-      st.popPct.rare = st.pop.rare / st.pop.total;
-    } else {
-      st.popPct.classic = 0;
-      st.popPct.common = 0;
-      st.popPct.rare = 0;
     }
 
     // chosen diff %
@@ -2613,13 +2553,18 @@ function computeMemberStats(events) {
       st.chosenDiffPct.hard = 0;
     }
 
-    // ---- aliases p/ compatibilidade com o resto do arquivo ----
-    // (renderMemberSection usa st.chosenSongsSet.size e st.chosenSongsUniquePct)
-    st.chosenSongsSet = st._chosenSongsSet;
-    st.chosenSongsUniquePct = st._chosenSongsUniquePct;
+    // pop %
+    if (st.pop.total > 0) {
+      st.popPct.classic = st.pop.classic / st.pop.total;
+      st.popPct.common = st.pop.common / st.pop.total;
+      st.popPct.rare = st.pop.rare / st.pop.total;
+    } else {
+      st.popPct.classic = 0;
+      st.popPct.common = 0;
+      st.popPct.rare = 0;
+    }
 
-    // campos sempre numéricos
-    st.cultos = Number.isFinite(st.cultos) ? st.cultos : 0;
+    // garantias numéricas
     st.attendanceCount = Number.isFinite(st.attendanceCount)
       ? st.attendanceCount
       : 0;
@@ -2634,9 +2579,6 @@ function computeMemberStats(events) {
       : 0;
     st.formationsCount = Number.isFinite(st.formationsCount)
       ? st.formationsCount
-      : 0;
-    st.uniqueSongsPct = Number.isFinite(st.uniqueSongsPct)
-      ? st.uniqueSongsPct
       : 0;
     st.inauguratedSongsCount = Number.isFinite(st.inauguratedSongsCount)
       ? st.inauguratedSongsCount
