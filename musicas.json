@@ -36,7 +36,7 @@
     {
         "id": 3,
         "titulo": "Senhor e Rei",
-        "artista": "Davi Sacer",
+        "artista": "Trazendo a Arca",
         "referLink": "zPD2W9WEm8s",
         "categorias": "Engrandecimento e Exaltação; Adoração Congregacional; Glória de Deus",
         "versiculos": "",
@@ -107,7 +107,7 @@
         "titulo": "Atos 2",
         "artista": "Gabriela Rocha",
         "referLink": "WWrU6LC_4ho",
-        "categorias": "Engrandecimento e Exaltação; Adoração Congregacional",
+        "categorias": "Engrandecimento e Exaltação; Adoração Congregacional; Glória de Deus",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -139,7 +139,7 @@
     {
         "id": 10,
         "titulo": "Canção do Apocalipse",
-        "artista": "Diante do Trono",
+        "artista": "Gateway Church",
         "referLink": "5j0arvaKdqk",
         "categorias": "Engrandecimento e Exaltação; Segunda Vinda",
         "versiculos": "",
@@ -282,11 +282,11 @@
         "categorias": "Confiança e Esperança",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
+            "vocal": "hard",
             "guitarra": "medium",
             "baixo": "medium",
             "violao": "",
-            "bateria": "medium",
+            "bateria": "hard",
             "teclado": "medium",
             "sax": ""
         },
@@ -305,7 +305,7 @@
             "baixo": "easy",
             "violao": "",
             "bateria": "easy",
-            "teclado": "easy",
+            "teclado": "medium",
             "sax": ""
         },
         "ban": true
@@ -354,12 +354,12 @@
         "categorias": "Morte e Ressurreição; Engrandecimento e Exaltação",
         "versiculos": "",
         "level": {
-            "vocal": "easy",
+            "vocal": "medium",
             "guitarra": "hard",
             "baixo": "hard",
             "violao": "",
             "bateria": "hard",
-            "teclado": "easy",
+            "teclado": "medium",
             "sax": ""
         },
         "ban": true
@@ -407,7 +407,7 @@
         "categorias": "Adoração Congregacional; Morte e Ressurreição",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
+            "vocal": "easy",
             "guitarra": "medium",
             "baixo": "medium",
             "violao": "",
@@ -511,7 +511,7 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "easy",
+            "guitarra": "medium",
             "baixo": "easy",
             "violao": "",
             "bateria": "easy",
@@ -627,13 +627,13 @@
     {
         "id": 38,
         "titulo": "Nada Além do Sangue",
-        "artista": "Fernandinho",
+        "artista": "Robert Lowry",
         "referLink": "csPaNdL6ndA",
         "categorias": "Morte e Ressurreição",
         "versiculos": "",
         "level": {
             "vocal": "easy",
-            "guitarra": "easy",
+            "guitarra": "medium",
             "baixo": "easy",
             "violao": "",
             "bateria": "easy",
@@ -662,13 +662,13 @@
     {
         "id": 40,
         "titulo": "O Escudo + Sou um Milagre",
-        "artista": "Lukas Agustinho",
+        "artista": "Voz da Verdade",
         "referLink": "lWax47zymUE",
         "categorias": "Engrandecimento e Exaltação; Confiança e Esperança",
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "medium",
+            "guitarra": "hard",
             "baixo": "medium",
             "violao": "",
             "bateria": "medium",
@@ -720,7 +720,7 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "easy",
+            "guitarra": "medium",
             "baixo": "easy",
             "violao": "",
             "bateria": "easy",
@@ -785,7 +785,7 @@
         "titulo": "Pode Morar Aqui",
         "artista": "Theo Rubia",
         "referLink": "n0fDvJAyrQ8",
-        "categorias": "Segunda Vinda",
+        "categorias": "Intimidade com Deus; Segunda Vinda",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -802,7 +802,7 @@
         "titulo": "Preciso de Ti",
         "artista": "Diante do Trono",
         "referLink": "ieyQpi1j78E",
-        "categorias": "Confiança e Esperança; Intimidade com Deus; Engrandecimento e Exaltação",
+        "categorias": "Confiança e Esperança; Intimidade com Deus; Engrandecimento e Exaltação; Amor de Deus",
         "versiculos": "",
         "level": {
             "vocal": "hard",
@@ -842,10 +842,10 @@
         "level": {
             "vocal": "medium",
             "guitarra": "hard",
-            "baixo": "medium",
+            "baixo": "hard",
             "violao": "",
             "bateria": "hard",
-            "teclado": "medium",
+            "teclado": "hard",
             "sax": ""
         }
     },
@@ -933,7 +933,7 @@
             "baixo": "easy",
             "violao": "",
             "bateria": "easy",
-            "teclado": "easy",
+            "teclado": "medium",
             "sax": ""
         }
     },
@@ -946,18 +946,18 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "medium",
-            "baixo": "medium",
+            "guitarra": "hard",
+            "baixo": "hard",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "hard",
+            "teclado": "hard",
             "sax": ""
         }
     },
     {
         "id": 57,
         "titulo": "Tua Graça me basta",
-        "artista": "Davi Sacer",
+        "artista": "Trazendo a Arca",
         "referLink": "4y0_rOSnb_g",
         "categorias": "Intimidade com Deus; Confiança e Esperança; Glória de Deus",
         "versiculos": "",
@@ -995,7 +995,7 @@
         "titulo": "Vim para Adorar-te",
         "artista": "Hillsong",
         "referLink": "-4AAHPM98Do",
-        "categorias": "Adoração Congregacional; Engrandecimento e Exaltação; Morte e Ressurreição",
+        "categorias": "Intimidade com Deus; Engrandecimento e Exaltação; Morte e Ressurreição",
         "versiculos": "",
         "level": {
             "vocal": "easy",
@@ -1046,7 +1046,7 @@
         "titulo": "Até que o Senhor venha",
         "artista": "Cultura do Céu",
         "referLink": "E0F9NvrSoa0",
-        "categorias": "Glória de Deus",
+        "categorias": "Segunda Vinda; Glória de Deus",
         "versiculos": "",
         "level": {
             "vocal": "medium",
@@ -1086,10 +1086,10 @@
         "level": {
             "vocal": "easy",
             "guitarra": "medium",
-            "baixo": "medium",
+            "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -1101,11 +1101,11 @@
         "categorias": "Morte e Ressurreição",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
+            "vocal": "easy",
             "guitarra": "medium",
             "baixo": "medium",
             "violao": "",
-            "bateria": "medium",
+            "bateria": "easy",
             "teclado": "medium",
             "sax": ""
         },
@@ -1136,7 +1136,7 @@
         "categorias": "Glória de Deus; Intimidade com Deus",
         "versiculos": "",
         "level": {
-            "vocal": "medium",
+            "vocal": "easy",
             "guitarra": "easy",
             "baixo": "easy",
             "violao": "",
@@ -1157,8 +1157,8 @@
             "guitarra": "medium",
             "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "medium",
+            "bateria": "easy",
+            "teclado": "easy",
             "sax": ""
         }
     },
@@ -1225,7 +1225,7 @@
             "guitarra": "medium",
             "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
+            "bateria": "easy",
             "teclado": "medium",
             "sax": ""
         }
@@ -1497,8 +1497,8 @@
             "guitarra": "medium",
             "baixo": "easy",
             "violao": "",
-            "bateria": "medium",
-            "teclado": "easy",
+            "bateria": "hard",
+            "teclado": "medium",
             "sax": ""
         }
     },

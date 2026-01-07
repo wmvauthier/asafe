@@ -1819,7 +1819,7 @@ function calcularStatsRepertorioDaEscala(escala) {
   if (!n) return { dificuldadeGeralNivel: null };
 
   const media = soma / n;
-  const nivel = media < 1.67 ? "easy" : media < 2.34 ? "medium" : "hard";
+  const nivel = media < 1.5 ? "easy" : media < 2.5 ? "medium" : "hard";
 
   return { dificuldadeGeralNivel: nivel };
 }

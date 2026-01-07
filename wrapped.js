@@ -2353,8 +2353,8 @@ function computeMemberStats(events) {
     const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
 
     if (avg >= 2.5) {
-      console.log(musica.titulo);
-      console.log(avg);
+      // console.log(musica.titulo);
+      // console.log(avg);
     }
 
     // thresholds atuais do projeto (mantidos)
