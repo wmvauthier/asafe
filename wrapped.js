@@ -82,7 +82,7 @@ const TITLES = [
   {
     id: "equilibrador-de-repertorio",
     categoria: "tecnica",
-    nome: "Equilibrador de Repertório",
+    nome: "Médio, Mas Matador",
     descricao:
       "Maior (%) das músicas que escolheu são médias (pela dificuldade média da música).",
     ranking: () => {
@@ -96,7 +96,7 @@ const TITLES = [
   {
     id: "zona-de-conforto-tecnica",
     categoria: "tecnica",
-    nome: "Zona de Conforto",
+    nome: "Piloto Automático",
     descricao:
       "“Nem fácil demais, nem impossível.” — Maior (%) das músicas que tocou é considerada como tendo um nível médio.",
     ranking: () => {
@@ -110,7 +110,7 @@ const TITLES = [
   {
     id: "curador-do-conforto",
     categoria: "tecnica",
-    nome: "Curador do Conforto",
+    nome: "Setlist das 'Churchs'",
     descricao:
       "Maior (%) das músicas que escolheu são fáceis (pela dificuldade média da música).",
     ranking: () => {
@@ -152,18 +152,18 @@ const TITLES = [
       "“Se a playlist tá boa (ou ruim), já sabemos quem foi.” — Foi o cabeça de repertório em mais cultos.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankByChosenDaysOnly(stats, (s) => s.chosenDaysCount);
+      return rankBy(stats, (s) => s.chosenDaysCount);
     },
   },
   {
     id: "deixa-com-eles",
     categoria: "repertorio",
-    nome: "Deixa com Eles",
+    nome: "Escolhendo em Home Office",
     descricao:
       "“Confia no Espírito… e nas escolhas da galera.” — Foi o cabeça de repertório em menos cultos.",
     ranking: () => {
       const stats = computeMemberStats(HISTORICO);
-      return rankByAscChosenDaysOnly(stats, (s) => s.chosenDaysCount);
+      return rankByAsc(stats, (s) => s.chosenDaysCount);
     },
   },
 
@@ -184,7 +184,7 @@ const TITLES = [
   {
     id: "panelinha-fiel",
     categoria: "diversidade",
-    nome: "Panelinha Fiel",
+    nome: "Clube do Bolinha",
     descricao:
       "“Sempre com os mesmos parceiros.” — Tocou com o menor número de formações diferentes.",
     ranking: () => {
@@ -226,7 +226,7 @@ const TITLES = [
   {
     id: "pioneiro-do-repertorio",
     categoria: "repertorio",
-    nome: "Desbravador de Refrão",
+    nome: "Apóstolo das Inéditas",
     descricao:
       "“Alguém tinha que cantar primeiro.” — Aquele que, por mais vezes, escolheu primeiro uma música nova no repertório.",
     ranking: () => {
@@ -242,7 +242,7 @@ const TITLES = [
   {
     id: "chega-depois",
     categoria: "repertorio",
-    nome: "Só Depois Que Virou Hino",
+    nome: "Presbítero das Conhecidas",
     descricao:
       "“Prefere quando já tá todo mundo cantando.” — Aquele que, por menos vezes, escolheu primeiro uma música nova no repertório.",
     ranking: () => {
@@ -259,7 +259,7 @@ const TITLES = [
   {
     id: "curador-ecletico",
     categoria: "diversidade",
-    nome: "O Eclético",
+    nome: "Multigêneros",
     descricao:
       "“Uma hora é Rock, outra hora é Pop.” — Maior (%) de artistas diferentes escolhidos dentre os disponíveis no repertório.",
     ranking: () => {
@@ -278,7 +278,7 @@ const TITLES = [
   {
     id: "sempre-os-mesmos",
     categoria: "diversidade",
-    nome: "O Tradicional",
+    nome: "Monogâmico Musical",
     descricao:
       "“Achou os artistas favoritos e nunca mais largou.” — Menor (%) de artistas diferentes escolhidos dentre os disponíveis no repertório.",
     ranking: () => {
@@ -315,7 +315,7 @@ const TITLES = [
   {
     id: "foge-dos-classicos",
     categoria: "popularidade",
-    nome: "Foge dos Clássicos",
+    nome: "Anti-Nostalgia",
     descricao:
       "“Mas essa aí todo mundo já enjoou …” — Menor (%) de músicas clássicas entre as tocadas.",
     ranking: () => {
@@ -343,7 +343,7 @@ const TITLES = [
   {
     id: "sempre-fora-da-curva",
     categoria: "popularidade",
-    nome: "Sempre Fora da Curva",
+    nome: "Modo Diferentão",
     descricao:
       "“Difícil cair no padrão.” — Menor (%) de músicas comuns entre as tocadas.",
     ranking: () => {
@@ -357,7 +357,7 @@ const TITLES = [
   {
     id: "explorador-das-incomuns",
     categoria: "popularidade",
-    nome: "Explorador das Incomuns",
+    nome: "Arqueólogo do Repertório",
     descricao:
       "“Quando ninguém conhece, ele conhece.” — Maior (%) de músicas incomuns entre as tocadas.",
     ranking: () => {
@@ -371,7 +371,7 @@ const TITLES = [
   {
     id: "avesso-ao-inedito",
     categoria: "popularidade",
-    nome: "Avesso ao Inédito",
+    nome: "Testado e Aprovado",
     descricao:
       "“Prefere o que já foi testado.” — Menor (%) de músicas incomuns entre as tocadas.",
     ranking: () => {
@@ -414,7 +414,7 @@ const TITLES = [
   {
     id: "sempre-em-busca-do-novo",
     categoria: "curadoria",
-    nome: "Sempre em Busca do Novo",
+    nome: "Anti-Tradição",
     descricao:
       "“Se for pra repetir, melhor nem tocar!” — Menor (%) de músicas clássicas entre as escolhidas.",
     ranking: () => {
@@ -439,7 +439,7 @@ const TITLES = [
   {
     id: "escolhe-o-seguro",
     categoria: "curadoria",
-    nome: "Escolhe o Seguro",
+    nome: "Garantia Estendida",
     descricao:
       "“Essa todo mundo já canta mesmo ...” — Maior (%) de músicas comuns entre as escolhidas.",
     ranking: () => {
@@ -463,7 +463,7 @@ const TITLES = [
   {
     id: "fugindo-do-obvio",
     categoria: "curadoria",
-    nome: "Fugindo do Óbvio",
+    nome: "Sociedade Alternativa",
     descricao:
       "“Bora sair do básico.” — Menor (%) de músicas comuns entre as escolhidas.",
     ranking: () => {
@@ -488,7 +488,7 @@ const TITLES = [
   {
     id: "aposta-arriscada",
     categoria: "curadoria",
-    nome: "Aposta Arriscada",
+    nome: "Risco Calculado (ou não)",
     descricao:
       "“Nem sempre dá certo… mas quando dá!” — Maior (%) de músicas incomuns entre as escolhidas.",
     ranking: () => {
@@ -513,7 +513,7 @@ const TITLES = [
   {
     id: "jogando-seguro",
     categoria: "curadoria",
-    nome: "Jogando Seguro",
+    nome: "Conservador(a) do Setlist",
     descricao:
       "“Prefere garantir que todo mundo cante.” — Menor (%) de músicas incomuns entre as escolhidas.",
     ranking: () => {
