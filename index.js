@@ -13,6 +13,132 @@ let CACHE_POPULARIDADE = null;
 // Constantes
 const TOCADA_NOS_ULTIMOS_X_DIAS = 56; // ~8 semanas
 
+// ================= DEBUG =================
+const DEBUG_SUGESTOES_REPERTORIO = true;
+// =========================================
+
+/* ===== Sanidade essencial de repertório (ALINHADA AOS BADGES) =====
+   - Dificuldade: calcDificuldadeMediaMusica + valorToNivel
+   - Popularidade: classificarNiveisDePopularidade
+   Regras:
+   - NUNCA 3 hard
+   - NUNCA 3 rare
+*/
+function getPopularidadeNivelMusica(idMusica, popularidadeSnapshot) {
+  // Fonte única (mesma do badge inferior)
+  const snap = popularidadeSnapshot || CACHE_POPULARIDADE || null;
+  if (snap && snap[idMusica] && snap[idMusica].nivel) return snap[idMusica].nivel;
+  // fallback: mesma função usada na UI
+  return getNivelPopularidadeMusica(idMusica);
+}
+
+function getDificuldadeNivelMusica(musica) {
+  // Fonte única (mesma do badge superior)
+  const dAvg = calcDificuldadeMediaMusica(musica);
+  return { dAvg, nivel: valorToNivel(dAvg) };
+}
+
+/* ===== Checkpoint 1++ (sanidade + regras por repertório, alinhado aos badges) =====
+Regras globais:
+- NUNCA 3 hard
+- NUNCA 3 rare
+Regras por repertório (2026-01-12 -> complementadas pelo PO):
+Facílimo -> 0 rare + 0 hard + >=1 classic + <=1 medium
+Mediano  -> 0 rare + >=1 common + <=1 hard
+Desafiador -> >=1 rare + >=1 hard
+Favoritas do Time -> (sem hard rules adicionais além globais e categoria strong 100)
+Incomum -> >=1 rare
+Categoria:
+- Prioridade: sempre "strong" com 100% (todas as músicas compartilham a categoria dominante)
+*/
+function validarComboPorRepertorio(combo, popularidadeSnapshot, estrategiaKey, debugInfo) {
+  if (!Array.isArray(combo) || combo.length === 0) return false;
+
+  let hard = 0;
+  let medium = 0;
+  let easy = 0;
+
+  let rare = 0;
+  let common = 0;
+  let classic = 0;
+
+  const detalhes = [];
+
+  combo.forEach((item) => {
+    const si = item && item.si ? item.si : item;
+    const musica = si && si.musica ? si.musica : (item && item.musica ? item.musica : item);
+    if (!musica) return;
+
+    const { dAvg, nivel: dNivel } = getDificuldadeNivelMusica(musica);
+    if (dNivel === "hard") hard++;
+    else if (dNivel === "medium") medium++;
+    else easy++;
+
+    const popNivel = getPopularidadeNivelMusica(musica.id, popularidadeSnapshot);
+    if (popNivel === "rare") rare++;
+    else if (popNivel === "common") common++;
+    else classic++;
+
+    if (DEBUG_SUGESTOES_REPERTORIO) {
+      detalhes.push({
+        id: musica.id,
+        titulo: musica.titulo,
+        artista: musica.artista,
+        dificuldadeMedia: dAvg,
+        dificuldadeNivel: dNivel,
+        popularidade: popNivel,
+      });
+    }
+  });
+
+  // regras globais
+  const reprovadoHard3 = hard >= 3;
+  const reprovadoRare3 = rare >= 3;
+
+  // regras por repertório
+  let reprovadoPorRegra = false;
+  const motivos = { hard3: reprovadoHard3, rare3: reprovadoRare3 };
+
+  if (estrategiaKey === "facilimo") {
+    // 0 rare + 0 hard + >=1 classic + <=1 medium
+    if (rare > 0) { motivos.facilimo_rare = true; reprovadoPorRegra = true; }
+    if (hard > 0) { motivos.facilimo_hard = true; reprovadoPorRegra = true; }
+    if (classic < 1) { motivos.facilimo_semClassic = true; reprovadoPorRegra = true; }
+    if (medium > 1) { motivos.facilimo_mediumMaior1 = true; reprovadoPorRegra = true; }
+  } else if (estrategiaKey === "mediano") {
+    // 0 rare + >=1 common + <=1 hard
+    if (rare > 0) { motivos.mediano_rare = true; reprovadoPorRegra = true; }
+    if (common < 1) { motivos.mediano_semCommon = true; reprovadoPorRegra = true; }
+    if (hard > 1) { motivos.mediano_hardMaior1 = true; reprovadoPorRegra = true; }
+  } else if (estrategiaKey === "desafiador") {
+    // >=1 rare + >=1 hard
+    if (rare < 1) { motivos.desafiador_semRare = true; reprovadoPorRegra = true; }
+    if (hard < 1) { motivos.desafiador_semHard = true; reprovadoPorRegra = true; }
+  } else if (estrategiaKey === "incomum") {
+    // >=1 rare
+    if (rare < 1) { motivos.incomum_semRare = true; reprovadoPorRegra = true; }
+  }
+
+  if (DEBUG_SUGESTOES_REPERTORIO) {
+    const rep = debugInfo && (debugInfo.repertorioTitulo || debugInfo.repertorioKey) ? (debugInfo.repertorioTitulo || debugInfo.repertorioKey) : "(sem repertório)";
+    const comboIdx = debugInfo && typeof debugInfo.comboIdx === "number" ? debugInfo.comboIdx : null;
+
+    if (reprovadoHard3 || reprovadoRare3 || reprovadoPorRegra) {
+      console.warn("[Sugestões][Sanidade] Combo REPROVADO", { repertorio: rep, comboIdx, contagens: { hard, medium, easy, rare, common, classic }, motivos }, detalhes);
+    } else {
+      console.log("[Sugestões][Sanidade] Combo APROVADO", { repertorio: rep, comboIdx, contagens: { hard, medium, easy, rare, common, classic } }, detalhes);
+    }
+  }
+
+  if (reprovadoHard3) return false;
+  if (reprovadoRare3) return false;
+  if (reprovadoPorRegra) return false;
+
+  return true;
+}
+/* ===== fim sanidade essencial ===== */
+
+
 // Map de valores de dificuldade
 const LEVEL_VALUE = {
   easy: 1,
@@ -564,6 +690,18 @@ function foiTocadaRecentementeAte(idMusica, dataObj, dias) {
   return delta >= 0 && delta <= dias;
 }
 
+// Retorna true se a música já está programada em alguma escala futura (após a data de referência)
+// Isso evita sugerir algo que já está "reservado" no futuro.
+function foiProgramadaEmEscalaFuturaApos(idMusica, dataRefObj) {
+  if (!(dataRefObj instanceof Date) || isNaN(dataRefObj)) return false;
+
+  const futuros = (historico || [])
+    .map((ev) => ({ ev, dataObj: parseDate(ev.data) }))
+    .filter((x) => x.dataObj instanceof Date && !isNaN(x.dataObj) && x.dataObj > dataRefObj);
+
+  return futuros.some(({ ev }) => Array.isArray(ev.musicas) && ev.musicas.includes(idMusica));
+}
+
 // Dificuldade média (numérica) da música a partir de musica.level
 function calcDificuldadeMediaMusica(musica) {
   if (!musica || !musica.level || typeof musica.level !== "object") return null;
@@ -742,6 +880,16 @@ function clamp01(x) {
   return Math.max(0, Math.min(1, x));
 }
 
+
+function parseCategoriasMusica(categoriasRaw) {
+  // No JSON atual, categorias vem como string "Cat A; Cat B; Cat C"
+  if (!categoriasRaw) return [];
+  if (Array.isArray(categoriasRaw)) return categoriasRaw.map((c) => String(c || "").trim()).filter(Boolean);
+  const s = String(categoriasRaw);
+  return s.split(";").map((c) => c.trim()).filter(Boolean);
+}
+
+
 function scoreToLabel3(score01, highLabel, midLabel, lowLabel) {
   if (score01 >= 0.70) return highLabel;
   if (score01 >= 0.45) return midLabel;
@@ -813,7 +961,7 @@ function buildSongInsightParaEscala(musica, context, caches) {
 
   return {
     musica,
-    categorias: Array.isArray(musica.categorias) ? musica.categorias : [],
+    categorias: parseCategoriasMusica(musica.categorias),
     artista: (musica.artista || "").trim(),
     metrics: {
       timesPlayed,
@@ -928,11 +1076,23 @@ const REPERTORIOS_ESTRATEGIAS = [
 function scoreSongForStrategy(songInsight, estrategia) {
   const p = estrategia.pesos;
   const s = songInsight.insights;
-  const score =
+  const m = songInsight.metrics || {};
+
+  let score =
     (p.seguranca * s.seguranca) +
     (p.familiaridade * s.familiaridade) +
     (p.desafio * s.desafio) +
     (p.renovacao * s.renovacao);
+
+  // Favoritas do Time: considere BEM MAIS membros/headers (afinidade, familiaridade e compatibilidade)
+  if (estrategia && estrategia.key === "favoritas") {
+    const bonusTime =
+      (0.55 * clamp01(m.headerAffinity || 0)) +
+      (0.45 * clamp01(m.teamFamiliarity || 0)) +
+      (0.25 * clamp01(m.teamCompatibility || 0));
+    score = score + bonusTime;
+  }
+
   return score;
 }
 
@@ -950,6 +1110,9 @@ function gerarCombinacoesTop(scored, k) {
 }
 
 function gerarSugestoesRepertoriosParaEscala(escala) {
+  // Snapshot de popularidade (mesma fonte da UI)
+  const popularidadeSnapshot = classificarNiveisDePopularidade(musicas);
+
   const serviceDate = escala.dataObj || parseDate(escala.data);
   if (!(serviceDate instanceof Date) || isNaN(serviceDate)) return [];
 
@@ -964,9 +1127,11 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
   // 1) elegibilidade
   const elegiveis = musicas.filter((m) => {
     if (!m) return false;
-    if (m.banned) return false;
+    if (m.ban === true || m.banned === true) return false;
     // filtro de recência relativo à data do culto (regra global)
     if (foiTocadaRecentementeAte(m.id, serviceDate, TOCADA_NOS_ULTIMOS_X_DIAS)) return false;
+    // não sugerir músicas já programadas em escalas futuras
+    if (foiProgramadaEmEscalaFuturaApos(m.id, serviceDate)) return false;
     return true;
   });
 
@@ -1004,11 +1169,17 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
 
   // função helper para montar um repertório por estratégia
   function montarRepertorio(estrategia) {
+  // FIX: garantir comboIdx definido para logs/debug
+  if (typeof comboIdx === 'undefined') {
+    var comboIdx = null;
+  }
+
     const scored = insightsBase
       .map((si) => ({ si, score: scoreSongForStrategy(si, estrategia) }))
       .sort((a, b) => b.score - a.score);
 
-    const candidates = scored.slice(0, 12); // top-N para combinar (performance + qualidade)
+    const TOP_K = Math.min(40, scored.length);
+    const candidates = scored.slice(0, TOP_K); // top-K para combinar (garante combos possíveis)
     if (candidates.length < SUGGESTION_SIZE) return null;
 
     const combos = gerarCombinacoesTop(candidates, SUGGESTION_SIZE);
@@ -1016,16 +1187,20 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
     let best = null;
 
     combos.forEach((combo) => {
+      if (!validarComboPorRepertorio(combo, popularidadeSnapshot, estrategia.key, { repertorioKey: estrategia.key, repertorioTitulo: estrategia.titulo, comboIdx })) return;
+
       // valida força mínima de categoria
       const cat = calcCategoriaDominanteCombo(combo);
-      if (!isCategoriaValida(cat.intensidade)) return;
+      // Prioridade: força strong com 100% de afinidade (todas as músicas compartilham a mesma categoria dominante)
+      if (!(cat && cat.intensidade === "strong" && cat.percentual === 100)) return;
 
       const baseScore =
         (scoreSongForStrategy(combo[0], estrategia) +
           scoreSongForStrategy(combo[1], estrategia) +
           scoreSongForStrategy(combo[2], estrategia)) / 3;
 
-      const bonusArt = ajustarScorePorArtistas(combo, preferenciaArtistas);
+      const bonusArtBase = ajustarScorePorArtistas(combo, preferenciaArtistas);
+      const bonusArt = bonusArtBase * (estrategia.key === "favoritas" ? 3 : 1);
 
       const finalScore = baseScore + bonusArt;
 
