@@ -13,10 +13,6 @@ let CACHE_POPULARIDADE = null;
 // Constantes
 const TOCADA_NOS_ULTIMOS_X_DIAS = 56; // ~8 semanas
 
-// ================= DEBUG =================
-const DEBUG_SUGESTOES_REPERTORIO = true;
-// =========================================
-
 /* ===== Sanidade essencial de repertório (ALINHADA AOS BADGES) =====
    - Dificuldade: calcDificuldadeMediaMusica + valorToNivel
    - Popularidade: classificarNiveisDePopularidade
@@ -51,8 +47,9 @@ Incomum -> >=1 rare
 Categoria:
 - Prioridade: sempre "strong" com 100% (todas as músicas compartilham a categoria dominante)
 */
-function validarComboPorRepertorio(combo, popularidadeSnapshot, estrategiaKey, debugInfo) {
-  if (!Array.isArray(combo) || combo.length === 0) return false;
+function validarComboPorRepertorio(combo, estrategiaKey) {
+  // combo: Array<songInsight>
+  if (!Array.isArray(combo) || combo.length !== 3) return false;
 
   let hard = 0;
   let medium = 0;
@@ -62,81 +59,50 @@ function validarComboPorRepertorio(combo, popularidadeSnapshot, estrategiaKey, d
   let common = 0;
   let classic = 0;
 
-  const detalhes = [];
+  for (let i = 0; i < 3; i++) {
+    const si = combo[i];
+    if (!si) return false;
 
-  combo.forEach((item) => {
-    const si = item && item.si ? item.si : item;
-    const musica = si && si.musica ? si.musica : (item && item.musica ? item.musica : item);
-    if (!musica) return;
-
-    const { dAvg, nivel: dNivel } = getDificuldadeNivelMusica(musica);
+    const dNivel = si._diffNivel || null; // precomputado via badge helpers
     if (dNivel === "hard") hard++;
     else if (dNivel === "medium") medium++;
     else easy++;
 
-    const popNivel = getPopularidadeNivelMusica(musica.id, popularidadeSnapshot);
-    if (popNivel === "rare") rare++;
-    else if (popNivel === "common") common++;
+    const pNivel = si._popNivel || null; // precomputado via classificarNiveisDePopularidade
+    if (pNivel === "rare") rare++;
+    else if (pNivel === "common") common++;
     else classic++;
+  }
 
-    if (DEBUG_SUGESTOES_REPERTORIO) {
-      detalhes.push({
-        id: musica.id,
-        titulo: musica.titulo,
-        artista: musica.artista,
-        dificuldadeMedia: dAvg,
-        dificuldadeNivel: dNivel,
-        popularidade: popNivel,
-      });
-    }
-  });
+  // Regras globais
+  if (hard >= 3) return false;
+  if (rare >= 3) return false;
 
-  // regras globais
-  const reprovadoHard3 = hard >= 3;
-  const reprovadoRare3 = rare >= 3;
-
-  // regras por repertório
-  let reprovadoPorRegra = false;
-  const motivos = { hard3: reprovadoHard3, rare3: reprovadoRare3 };
-
+  // Regras por repertório
   if (estrategiaKey === "facilimo") {
     // 0 rare + 0 hard + >=1 classic + <=1 medium
-    if (rare > 0) { motivos.facilimo_rare = true; reprovadoPorRegra = true; }
-    if (hard > 0) { motivos.facilimo_hard = true; reprovadoPorRegra = true; }
-    if (classic < 1) { motivos.facilimo_semClassic = true; reprovadoPorRegra = true; }
-    if (medium > 1) { motivos.facilimo_mediumMaior1 = true; reprovadoPorRegra = true; }
+    if (rare > 0) return false;
+    if (hard > 0) return false;
+    if (classic < 1) return false;
+    if (medium > 1) return false;
   } else if (estrategiaKey === "mediano") {
     // 0 rare + >=1 common + <=1 hard
-    if (rare > 0) { motivos.mediano_rare = true; reprovadoPorRegra = true; }
-    if (common < 1) { motivos.mediano_semCommon = true; reprovadoPorRegra = true; }
-    if (hard > 1) { motivos.mediano_hardMaior1 = true; reprovadoPorRegra = true; }
+    if (rare > 0) return false;
+    if (common < 1) return false;
+    if (hard > 1) return false;
   } else if (estrategiaKey === "desafiador") {
     // >=1 rare + >=1 hard
-    if (rare < 1) { motivos.desafiador_semRare = true; reprovadoPorRegra = true; }
-    if (hard < 1) { motivos.desafiador_semHard = true; reprovadoPorRegra = true; }
+    if (rare < 1) return false;
+    if (hard < 1) return false;
   } else if (estrategiaKey === "incomum") {
     // >=1 rare
-    if (rare < 1) { motivos.incomum_semRare = true; reprovadoPorRegra = true; }
+    if (rare < 1) return false;
   }
-
-  if (DEBUG_SUGESTOES_REPERTORIO) {
-    const rep = debugInfo && (debugInfo.repertorioTitulo || debugInfo.repertorioKey) ? (debugInfo.repertorioTitulo || debugInfo.repertorioKey) : "(sem repertório)";
-    const comboIdx = debugInfo && typeof debugInfo.comboIdx === "number" ? debugInfo.comboIdx : null;
-
-    if (reprovadoHard3 || reprovadoRare3 || reprovadoPorRegra) {
-      console.warn("[Sugestões][Sanidade] Combo REPROVADO", { repertorio: rep, comboIdx, contagens: { hard, medium, easy, rare, common, classic }, motivos }, detalhes);
-    } else {
-      console.log("[Sugestões][Sanidade] Combo APROVADO", { repertorio: rep, comboIdx, contagens: { hard, medium, easy, rare, common, classic } }, detalhes);
-    }
-  }
-
-  if (reprovadoHard3) return false;
-  if (reprovadoRare3) return false;
-  if (reprovadoPorRegra) return false;
 
   return true;
 }
 /* ===== fim sanidade essencial ===== */
+
 
 
 // Map de valores de dificuldade
@@ -1017,6 +983,30 @@ function calcCategoriaDominanteCombo(insightsCombo) {
   return { categoria: bestCat, percentual: perc, intensidade };
 }
 
+function calcCategoriaDominanteComboStrong100(combo) {
+  // Retorna {categoria, percentual:100, intensidade:"strong"} se existir uma categoria comum às 3 músicas.
+  if (!Array.isArray(combo) || combo.length !== 3) return { categoria: null, percentual: 0, intensidade: "weak" };
+
+  const a = combo[0]?.categorias || [];
+  const b = combo[1]?.categorias || [];
+  const c = combo[2]?.categorias || [];
+
+  if (!a.length || !b.length || !c.length) return { categoria: null, percentual: 0, intensidade: "weak" };
+
+  const setB = new Set(b);
+  const setC = new Set(c);
+
+  for (let i = 0; i < a.length; i++) {
+    const cat = a[i];
+    if (!cat) continue;
+    if (setB.has(cat) && setC.has(cat)) {
+      return { categoria: cat, percentual: 100, intensidade: "strong" };
+    }
+  }
+
+  return { categoria: null, percentual: 0, intensidade: "weak" };
+}
+
 function isCategoriaValida(intensidade) {
   return intensidade === "strong" || intensidade === "medium";
 }
@@ -1165,76 +1155,112 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
 
   const preferenciaArtistas = buildPreferenciaArtistas(headerIds, members, eventosPassados);
 
-  const insightsBase = elegiveis.map((m) => buildSongInsightParaEscala(m, context, caches));
+const insightsBase = elegiveis.map((m) => buildSongInsightParaEscala(m, context, caches));
+
+// Pré-cálculo (performance): fixar exatamente os mesmos níveis usados nos badges
+// - Dificuldade: valorToNivel(calcDificuldadeMediaMusica)
+// - Popularidade: classificarNiveisDePopularidade (snapshot) -> .nivel
+insightsBase.forEach((si) => {
+  const musica = si?.musica;
+  if (!musica) return;
+
+  const dAvg = calcDificuldadeMediaMusica(musica);
+  si._diffAvg = dAvg;
+  si._diffNivel = dAvg != null ? valorToNivel(dAvg) : null;
+
+  const snap = popularidadeSnapshot && popularidadeSnapshot[musica.id];
+  si._popNivel = snap && snap.nivel ? snap.nivel : getNivelPopularidadeMusica(musica.id);
+
+  // normalizar categorias já calculadas
+  if (!Array.isArray(si.categorias)) si.categorias = parseCategoriasMusica(musica.categorias);
+});
+
 
   // função helper para montar um repertório por estratégia
-  function montarRepertorio(estrategia) {
-  // FIX: garantir comboIdx definido para logs/debug
-  if (typeof comboIdx === 'undefined') {
-    var comboIdx = null;
+function montarRepertorio(estrategia) {
+  const scored = insightsBase
+    .map((si) => ({ si, score: scoreSongForStrategy(si, estrategia) }))
+    .sort((a, b) => b.score - a.score);
+
+  const TOP_K = Math.min(40, scored.length);
+  if (TOP_K < SUGGESTION_SIZE) return null;
+
+  // Pool base (já ordenado por score)
+  let pool = scored.slice(0, TOP_K).map((x) => x.si);
+
+  // Pequenas reduções do espaço de busca por estratégia (sem relaxar regras)
+  if (estrategia.key === "facilimo") {
+    pool = pool.filter((si) => si._popNivel !== "rare" && si._diffNivel !== "hard");
+  } else if (estrategia.key === "mediano") {
+    pool = pool.filter((si) => si._popNivel !== "rare");
   }
 
-    const scored = insightsBase
-      .map((si) => ({ si, score: scoreSongForStrategy(si, estrategia) }))
-      .sort((a, b) => b.score - a.score);
+  if (pool.length < SUGGESTION_SIZE) return null;
 
-    const TOP_K = Math.min(40, scored.length);
-    const candidates = scored.slice(0, TOP_K); // top-K para combinar (garante combos possíveis)
-    if (candidates.length < SUGGESTION_SIZE) return null;
+  // Helper: score médio do combo (3 músicas)
+  const scoreComboBase = (a, b, c) =>
+    (scoreSongForStrategy(a, estrategia) +
+      scoreSongForStrategy(b, estrategia) +
+      scoreSongForStrategy(c, estrategia)) / 3;
 
-    const combos = gerarCombinacoesTop(candidates, SUGGESTION_SIZE);
+  let best = null;
 
-    let best = null;
+  // Iteração direta (evita alocar array gigante de combos)
+  for (let i = 0; i < pool.length - 2; i++) {
+    const a = pool[i];
+    for (let j = i + 1; j < pool.length - 1; j++) {
+      const b = pool[j];
+      for (let k = j + 1; k < pool.length; k++) {
+        const c = pool[k];
 
-    combos.forEach((combo) => {
-      if (!validarComboPorRepertorio(combo, popularidadeSnapshot, estrategia.key, { repertorioKey: estrategia.key, repertorioTitulo: estrategia.titulo, comboIdx })) return;
+        const combo = [a, b, c];
 
-      // valida força mínima de categoria
-      const cat = calcCategoriaDominanteCombo(combo);
-      // Prioridade: força strong com 100% de afinidade (todas as músicas compartilham a mesma categoria dominante)
-      if (!(cat && cat.intensidade === "strong" && cat.percentual === 100)) return;
+        // Regras globais + por repertório
+        if (!validarComboPorRepertorio(combo, estrategia.key)) continue;
 
-      const baseScore =
-        (scoreSongForStrategy(combo[0], estrategia) +
-          scoreSongForStrategy(combo[1], estrategia) +
-          scoreSongForStrategy(combo[2], estrategia)) / 3;
+        // Categoria: exigir strong 100% (uma categoria presente nas 3 músicas)
+        const cat = calcCategoriaDominanteComboStrong100(combo);
+        if (!(cat && cat.intensidade === "strong" && cat.percentual === 100 && cat.categoria)) continue;
 
-      const bonusArtBase = ajustarScorePorArtistas(combo, preferenciaArtistas);
-      const bonusArt = bonusArtBase * (estrategia.key === "favoritas" ? 3 : 1);
+        const baseScore = scoreComboBase(a, b, c);
+        const bonusArtBase = ajustarScorePorArtistas(combo, preferenciaArtistas);
+        const bonusArt = bonusArtBase * (estrategia.key === "favoritas" ? 3 : 1);
+        const finalScore = baseScore + bonusArt;
 
-      const finalScore = baseScore + bonusArt;
-
-      if (!best || finalScore > best.finalScore) {
-        best = { combo, cat, baseScore, bonusArt, finalScore };
+        if (!best || finalScore > best.finalScore) {
+          best = { combo, cat, finalScore };
+        }
       }
-    });
-
-    if (!best) return null;
-
-    // repertório: agrega badges (média dos 4 insights)
-    const avg = (key) =>
-      (best.combo[0].insights[key] + best.combo[1].insights[key] + best.combo[2].insights[key]) / 3;
-
-    const seguranca = avg("seguranca");
-    const familiaridade = avg("familiaridade");
-    const desafio = avg("desafio");
-    const renovacao = avg("renovacao");
-
-    return {
-      estrategiaKey: estrategia.key,
-      titulo: estrategia.titulo,
-      musicas: best.combo.map((x) => x.musica),
-      categoria: best.cat,
-      badges: {
-        seguranca: scoreToLabel3(seguranca, "Muito Segura", "Moderada", "Arriscada"),
-        familiaridade: scoreToLabel3(familiaridade, "Muito Familiar", "Familiar", "Pouco Familiar"),
-        desafio: scoreToLabel3(desafio, "Baixo", "Moderado", "Alto"),
-        renovacao: scoreToLabel3(renovacao, "Alta", "Moderada", "Baixa"),
-      },
-    };
+    }
   }
 
-  const sugestoes = [];
+  if (!best) return null;
+
+  // repertório: agrega badges (média dos 4 insights)
+  const avg = (key) =>
+    (best.combo[0].insights[key] + best.combo[1].insights[key] + best.combo[2].insights[key]) / 3;
+
+  const seguranca = avg("seguranca");
+  const familiaridade = avg("familiaridade");
+  const desafio = avg("desafio");
+  const renovacao = avg("renovacao");
+
+  return {
+    estrategiaKey: estrategia.key,
+    titulo: estrategia.titulo,
+    musicas: best.combo.map((x) => x.musica),
+    categoria: best.cat,
+    badges: {
+      seguranca: scoreToLabel3(seguranca, "Muito Segura", "Moderada", "Arriscada"),
+      familiaridade: scoreToLabel3(familiaridade, "Muito Familiar", "Familiar", "Pouco Familiar"),
+      desafio: scoreToLabel3(desafio, "Baixo", "Moderado", "Alto"),
+      renovacao: scoreToLabel3(renovacao, "Alta", "Moderada", "Baixa"),
+    },
+  };
+}
+
+const sugestoes
+ = [];
   REPERTORIOS_ESTRATEGIAS.forEach((estrategia) => {
     const rep = montarRepertorio(estrategia);
     if (rep) sugestoes.push(rep);
@@ -3213,5 +3239,3 @@ function classificarNiveisDePopularidade(musicas) {
 // =========================================================
 // FIM DO ARQUIVO
 // =========================================================
-
-console.log("Projeto Asafe carregado com sucesso!");
