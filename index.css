@@ -1054,6 +1054,41 @@ body {
   box-shadow: 0 2px 8px rgba(0,0,0,0.35);
 }
 
+.rep-insight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 4px 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+}
+
+.rep-insight-icon {
+  font-size: 13px;
+}
+
+.rep-insight-label {
+  font-weight: 500;
+}
+
+.rep-insight-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* reutiliza as mesmas cores da dificuldade */
+.rep-insight-dot.dot-easy {
+  background: #22c55e;
+}
+.rep-insight-dot.dot-medium {
+  background: #facc15;
+}
+.rep-insight-dot.dot-hard {
+  background: #ef4444;
+}
+
 /* ==========================
    RESPONSIVIDADE
    ========================== */

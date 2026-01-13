@@ -1321,18 +1321,55 @@ function renderSugestoesRepertorioNoCard(parentEl, escala) {
       return b;
     };
 
-    badges.appendChild(makeBadge(`🛡️ ${rep.badges.seguranca}`));
-    badges.appendChild(makeBadge(`👥 ${rep.badges.familiaridade}`));
-    badges.appendChild(makeBadge(`🔥 ${rep.badges.desafio}`));
-    badges.appendChild(makeBadge(`🌱 ${rep.badges.renovacao}`));
+badges.innerHTML = "";
 
-    if (rep.categoria && rep.categoria.categoria) {
-      badges.appendChild(
-        makeBadge(
-          `🏷️ ${rep.categoria.categoria} (${rep.categoria.intensidade})`
-        )
-      );
-    }
+// 🏷️ Categoria (primeiro)
+const catInsight = criarCategoriaVisual(rep.categoria);
+if (catInsight) badges.appendChild(catInsight);
+
+// 🛡️ Segurança
+badges.appendChild(
+  criarInsightVisual({
+    icon: "🛡️",
+    label: "Segurança",
+    nivelLabel: rep.badges.seguranca,
+  })
+);
+
+// 👥 Familiaridade
+badges.appendChild(
+  criarInsightVisual({
+    icon: "👥",
+    label: "Familiaridade",
+    nivelLabel: rep.badges.familiaridade,
+  })
+);
+
+// 🔥 Desafio
+badges.appendChild(
+  criarInsightVisual({
+    icon: "🔥",
+    label: "Desafio",
+    nivelLabel: rep.badges.desafio,
+  })
+);
+
+// 🌱 Renovação
+badges.appendChild(
+  criarInsightVisual({
+    icon: "🌱",
+    label: "Renovação",
+    nivelLabel: rep.badges.renovacao,
+  })
+);
+
+    // if (rep.categoria && rep.categoria.categoria) {
+    //   badges.appendChild(
+    //     makeBadge(
+    //       `🏷️ ${rep.categoria.categoria} (${rep.categoria.intensidade})`
+    //     )
+    //   );
+    // }
 
     topRow.appendChild(repTitle);
     topRow.appendChild(badges);
@@ -1355,6 +1392,79 @@ function renderSugestoesRepertorioNoCard(parentEl, escala) {
   parentEl.appendChild(wrap);
 }
 
+function criarInsightVisual({ icon, label, nivelLabel }) {
+  const wrap = document.createElement("div");
+  wrap.className = "rep-insight";
+
+  const iconEl = document.createElement("span");
+  iconEl.className = "rep-insight-icon";
+  iconEl.textContent = icon;
+
+  const textEl = document.createElement("span");
+  textEl.className = "rep-insight-label";
+  textEl.textContent = label;
+
+  const dot = document.createElement("span");
+  dot.className = "rep-insight-dot";
+
+  const dotClass = insightLabelToDotClass(nivelLabel);
+  dot.classList.add(dotClass);
+
+  wrap.append(iconEl, textEl, dot);
+  return wrap;
+}
+
+function criarCategoriaVisual(categoriaInfo) {
+  if (!categoriaInfo || !categoriaInfo.categoria) return null;
+
+  const wrap = document.createElement("div");
+  wrap.className = "rep-insight";
+
+  const iconEl = document.createElement("span");
+  iconEl.className = "rep-insight-icon";
+  iconEl.textContent = "🏷️";
+
+  const textEl = document.createElement("span");
+  textEl.className = "rep-insight-label";
+  textEl.textContent = categoriaInfo.categoria;
+
+  const dot = document.createElement("span");
+  dot.className = "rep-insight-dot";
+  dot.classList.add(categoriaIntensidadeToDotClass(categoriaInfo.intensidade));
+
+  wrap.append(iconEl, textEl, dot);
+  return wrap;
+}
+
+function categoriaIntensidadeToDotClass(intensidade) {
+  if (intensidade === "strong") return "dot-easy";
+  if (intensidade === "medium") return "dot-medium";
+  return "dot-hard";
+}
+
+function insightLabelToDotClass(label) {
+  // Verde (situação boa)
+  if (
+    label === "Muito Segura" ||
+    label === "Muito Familiar" ||
+    label === "Alta" ||
+    label === "Baixo"
+  ) {
+    return "dot-easy";
+  }
+
+  // Amarelo (intermediário)
+  if (
+    label === "Moderada" ||
+    label === "Familiar" ||
+    label === "Moderado"
+  ) {
+    return "dot-medium";
+  }
+
+  // Vermelho (exigente / crítica)
+  return "dot-hard";
+}
 
 
 // ===== Helper: card de música (idêntico ao usado em Escalas Futuras) =====
