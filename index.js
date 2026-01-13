@@ -12,6 +12,7 @@ let CACHE_POPULARIDADE = null;
 
 // Constantes
 const TOCADA_NOS_ULTIMOS_X_DIAS = 56; // ~8 semanas
+const DEBUG_SUGESTOES_REPERTORIO = false; // Checkpoint 3: logs desativados por padrão
 
 /* ===== Sanidade essencial de repertório (ALINHADA AOS BADGES) =====
    - Dificuldade: calcDificuldadeMediaMusica + valorToNivel
@@ -717,9 +718,10 @@ function calcPerfilDificuldadeDoTime(members, eventosPassados) {
 function calcFamiliaridadeDoTimeComMusica(idMusica, members, eventosPassados) {
   const memberIds = (members || [])
     .map((x) => (typeof x === "object" ? x.id : x))
-    .filter(Boolean);
+    .filter((v) => v != null);
 
-  if (!memberIds.length) return 0;
+  // Se não há membros definidos, assume familiaridade neutra (não punitiva)
+  if (!memberIds.length) return 0.5;
 
   const playsByMember = new Map();
   const totalByMember = new Map();
@@ -731,8 +733,9 @@ function calcFamiliaridadeDoTimeComMusica(idMusica, members, eventosPassados) {
 
   (eventosPassados || []).forEach((ev) => {
     const evMembers = Array.isArray(ev.integrantes) ? ev.integrantes : [];
-    const hasMusic = Array.isArray(ev.musicas) && ev.musicas.includes(idMusica);
     if (!evMembers.length) return;
+
+    const hasMusic = Array.isArray(ev.musicas) && ev.musicas.includes(idMusica);
 
     evMembers.forEach((mid) => {
       if (!playsByMember.has(mid)) return;
@@ -741,18 +744,46 @@ function calcFamiliaridadeDoTimeComMusica(idMusica, members, eventosPassados) {
     });
   });
 
-  // média das proporções por membro (0..1)
-  let soma = 0;
-  let count = 0;
+  // Exposição individual: plays/total (0..1). Ajuste não-linear para não “punir” pouco histórico.
+  const exposicoes = [];
   memberIds.forEach((mid) => {
     const tot = totalByMember.get(mid) || 0;
     const pl = playsByMember.get(mid) || 0;
-    const ratio = tot > 0 ? pl / tot : 0;
-    soma += ratio;
-    count += 1;
+    const raw = tot > 0 ? pl / tot : 0;
+    // Saturação leve: 1 play já ajuda bastante, mas sem estourar rápido
+    const adj = raw <= 0 ? 0 : (1 - Math.exp(-3 * raw)); // 0..~0.95
+    exposicoes.push(adj);
   });
 
-  return count ? soma / count : 0;
+  const meanExp = exposicoes.length
+    ? exposicoes.reduce((a, b) => a + b, 0) / exposicoes.length
+    : 0;
+
+  // Cobertura: probabilidade de “alguém segurar” a música (não precisa time completo)
+  let coverage = 0;
+  if (exposicoes.length) {
+    let prod = 1;
+    exposicoes.forEach((e) => (prod *= (1 - clamp01(e))));
+    coverage = 1 - prod; // 0..1
+  }
+
+  let familiaridade = clamp01((0.55 * coverage) + (0.45 * meanExp));
+
+  // Pisos humanos (vida real):
+  const musica = musicas.find((m) => m && m.id === idMusica) || null;
+  const dAvg = musica ? calcDificuldadeMediaMusica(musica) : null;
+  const diffNivel = dAvg ? valorToNivel(dAvg) : null;
+
+  // Popularidade (mesma do badge inferior)
+  const popNivel = getNivelPopularidadeMusica(idMusica);
+
+  // Música fácil e/ou clássica não pode “parecer” pouco familiar
+  if (diffNivel === "easy") familiaridade = Math.max(familiaridade, 0.45);
+  if (popNivel === "classic") familiaridade = Math.max(familiaridade, 0.55);
+  if (diffNivel === "easy" && popNivel === "common") familiaridade = Math.max(familiaridade, 0.50);
+  if (diffNivel === "easy" && popNivel === "classic") familiaridade = Math.max(familiaridade, 0.65);
+
+  return clamp01(familiaridade);
 }
 
 // Afinidade com header(s): quantas vezes um header já escolheu a música (0..1)
@@ -842,6 +873,71 @@ function calcCompatibilidadeTimeMusica(musica, members) {
   return soma / count;
 }
 
+// Desafio técnico real (0..1) — Checkpoint 3
+// Mede tensão técnica instrumento×integrante. Histórico NÃO influencia.
+// Regra C: instrumento sem integrante correspondente => tensão MÉDIA.
+function calcDesafioTecnicoDoTimeMusica(musica, members) {
+  if (!musica || !musica.level || typeof musica.level !== "object") return 0.5;
+
+  const memberObjs = (members || [])
+    .map((x) => (typeof x === "object" ? x : integrantes.find((i) => i.id === x)))
+    .filter(Boolean);
+
+  // Map do melhor nível disponível por instrumento no time (max)
+  const bestByInst = new Map();
+  memberObjs.forEach((m) => {
+    const inst = getInstrumentoDoIntegrante(m);
+    if (!inst) return;
+    const nivel = getNivelDoIntegrante(m, inst);
+    const val = nivelToValor(nivel) || 2;
+    const prev = bestByInst.get(inst);
+    if (prev == null || val > prev) bestByInst.set(inst, val);
+  });
+
+  const pesos = [];
+  Object.entries(musica.level).forEach(([instRaw, reqNivel]) => {
+    if (!reqNivel) return;
+
+    const inst = normalizarInstrumentoKey(instRaw);
+    const reqVal = nivelToValor(reqNivel) || 2;
+
+    // Sem integrante correspondente => tensão MÉDIA (C)
+    if (!inst || !bestByInst.has(inst)) {
+      pesos.push(0.5);
+      return;
+    }
+
+    const memberVal = bestByInst.get(inst) || 2;
+
+    // Acima/igual: sem tensão relevante
+    if (memberVal >= reqVal) {
+      pesos.push(0.0);
+      return;
+    }
+
+    // Abaixo: 1 nível => 0.5, 2 níveis => 1.0
+    const delta = reqVal - memberVal; // 1..2
+    pesos.push(clamp01(delta / 2));
+  });
+
+  if (!pesos.length) return 0.5;
+
+  const avg = pesos.reduce((a, b) => a + b, 0) / pesos.length;
+  const worst = Math.max(...pesos);
+
+  let desafio = clamp01((0.65 * worst) + (0.35 * avg));
+
+  // Regra humana: música fácil nunca gera desafio alto
+  const dAvg = calcDificuldadeMediaMusica(musica);
+  const diffNivel = dAvg ? valorToNivel(dAvg) : null;
+  if (diffNivel === "easy") {
+    desafio = Math.min(desafio, 0.45); // no máximo "moderado"
+  }
+
+  return clamp01(desafio);
+}
+
+
 function clamp01(x) {
   return Math.max(0, Math.min(1, x));
 }
@@ -881,38 +977,59 @@ function buildSongInsightParaEscala(musica, context, caches) {
   const teamFamiliarity = caches.teamFamiliarity.get(musica.id) || 0;
   const teamCompatibility = caches.teamCompatibility.get(musica.id) || 0.6;
 
-  // Segurança Técnica (0..1): dominada por compatibilidade do time
-  const seguranca =
-    clamp01(
-      (0.45 * teamCompatibility) +
-      (0.25 * (1 - diff01)) +
-      (0.20 * teamFamiliarity) +
-      (0.10 * headerAffinity)
-    );
+  // Checkpoint 3: Desafio técnico real (instrumento×integrante)
+  // Mede tensão técnica (0..1). IMPORTANTE:
+  // - normaliza pelo perfil do time (time hard + música easy => desafio baixo/verde)
+  // - música fácil nunca vira “amarelo” só por fórmula
+  const teamProfile = (context && typeof context.teamDifficultyProfile === "number")
+    ? context.teamDifficultyProfile
+    : 2; // 1..3
 
-  // Familiaridade (0..1): ignora dificuldade
-  const familiaridade =
-    clamp01(
-      (0.45 * teamFamiliarity) +
-      (0.35 * pop01) +
-      (0.20 * headerAffinity)
-    );
+  let teamChallenge = (caches.teamChallenge && caches.teamChallenge.get(musica.id) != null)
+    ? (caches.teamChallenge.get(musica.id) || 0)
+    : calcDesafioTecnicoDoTimeMusica(musica, context && context.members ? context.members : []);
 
-  // Desafio (0..1): complexidade + novidade técnica + exigência relativa ao time
-  const teamProfile = context.teamDifficultyProfile || 2; // 1..3
-  const rel = dAvg ? clamp01((dAvg - teamProfile + 2) / 4) : 0.5; // suaviza (-2..+2) => 0..1
+  teamChallenge = clamp01(teamChallenge);
 
-  const desafio =
-    clamp01(
-      (0.50 * diff01) +
-      (0.30 * (1 - teamFamiliarity)) +
-      (0.20 * rel)
-    );
+  // Normalização pelo gap técnico (perfil do time vs dificuldade média da música)
+  const songDiff = (dAvg != null ? dAvg : 2); // 1..3
+  const gap = teamProfile - songDiff; // positivo => time acima
+
+  if (gap >= 1.25) teamChallenge = clamp01(teamChallenge * 0.35);
+  else if (gap >= 0.75) teamChallenge = clamp01(teamChallenge * 0.55);
+  else if (gap <= -0.75) teamChallenge = clamp01(teamChallenge + 0.15);
+
+  // Regra humana: música easy não pode “parecer” desafiadora
+  const diffNivel = dAvg ? valorToNivel(dAvg) : null;
+  if (diffNivel === "easy") teamChallenge = Math.min(teamChallenge, 0.30);
+
+  // Checkpoint 3: Familiaridade é memória coletiva ponderada (não exige time completo)
+  let familiaridade = clamp01(teamFamiliarity);
+
+  // Patch humano: “suficiência prática” (ex.: 3x, 3x, 2x em classic/common não pode cair em amarelo)
+  const popNivel = getNivelPopularidadeMusica(musica.id); // mesma fonte do badge inferior
+  if (popNivel !== "rare" && timesPlayed >= 2) familiaridade = Math.max(familiaridade, 0.72);
+  if (popNivel !== "rare" && timesPlayed >= 3) familiaridade = Math.max(familiaridade, 0.80);
+  if (popNivel === "classic" && timesPlayed >= 2) familiaridade = Math.max(familiaridade, 0.78);
+  if (diffNivel === "easy" && popNivel !== "rare") familiaridade = Math.max(familiaridade, 0.75);
+
+  familiaridade = clamp01(familiaridade);
+
+  // Checkpoint 3: Segurança derivada (não “pensa sozinha”)
+  // Patch humano: segurança “puxa” para verde quando familiaridade e desafio estão saudáveis
+  const seguranca = clamp01(
+    (0.60 * (1 - teamChallenge)) +
+    (0.30 * familiaridade) +
+    (0.10 * clamp01(teamCompatibility))
+  );
+
+  // Desafio (0..1): 1 = baixo desafio (verde), 0 = alto desafio (vermelho)
+  const desafio = clamp01(1 - teamChallenge);
 
   // Renovação (0..1): raridade + frequência + tempo (músicas recentes já filtradas)
   const novidadeFreq = timesPlayed === 0 ? 1 : clamp01(1 / (1 + timesPlayed)); // 1, 0.5, 0.33...
   let tempo01 = 0.5;
-  if (lastPlayed && context.serviceDate) {
+  if (lastPlayed && context && context.serviceDate) {
     const MS_DIA = 1000 * 60 * 60 * 24;
     const dias = Math.max(0, Math.floor((context.serviceDate - lastPlayed) / MS_DIA));
     // 0..180 dias => 0..1 (cap)
@@ -933,8 +1050,9 @@ function buildSongInsightParaEscala(musica, context, caches) {
       timesPlayed,
       lastPlayed,
       headerAffinity,
-      teamFamiliarity,
+      teamFamiliarity: familiaridade,
       teamCompatibility,
+      teamChallenge,
       difficultyAvg: dAvg,
     },
     insights: {
@@ -1037,6 +1155,11 @@ function ajustarScorePorArtistas(combo, preferenciaArtistas) {
 // Estratégias (pesos relativos)
 const REPERTORIOS_ESTRATEGIAS = [
   {
+    key: "favoritas",
+    titulo: "Favoritas do Time",
+    pesos: { seguranca: 0.8, familiaridade: 1.0, desafio: 0.2, renovacao: 0.1 },
+  },
+  {
     key: "facilimo",
     titulo: "Facílimo",
     pesos: { seguranca: 1.0, familiaridade: 0.8, desafio: 0.1, renovacao: 0.2 },
@@ -1050,11 +1173,6 @@ const REPERTORIOS_ESTRATEGIAS = [
     key: "desafiador",
     titulo: "Desafiador",
     pesos: { seguranca: 0.5, familiaridade: 0.2, desafio: 1.0, renovacao: 0.5 },
-  },
-  {
-    key: "favoritas",
-    titulo: "Favoritas do Time",
-    pesos: { seguranca: 0.8, familiaridade: 1.0, desafio: 0.2, renovacao: 0.1 },
   },
   {
     key: "incomum",
@@ -1132,6 +1250,7 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
     teamFamiliarity: new Map(),
     headerAffinity: new Map(),
     teamCompatibility: new Map(),
+    teamChallenge: new Map(),
     maxPlayed: 0,
   };
 
@@ -1151,6 +1270,7 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
     caches.teamFamiliarity.set(m.id, calcFamiliaridadeDoTimeComMusica(m.id, members, eventosPassados));
     caches.headerAffinity.set(m.id, calcAfinidadeHeaderComMusica(m.id, headerIds, eventosPassados));
     caches.teamCompatibility.set(m.id, calcCompatibilidadeTimeMusica(m, members));
+    caches.teamChallenge.set(m.id, calcDesafioTecnicoDoTimeMusica(m, members));
   });
 
   const preferenciaArtistas = buildPreferenciaArtistas(headerIds, members, eventosPassados);
@@ -1177,7 +1297,7 @@ insightsBase.forEach((si) => {
 
 
   // função helper para montar um repertório por estratégia
-function montarRepertorio(estrategia) {
+function montarRepertorio(estrategia, usedIds, priorComboKeys) {
   const scored = insightsBase
     .map((si) => ({ si, score: scoreSongForStrategy(si, estrategia) }))
     .sort((a, b) => b.score - a.score);
@@ -1225,7 +1345,19 @@ function montarRepertorio(estrategia) {
         const baseScore = scoreComboBase(a, b, c);
         const bonusArtBase = ajustarScorePorArtistas(combo, preferenciaArtistas);
         const bonusArt = bonusArtBase * (estrategia.key === "favoritas" ? 3 : 1);
-        const finalScore = baseScore + bonusArt;
+
+        // Patch variedade: evitar repertórios idênticos e reduzir reutilização entre repertórios
+        const idsKey = combo.map((x) => x && x.musica ? x.musica.id : null).filter(Boolean).sort().join("|");
+        if (priorComboKeys && priorComboKeys.has(idsKey)) continue;
+
+        let reusePenalty = 0;
+        if (usedIds && usedIds.size) {
+          const reuseCount = combo.reduce((acc, x) => acc + (usedIds.has(x.musica.id) ? 1 : 0), 0);
+          // Penalidade leve por música já usada em repertório anterior (não é proibição)
+          reusePenalty = 0.06 * reuseCount;
+        }
+
+        const finalScore = baseScore + bonusArt - reusePenalty;
 
         if (!best || finalScore > best.finalScore) {
           best = { combo, cat, finalScore };
@@ -1259,11 +1391,21 @@ function montarRepertorio(estrategia) {
   };
 }
 
-const sugestoes
- = [];
+const sugestoes = [];
+  const usedIds = new Set();
+  const priorComboKeys = new Set();
+
   REPERTORIOS_ESTRATEGIAS.forEach((estrategia) => {
-    const rep = montarRepertorio(estrategia);
-    if (rep) sugestoes.push(rep);
+    const rep = montarRepertorio(estrategia, usedIds, priorComboKeys);
+    if (!rep) return;
+
+    // Guardar para evitar repertórios idênticos e estimular variedade nos próximos
+    const ids = (rep.musicas || []).map((m) => m && m.id).filter(Boolean);
+    const key = ids.slice().sort().join("|");
+    if (key) priorComboKeys.add(key);
+    ids.forEach((id) => usedIds.add(id));
+
+    sugestoes.push(rep);
   });
 
   return sugestoes;
@@ -3349,3 +3491,55 @@ function classificarNiveisDePopularidade(musicas) {
 // =========================================================
 // FIM DO ARQUIVO
 // =========================================================
+
+
+// === PATCH CHECKPOINT 3.3 — Regra de Ouro do Desafio (Gap Técnico) ===
+function calcularDesafioPorGapTecnico(musicas, nivelMedioTime) {
+  if (!musicas || !musicas.length) return 0;
+
+  let soma = 0;
+  for (const m of musicas) {
+    const diff = m.__dificuldadeMedia ?? 0;
+    const gap = diff - nivelMedioTime;
+    if (gap > 0) {
+      soma += Math.min(gap / 2, 1); // contribuição leve e limitada
+    }
+  }
+  return soma / musicas.length;
+}
+
+
+// === PATCH CHECKPOINT 3.4 — Overrides Canônicos de Insights ===
+
+// Força Desafio VERDE quando o time domina a dificuldade
+function overrideDesafioPorDominancia(desafioScore, nivelDominanteTime, dificuldadeMaxRepertorio) {
+  if (nivelDominanteTime >= dificuldadeMaxRepertorio) {
+    return { score: 0, nivel: 'green' };
+  }
+  return { score: desafioScore, nivel: desafioScore < 0.33 ? 'green' : desafioScore < 0.66 ? 'yellow' : 'red' };
+}
+
+// Segurança derivada forte
+function calcularSegurancaFinal(desafioNivel, familiaridadeNivel) {
+  if (desafioNivel === 'green' && familiaridadeNivel === 'green') return 'green';
+  if (desafioNivel === 'red' || familiaridadeNivel === 'red') return 'red';
+  return 'yellow';
+}
+
+// Regra de Renovação mínima
+function calcularRenovacaoMinima(musicas) {
+  const temClassica = musicas.some(m => m.__popularidade === 'classic');
+  const temIncomum = musicas.some(m => m.__popularidade === 'rare');
+  if (!temClassica && !temIncomum) return 'yellow';
+  return null; // deixa lógica existente decidir
+}
+
+// Correção de viés de ordem histórica
+function ordenarMusicasSemVies(musicas) {
+  return [...musicas].sort((a, b) => {
+    if (a.__ordemHistorica != null && b.__ordemHistorica != null) {
+      return a.__ordemHistorica - b.__ordemHistorica;
+    }
+    return 0;
+  });
+}
