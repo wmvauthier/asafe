@@ -1936,7 +1936,7 @@ function renderInsightsVerboseDoRepertorio(parentEl, repAnalysis) {
     renovSec.push(p("• Não há músicas incomuns — a Renovação tende a cair, porque o set fica mais previsível/recorrente."));
   }
   if (popCounts.classic >= 1) {
-    renovSec.push(p("• Existe pelo menos 1 clássica — isso aumenta conforto, mas normalmente reduz oxigenação (Renovação não deve ficar 'Alta' com clássica)."));
+    renovSec.push(p("• Existe pelo menos 1 clássica — isso aumenta conforto, mas normalmente reduz oxigenação."));
   }
   if (qtdIneditas > 0) {
     renovSec.push(p(`• Tem ${qtdIneditas} inédita(s) (nunca tocada antes) — isso adiciona novidade real.`));
