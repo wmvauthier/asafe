@@ -24,7 +24,8 @@ const DEBUG_SUGESTOES_REPERTORIO = false; // Checkpoint 3: logs desativados por 
 function getPopularidadeNivelMusica(idMusica, popularidadeSnapshot) {
   // Fonte única (mesma do badge inferior)
   const snap = popularidadeSnapshot || CACHE_POPULARIDADE || null;
-  if (snap && snap[idMusica] && snap[idMusica].nivel) return snap[idMusica].nivel;
+  if (snap && snap[idMusica] && snap[idMusica].nivel)
+    return snap[idMusica].nivel;
   // fallback: mesma função usada na UI
   return getNivelPopularidadeMusica(idMusica);
 }
@@ -103,8 +104,6 @@ function validarComboPorRepertorio(combo, estrategiaKey) {
   return true;
 }
 /* ===== fim sanidade essencial ===== */
-
-
 
 // Map de valores de dificuldade
 const LEVEL_VALUE = {
@@ -222,7 +221,7 @@ function criarBadgeDificuldadeMediaMusica(musica) {
 
   const valor = document.createElement("span");
   // mostra a média numérica (1 casa) para ser bem explícito
-  valor.textContent = `🎚️${Math.round(diff.avg * 10) / 10}`;
+  valor.textContent = `${Math.round(diff.avg * 10) / 10}`;
 
   badge.append(dot, valor);
   return badge;
@@ -373,7 +372,7 @@ function renderCategoriasFiltros() {
           .filter(Boolean)
       : [];
 
-cats.forEach((c) => counts.set(c, (counts.get(c) || 0) + 1));
+    cats.forEach((c) => counts.set(c, (counts.get(c) || 0) + 1));
   });
 
   // lista final de categorias (só as que têm pelo menos 1 disponível)
@@ -391,7 +390,7 @@ cats.forEach((c) => counts.set(c, (counts.get(c) || 0) + 1));
       btn.classList.add("active");
     }
 
-btn.addEventListener("click", () => {
+    btn.addEventListener("click", () => {
       const isActive = activeCategories.includes(cat);
 
       if (isActive) {
@@ -546,7 +545,7 @@ function calcularIntensidadeCategorias(escala) {
 
     const unicas = [...new Set(musica.categorias || [])];
     unicas.forEach((cat) => {
-freq.set(cat, (freq.get(cat) || 0) + 1);
+      freq.set(cat, (freq.get(cat) || 0) + 1);
     });
   });
 
@@ -565,7 +564,6 @@ freq.set(cat, (freq.get(cat) || 0) + 1);
 // BADGES DE DIFICULDADE (NOVO PADRÃO GLOBAL)
 // apenas ícone + nome do instrumento
 // =========================================================
-
 
 // =========================================================
 // SUGESTÃO AUTOMÁTICA DE REPERTÓRIO (ESCALAS FUTURAS)
@@ -611,7 +609,12 @@ function getNivelDoIntegrante(member, instKey) {
   // - member.nivel: { ... }
   // - member.niveis: { ... }
   // - member.expertise: "easy" | ...
-  const candidates = [member.level, member.nivel, member.niveis, member.expertise];
+  const candidates = [
+    member.level,
+    member.nivel,
+    member.niveis,
+    member.expertise,
+  ];
 
   for (const c of candidates) {
     if (!c) continue;
@@ -633,7 +636,10 @@ function getEventosPassadosAte(dataObj) {
   if (!(dataObj instanceof Date) || isNaN(dataObj)) return [];
   return historico
     .map((h) => ({ ...h, dataObj: parseDate(h.data) }))
-    .filter((h) => h.dataObj instanceof Date && !isNaN(h.dataObj) && h.dataObj < dataObj)
+    .filter(
+      (h) =>
+        h.dataObj instanceof Date && !isNaN(h.dataObj) && h.dataObj < dataObj
+    )
     .sort((a, b) => a.dataObj - b.dataObj);
 }
 
@@ -664,9 +670,14 @@ function foiProgramadaEmEscalaFuturaApos(idMusica, dataRefObj) {
 
   const futuros = (historico || [])
     .map((ev) => ({ ev, dataObj: parseDate(ev.data) }))
-    .filter((x) => x.dataObj instanceof Date && !isNaN(x.dataObj) && x.dataObj > dataRefObj);
+    .filter(
+      (x) =>
+        x.dataObj instanceof Date && !isNaN(x.dataObj) && x.dataObj > dataRefObj
+    );
 
-  return futuros.some(({ ev }) => Array.isArray(ev.musicas) && ev.musicas.includes(idMusica));
+  return futuros.some(
+    ({ ev }) => Array.isArray(ev.musicas) && ev.musicas.includes(idMusica)
+  );
 }
 
 // Dificuldade média (numérica) da música a partir de musica.level
@@ -689,7 +700,9 @@ function calcDificuldadeMediaMusica(musica) {
 
 // Perfil de dificuldade médio do time (com base no histórico passado)
 function calcPerfilDificuldadeDoTime(members, eventosPassados) {
-  const memberSet = new Set((members || []).map((x) => (typeof x === "object" ? x.id : x)));
+  const memberSet = new Set(
+    (members || []).map((x) => (typeof x === "object" ? x.id : x))
+  );
 
   let soma = 0;
   let count = 0;
@@ -739,9 +752,8 @@ function calcFamiliaridadeDoTimeComMusica(idMusica, members, eventosPassados) {
 
     evMembers.forEach((mid) => {
       if (!playsByMember.has(mid)) return;
-totalByMember.set(mid, (totalByMember.get(mid) || 0) + 1);
-if (hasMusic) playsByMember.set(mid, (playsByMember.get(mid) || 0) + 1);
-
+      totalByMember.set(mid, (totalByMember.get(mid) || 0) + 1);
+      if (hasMusic) playsByMember.set(mid, (playsByMember.get(mid) || 0) + 1);
     });
   });
 
@@ -752,7 +764,7 @@ if (hasMusic) playsByMember.set(mid, (playsByMember.get(mid) || 0) + 1);
     const pl = playsByMember.get(mid) || 0;
     const raw = tot > 0 ? pl / tot : 0;
     // Saturação leve: 1 play já ajuda bastante, mas sem estourar rápido
-    const adj = raw <= 0 ? 0 : (1 - Math.exp(-3 * raw)); // 0..~0.95
+    const adj = raw <= 0 ? 0 : 1 - Math.exp(-3 * raw); // 0..~0.95
     exposicoes.push(adj);
   });
 
@@ -764,11 +776,11 @@ if (hasMusic) playsByMember.set(mid, (playsByMember.get(mid) || 0) + 1);
   let coverage = 0;
   if (exposicoes.length) {
     let prod = 1;
-    exposicoes.forEach((e) => (prod *= (1 - clamp01(e))));
+    exposicoes.forEach((e) => (prod *= 1 - clamp01(e)));
     coverage = 1 - prod; // 0..1
   }
 
-  let familiaridade = clamp01((0.55 * coverage) + (0.45 * meanExp));
+  let familiaridade = clamp01(0.55 * coverage + 0.45 * meanExp);
 
   // Pisos humanos (vida real):
   const musica = musicas.find((m) => m && m.id === idMusica) || null;
@@ -781,8 +793,10 @@ if (hasMusic) playsByMember.set(mid, (playsByMember.get(mid) || 0) + 1);
   // Música fácil e/ou clássica não pode “parecer” pouco familiar
   if (diffNivel === "easy") familiaridade = Math.max(familiaridade, 0.45);
   if (popNivel === "classic") familiaridade = Math.max(familiaridade, 0.55);
-  if (diffNivel === "easy" && popNivel === "common") familiaridade = Math.max(familiaridade, 0.50);
-  if (diffNivel === "easy" && popNivel === "classic") familiaridade = Math.max(familiaridade, 0.65);
+  if (diffNivel === "easy" && popNivel === "common")
+    familiaridade = Math.max(familiaridade, 0.5);
+  if (diffNivel === "easy" && popNivel === "classic")
+    familiaridade = Math.max(familiaridade, 0.65);
 
   return clamp01(familiaridade);
 }
@@ -811,7 +825,11 @@ function calcAfinidadeHeaderComMusica(idMusica, headerIds, eventosPassados) {
 // Preferência do time/header por artista (para desempate)
 function buildPreferenciaArtistas(headerIds, members, eventosPassados) {
   const headers = new Set((headerIds || []).filter(Boolean));
-  const memberSet = new Set((members || []).map((x) => (typeof x === "object" ? x.id : x)).filter(Boolean));
+  const memberSet = new Set(
+    (members || [])
+      .map((x) => (typeof x === "object" ? x.id : x))
+      .filter(Boolean)
+  );
 
   const artistCounts = new Map();
   let total = 0;
@@ -847,10 +865,17 @@ function buildPreferenciaArtistas(headerIds, members, eventosPassados) {
 
 // Compatibilidade do time com a música (0..1), comparando nível do integrante com o nível do instrumento na música
 function calcCompatibilidadeTimeMusica(musica, members) {
-  const memberObjs = (members || []).map((x) => (typeof x === "object" ? x : integrantes.find((i) => i.id === x))).filter(Boolean);
+  const memberObjs = (members || [])
+    .map((x) =>
+      typeof x === "object" ? x : integrantes.find((i) => i.id === x)
+    )
+    .filter(Boolean);
   if (!memberObjs.length) return 0.6; // fallback neutro
 
-  const levels = (musica && musica.level && typeof musica.level === "object") ? musica.level : {};
+  const levels =
+    musica && musica.level && typeof musica.level === "object"
+      ? musica.level
+      : {};
   let soma = 0;
   let count = 0;
 
@@ -881,7 +906,9 @@ function calcDesafioTecnicoDoTimeMusica(musica, members) {
   if (!musica || !musica.level || typeof musica.level !== "object") return 0.5;
 
   const memberObjs = (members || [])
-    .map((x) => (typeof x === "object" ? x : integrantes.find((i) => i.id === x)))
+    .map((x) =>
+      typeof x === "object" ? x : integrantes.find((i) => i.id === x)
+    )
     .filter(Boolean);
 
   // Map do melhor nível disponível por instrumento no time (max)
@@ -926,7 +953,7 @@ function calcDesafioTecnicoDoTimeMusica(musica, members) {
   const avg = pesos.reduce((a, b) => a + b, 0) / pesos.length;
   const worst = Math.max(...pesos);
 
-  let desafio = clamp01((0.65 * worst) + (0.35 * avg));
+  let desafio = clamp01(0.65 * worst + 0.35 * avg);
 
   // Regra humana: música fácil nunca gera desafio alto
   const dAvg = calcDificuldadeMediaMusica(musica);
@@ -938,23 +965,24 @@ function calcDesafioTecnicoDoTimeMusica(musica, members) {
   return clamp01(desafio);
 }
 
-
 function clamp01(x) {
   return Math.max(0, Math.min(1, x));
 }
 
-
 function parseCategoriasMusica(categoriasRaw) {
   // No JSON atual, categorias vem como string "Cat A; Cat B; Cat C"
   if (!categoriasRaw) return [];
-  if (Array.isArray(categoriasRaw)) return categoriasRaw.map((c) => String(c || "").trim()).filter(Boolean);
+  if (Array.isArray(categoriasRaw))
+    return categoriasRaw.map((c) => String(c || "").trim()).filter(Boolean);
   const s = String(categoriasRaw);
-  return s.split(";").map((c) => c.trim()).filter(Boolean);
+  return s
+    .split(";")
+    .map((c) => c.trim())
+    .filter(Boolean);
 }
 
-
 function scoreToLabel3(score01, highLabel, midLabel, lowLabel) {
-  if (score01 >= 0.70) return highLabel;
+  if (score01 >= 0.7) return highLabel;
   if (score01 >= 0.45) return midLabel;
   return lowLabel;
 }
@@ -978,22 +1006,32 @@ function buildSongInsightParaEscala(musica, context, caches) {
   const teamFamiliarity = caches.teamFamiliarity.get(musica.id) || 0;
   const teamCompatibility = caches.teamCompatibility.get(musica.id) || 0.6;
 
-  const popNivel = (caches.popNivel && caches.popNivel.get(musica.id)) ? caches.popNivel.get(musica.id) : null;
-  const orderAvgPos = (caches.orderAvgPos && caches.orderAvgPos.get(musica.id) != null) ? caches.orderAvgPos.get(musica.id) : 2;
+  const popNivel =
+    caches.popNivel && caches.popNivel.get(musica.id)
+      ? caches.popNivel.get(musica.id)
+      : null;
+  const orderAvgPos =
+    caches.orderAvgPos && caches.orderAvgPos.get(musica.id) != null
+      ? caches.orderAvgPos.get(musica.id)
+      : 2;
 
   // Checkpoint 3: Desafio técnico real (instrumento×integrante)
-  const teamChallenge = (caches.teamChallenge && caches.teamChallenge.get(musica.id) != null)
-    ? (caches.teamChallenge.get(musica.id) || 0)
-    : calcDesafioTecnicoDoTimeMusica(musica, context && context.members ? context.members : []);
+  const teamChallenge =
+    caches.teamChallenge && caches.teamChallenge.get(musica.id) != null
+      ? caches.teamChallenge.get(musica.id) || 0
+      : calcDesafioTecnicoDoTimeMusica(
+          musica,
+          context && context.members ? context.members : []
+        );
 
   // Checkpoint 3: Familiaridade é memória coletiva ponderada (não exige time completo)
   const familiaridade = clamp01(teamFamiliarity);
 
   // Checkpoint 3: Segurança derivada (não “pensa sozinha”)
-  const seguranca = clamp01(
-    (0.55 * (1 - teamChallenge)) +
-    (0.35 * familiaridade) +
-    (0.10 * clamp01(teamCompatibility))
+  let seguranca = clamp01(
+    0.55 * (1 - teamChallenge) +
+      0.35 * familiaridade +
+      0.1 * clamp01(teamCompatibility)
   );
 
   // Desafio (0..1) agora é o desafio técnico real
@@ -1004,18 +1042,46 @@ function buildSongInsightParaEscala(musica, context, caches) {
   let tempo01 = 0.5;
   if (lastPlayed && context && context.serviceDate) {
     const MS_DIA = 1000 * 60 * 60 * 24;
-    const dias = Math.max(0, Math.floor((context.serviceDate - lastPlayed) / MS_DIA));
+    const dias = Math.max(
+      0,
+      Math.floor((context.serviceDate - lastPlayed) / MS_DIA)
+    );
     // 0..180 dias => 0..1 (cap)
     tempo01 = clamp01(dias / 180);
   }
-  const raridade01 = popNivel === "rare" ? 0.9 : popNivel === "classic" ? 0.2 : 0.5;
-  const renovacao =
-    clamp01(
-      (0.35 * (1 - pop01)) +
-      (0.30 * novidadeFreq) +
-      (0.20 * tempo01) +
-      (0.15 * raridade01)
-    );
+  const raridade01 =
+    popNivel === "rare" ? 0.9 : popNivel === "classic" ? 0.2 : 0.5;
+  const renovacao = clamp01(
+    0.35 * (1 - pop01) + 0.3 * novidadeFreq + 0.2 * tempo01 + 0.15 * raridade01
+  );
+
+  // ===============================
+  // AJUSTES HUMANOS DE SEGURANÇA
+  // ===============================
+
+  // Dados auxiliares do repertório (música única neste contexto)
+  const dificuldadeMax = dAvg || 0;
+  const dificuldadeMedia = dAvg || 0;
+
+  const qtdClassicas = popNivel === "classic" ? 1 : 0;
+  const temInedita = timesPlayed === 0;
+
+  // Ajuste A — Colchão clássico + time forte
+  // Time experiente, músicas fáceis e memória coletiva suficiente
+  if (
+    context &&
+    context.nivelDominanteTime === "hard" &&
+    dificuldadeMax <= 1.5 &&
+    qtdClassicas >= 1
+  ) {
+    seguranca = Math.max(seguranca, 0.7); // força VERDE
+  }
+
+  // Ajuste B — Previsibilidade operacional
+  // Repertório batido ≠ perigoso
+  if (renovacao <= 0.33 && !temInedita && dificuldadeMedia <= 1.8) {
+    seguranca = Math.max(seguranca, 0.7); // força VERDE
+  }
 
   return {
     musica,
@@ -1039,8 +1105,18 @@ function buildSongInsightParaEscala(musica, context, caches) {
       desafio,
       renovacao,
       badges: {
-        seguranca: scoreToLabel3(seguranca, "Muito Segura", "Moderada", "Arriscada"),
-        familiaridade: scoreToLabel3(familiaridade, "Muito Familiar", "Familiar", "Pouco Familiar"),
+        seguranca: scoreToLabel3(
+          seguranca,
+          "Muito Segura",
+          "Moderada",
+          "Arriscada"
+        ),
+        familiaridade: scoreToLabel3(
+          familiaridade,
+          "Muito Familiar",
+          "Familiar",
+          "Pouco Familiar"
+        ),
         desafio: scoreToLabel3(desafio, "Baixo", "Moderado", "Alto"),
         renovacao: scoreToLabel3(renovacao, "Alta", "Moderada", "Baixa"),
       },
@@ -1052,7 +1128,7 @@ function calcCategoriaDominanteCombo(insightsCombo) {
   const total = insightsCombo.length || 1;
   const freq = new Map();
 
-insightsCombo.forEach((si) => {
+  insightsCombo.forEach((si) => {
     (si.categorias || []).forEach((c) => {
       const cat = (c || "").trim();
       if (!cat) return;
@@ -1060,7 +1136,8 @@ insightsCombo.forEach((si) => {
     });
   });
 
-  if (!freq.size) return { categoria: null, percentual: 0, intensidade: "weak" };
+  if (!freq.size)
+    return { categoria: null, percentual: 0, intensidade: "weak" };
 
   let bestCat = null;
   let bestCount = 0;
@@ -1081,13 +1158,15 @@ insightsCombo.forEach((si) => {
 
 function calcCategoriaDominanteComboStrong100(combo) {
   // Retorna {categoria, percentual:100, intensidade:"strong"} se existir uma categoria comum às 3 músicas.
-  if (!Array.isArray(combo) || combo.length !== 3) return { categoria: null, percentual: 0, intensidade: "weak" };
+  if (!Array.isArray(combo) || combo.length !== 3)
+    return { categoria: null, percentual: 0, intensidade: "weak" };
 
   const a = combo[0]?.categorias || [];
   const b = combo[1]?.categorias || [];
   const c = combo[2]?.categorias || [];
 
-  if (!a.length || !b.length || !c.length) return { categoria: null, percentual: 0, intensidade: "weak" };
+  if (!a.length || !b.length || !c.length)
+    return { categoria: null, percentual: 0, intensidade: "weak" };
 
   const setB = new Set(b);
   const setC = new Set(c);
@@ -1132,22 +1211,32 @@ function ajustarScorePorArtistas(combo, preferenciaArtistas) {
 
 // Estratégias (pesos relativos)
 const REPERTORIOS_ESTRATEGIAS = [
-  {key: "favoritas",
+  {
+    key: "favoritas",
     titulo: "Favoritas do Time",
-    pesos: { seguranca: 0.8, familiaridade: 1.0, desafio: 0.2, renovacao: 0.1 }},
-  {key: "facilimo",
+    pesos: { seguranca: 0.8, familiaridade: 1.0, desafio: 0.2, renovacao: 0.1 },
+  },
+  {
+    key: "facilimo",
     titulo: "Facílimo",
-    pesos: { seguranca: 1.0, familiaridade: 0.8, desafio: 0.1, renovacao: 0.2 }},
-  {key: "mediano",
+    pesos: { seguranca: 1.0, familiaridade: 0.8, desafio: 0.1, renovacao: 0.2 },
+  },
+  {
+    key: "mediano",
     titulo: "Mediano",
-    pesos: { seguranca: 0.8, familiaridade: 0.5, desafio: 0.5, renovacao: 0.4 }},
-  {key: "desafiador",
+    pesos: { seguranca: 0.8, familiaridade: 0.5, desafio: 0.5, renovacao: 0.4 },
+  },
+  {
+    key: "desafiador",
     titulo: "Desafiador",
-    pesos: { seguranca: 0.5, familiaridade: 0.2, desafio: 1.0, renovacao: 0.5 }},
-  {key: "incomum",
-    titulo: "Incomum",
-    pesos: { seguranca: 0.4, familiaridade: 0.2, desafio: 0.5, renovacao: 1.0 }},
-
+    pesos: { seguranca: 0.5, familiaridade: 0.2, desafio: 1.0, renovacao: 0.5 },
+  },
+  {
+    key: "incomum",
+    // Nome novo sugerido (PO): foca no objetivo humano de oxigenação sem parecer "estranho".
+    titulo: "Oxigenação",
+    pesos: { seguranca: 0.4, familiaridade: 0.2, desafio: 0.5, renovacao: 1.0 },
+  },
 ];
 
 function scoreSongForStrategy(songInsight, estrategia) {
@@ -1156,17 +1245,17 @@ function scoreSongForStrategy(songInsight, estrategia) {
   const m = songInsight.metrics || {};
 
   let score =
-    (p.seguranca * s.seguranca) +
-    (p.familiaridade * s.familiaridade) +
-    (p.desafio * s.desafio) +
-    (p.renovacao * s.renovacao);
+    p.seguranca * s.seguranca +
+    p.familiaridade * s.familiaridade +
+    p.desafio * s.desafio +
+    p.renovacao * s.renovacao;
 
   // Favoritas do Time: considere BEM MAIS membros/headers (afinidade, familiaridade e compatibilidade)
   if (estrategia && estrategia.key === "favoritas") {
     const bonusTime =
-      (0.55 * clamp01(m.headerAffinity || 0)) +
-      (0.45 * clamp01(m.teamFamiliarity || 0)) +
-      (0.25 * clamp01(m.teamCompatibility || 0));
+      0.55 * clamp01(m.headerAffinity || 0) +
+      0.45 * clamp01(m.teamFamiliarity || 0) +
+      0.25 * clamp01(m.teamCompatibility || 0);
     score = score + bonusTime;
   }
 
@@ -1197,22 +1286,28 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
   const headerIds = Array.isArray(escala.header) ? escala.header : [];
 
   const eventosPassados = getEventosPassadosAte(serviceDate);
-  const teamDifficultyProfile = calcPerfilDificuldadeDoTime(members, eventosPassados) || 2;
+  const teamDifficultyProfile =
+    calcPerfilDificuldadeDoTime(members, eventosPassados) || 2;
 
-  const context = { serviceDate, members, headerIds, eventosPassados, teamDifficultyProfile };
+  const context = {
+    serviceDate,
+    members,
+    headerIds,
+    eventosPassados,
+    teamDifficultyProfile,
+  };
 
   // Patch variedade: evitar repertórios idênticos e reduzir reutilização entre repertórios
   const priorComboKeys = new Set();
   const usedIds = new Set();
-
-
 
   // 1) elegibilidade
   const elegiveis = musicas.filter((m) => {
     if (!m) return false;
     if (m.ban === true || m.banned === true) return false;
     // filtro de recência relativo à data do culto (regra global)
-    if (foiTocadaRecentementeAte(m.id, serviceDate, TOCADA_NOS_ULTIMOS_X_DIAS)) return false;
+    if (foiTocadaRecentementeAte(m.id, serviceDate, TOCADA_NOS_ULTIMOS_X_DIAS))
+      return false;
     // não sugerir músicas já programadas em escalas futuras
     if (foiProgramadaEmEscalaFuturaApos(m.id, serviceDate)) return false;
     return true;
@@ -1228,7 +1323,7 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
     teamChallenge: new Map(),
     popNivel: new Map(),
     orderAvgPos: new Map(),
-    maxPlayed: 0
+    maxPlayed: 0,
   };
 
   // Cache de posição média histórica (1ª/2ª/3ª...) para reduzir viés de ordem
@@ -1261,186 +1356,291 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
     })();
 
     caches.timesPlayed.set(m.id, times);
-    const popSnap = popularidadeSnapshot && popularidadeSnapshot[m.id] ? popularidadeSnapshot[m.id] : null;
+    const popSnap =
+      popularidadeSnapshot && popularidadeSnapshot[m.id]
+        ? popularidadeSnapshot[m.id]
+        : null;
     if (popSnap && popSnap.nivel) caches.popNivel.set(m.id, popSnap.nivel);
     caches.maxPlayed = Math.max(caches.maxPlayed, times);
 
     caches.lastPlayed.set(m.id, getUltimaDataTocadaAte(m.id, serviceDate));
-    caches.teamFamiliarity.set(m.id, calcFamiliaridadeDoTimeComMusica(m.id, members, eventosPassados));
-    caches.headerAffinity.set(m.id, calcAfinidadeHeaderComMusica(m.id, headerIds, eventosPassados));
-    caches.teamCompatibility.set(m.id, calcCompatibilidadeTimeMusica(m, members));
+    caches.teamFamiliarity.set(
+      m.id,
+      calcFamiliaridadeDoTimeComMusica(m.id, members, eventosPassados)
+    );
+    caches.headerAffinity.set(
+      m.id,
+      calcAfinidadeHeaderComMusica(m.id, headerIds, eventosPassados)
+    );
+    caches.teamCompatibility.set(
+      m.id,
+      calcCompatibilidadeTimeMusica(m, members)
+    );
     caches.teamChallenge.set(m.id, calcDesafioTecnicoDoTimeMusica(m, members));
   });
 
-  const preferenciaArtistas = buildPreferenciaArtistas(headerIds, members, eventosPassados);
+  const preferenciaArtistas = buildPreferenciaArtistas(
+    headerIds,
+    members,
+    eventosPassados
+  );
 
-const insightsBase = elegiveis.map((m) => buildSongInsightParaEscala(m, context, caches));
+  const insightsBase = elegiveis.map((m) =>
+    buildSongInsightParaEscala(m, context, caches)
+  );
 
-// Pré-cálculo (performance): fixar exatamente os mesmos níveis usados nos badges
-// - Dificuldade: valorToNivel(calcDificuldadeMediaMusica)
-// - Popularidade: classificarNiveisDePopularidade (snapshot) -> .nivel
-insightsBase.forEach((si) => {
-  const musica = si?.musica;
-  if (!musica) return;
+  // Pré-cálculo (performance): fixar exatamente os mesmos níveis usados nos badges
+  // - Dificuldade: valorToNivel(calcDificuldadeMediaMusica)
+  // - Popularidade: classificarNiveisDePopularidade (snapshot) -> .nivel
+  insightsBase.forEach((si) => {
+    const musica = si?.musica;
+    if (!musica) return;
 
-  const dAvg = calcDificuldadeMediaMusica(musica);
-  si._diffAvg = dAvg;
-  si._diffNivel = dAvg != null ? valorToNivel(dAvg) : null;
+    const dAvg = calcDificuldadeMediaMusica(musica);
+    si._diffAvg = dAvg;
+    si._diffNivel = dAvg != null ? valorToNivel(dAvg) : null;
 
-  const snap = popularidadeSnapshot && popularidadeSnapshot[musica.id];
-  si._popNivel = snap && snap.nivel ? snap.nivel : getNivelPopularidadeMusica(musica.id);
+    const snap = popularidadeSnapshot && popularidadeSnapshot[musica.id];
+    si._popNivel =
+      snap && snap.nivel ? snap.nivel : getNivelPopularidadeMusica(musica.id);
 
-  // normalizar categorias já calculadas
-  if (!Array.isArray(si.categorias)) si.categorias = parseCategoriasMusica(musica.categorias);
-});
-
+    // normalizar categorias já calculadas
+    if (!Array.isArray(si.categorias))
+      si.categorias = parseCategoriasMusica(musica.categorias);
+  });
 
   // função helper para montar um repertório por estratégia
-function montarRepertorio(estrategia) {
-  const scored = insightsBase
-    .map((si) => ({ si, score: scoreSongForStrategy(si, estrategia) }))
-    .sort((a, b) => b.score - a.score);
+  function montarRepertorio(estrategia) {
+    const scored = insightsBase
+      .map((si) => ({ si, score: scoreSongForStrategy(si, estrategia) }))
+      .sort((a, b) => b.score - a.score);
 
-  const TOP_K = Math.min(40, scored.length);
-  if (TOP_K < SUGGESTION_SIZE) return null;
+    const TOP_K = Math.min(40, scored.length);
+    if (TOP_K < SUGGESTION_SIZE) return null;
 
-  // Pool base (já ordenado por score)
-  let pool = scored.slice(0, TOP_K).map((x) => x.si);
+    // Pool base (já ordenado por score)
+    let pool = scored.slice(0, TOP_K).map((x) => x.si);
 
-  // Pequenas reduções do espaço de busca por estratégia (sem relaxar regras)
-  if (estrategia.key === "facilimo") {
-    pool = pool.filter((si) => si._popNivel !== "rare" && si._diffNivel !== "hard");
-  } else if (estrategia.key === "mediano") {
-    pool = pool.filter((si) => si._popNivel !== "rare");
-  }
+    // Pequenas reduções do espaço de busca por estratégia (sem relaxar regras)
+    if (estrategia.key === "facilimo") {
+      pool = pool.filter(
+        (si) => si._popNivel !== "rare" && si._diffNivel !== "hard"
+      );
+    } else if (estrategia.key === "mediano") {
+      pool = pool.filter((si) => si._popNivel !== "rare");
+    }
 
-  if (pool.length < SUGGESTION_SIZE) return null;
+    if (pool.length < SUGGESTION_SIZE) return null;
 
-  // Helper: score médio do combo (3 músicas)
-  const scoreComboBase = (a, b, c) =>
-    (scoreSongForStrategy(a, estrategia) +
-      scoreSongForStrategy(b, estrategia) +
-      scoreSongForStrategy(c, estrategia)) / 3;
+    // Helper: score médio do combo (3 músicas)
+    const scoreComboBase = (a, b, c) =>
+      (scoreSongForStrategy(a, estrategia) +
+        scoreSongForStrategy(b, estrategia) +
+        scoreSongForStrategy(c, estrategia)) /
+      3;
 
-  let best = null;
+    let best = null;
 
-  // Iteração direta (evita alocar array gigante de combos)
-  for (let i = 0; i < pool.length - 2; i++) {
-    const a = pool[i];
-    for (let j = i + 1; j < pool.length - 1; j++) {
-      const b = pool[j];
-      for (let k = j + 1; k < pool.length; k++) {
-        const c = pool[k];
+    // Iteração direta (evita alocar array gigante de combos)
+    for (let i = 0; i < pool.length - 2; i++) {
+      const a = pool[i];
+      for (let j = i + 1; j < pool.length - 1; j++) {
+        const b = pool[j];
+        for (let k = j + 1; k < pool.length; k++) {
+          const c = pool[k];
 
-        const combo = [a, b, c];
+          const combo = [a, b, c];
 
           // Regra absoluta: nunca sugerir repertório com 2 músicas inéditas (0 execuções)
           const qtdIneditas = combo.reduce((acc, si) => {
             const id = si && si.musica ? si.musica.id : null;
             if (!id) return acc;
-            const tp = (si.metrics && typeof si.metrics.timesPlayed === "number")
-              ? si.metrics.timesPlayed
-              : (caches.timesPlayed.get(id) || 0);
+            const tp =
+              si.metrics && typeof si.metrics.timesPlayed === "number"
+                ? si.metrics.timesPlayed
+                : caches.timesPlayed.get(id) || 0;
             return acc + (tp === 0 ? 1 : 0);
           }, 0);
           if (qtdIneditas >= 2) continue;
 
           // Patch variedade: evitar repertórios idênticos
-          const idsKey = combo.map((x) => (x && x.musica ? x.musica.id : null)).filter(Boolean).sort().join("|");
+          const idsKey = combo
+            .map((x) => (x && x.musica ? x.musica.id : null))
+            .filter(Boolean)
+            .sort()
+            .join("|");
           if (priorComboKeys.has(idsKey)) continue;
 
+          // Regras globais + por repertório
+          if (!validarComboPorRepertorio(combo, estrategia.key)) continue;
 
-        // Regras globais + por repertório
-        if (!validarComboPorRepertorio(combo, estrategia.key)) continue;
+          // Categoria: exigir strong 100% (uma categoria presente nas 3 músicas)
+          const cat = calcCategoriaDominanteComboStrong100(combo);
+          if (
+            !(
+              cat &&
+              cat.intensidade === "strong" &&
+              cat.percentual === 100 &&
+              cat.categoria
+            )
+          )
+            continue;
 
-        // Categoria: exigir strong 100% (uma categoria presente nas 3 músicas)
-        const cat = calcCategoriaDominanteComboStrong100(combo);
-        if (!(cat && cat.intensidade === "strong" && cat.percentual === 100 && cat.categoria)) continue;
+          const baseScore = scoreComboBase(a, b, c);
+          const bonusArtBase = ajustarScorePorArtistas(
+            combo,
+            preferenciaArtistas
+          );
+          const bonusArt =
+            bonusArtBase * (estrategia.key === "favoritas" ? 3 : 1);
 
-        const baseScore = scoreComboBase(a, b, c);
-        const bonusArtBase = ajustarScorePorArtistas(combo, preferenciaArtistas);
-        const bonusArt = bonusArtBase * (estrategia.key === "favoritas" ? 3 : 1);
-        
-        // Penalidade leve por música já usada em repertório anterior (não é proibição)
-        const reuseCount = combo.reduce((acc, si) => {
-          const id = si && si.musica ? si.musica.id : null;
-          return acc + (id && usedIds.has(id) ? 1 : 0);
-        }, 0);
-        const reusePenalty = 0.06 * reuseCount;
+          // Penalidade leve por música já usada em repertório anterior (não é proibição)
+          const reuseCount = combo.reduce((acc, si) => {
+            const id = si && si.musica ? si.musica.id : null;
+            return acc + (id && usedIds.has(id) ? 1 : 0);
+          }, 0);
+          const reusePenalty = 0.06 * reuseCount;
 
-        const finalScore = baseScore + bonusArt - reusePenalty;
+          const finalScore = baseScore + bonusArt - reusePenalty;
 
-
-        if (!best || finalScore > best.finalScore) {
-          best = { combo, cat, finalScore };
+          if (!best || finalScore > best.finalScore) {
+            best = { combo, cat, finalScore };
+          }
         }
       }
     }
+
+    if (!best) return null;
+
+    // repertório: agrega badges (média dos 4 insights)
+    // =====================================================
+    // REPERTÓRIO — AGREGAÇÃO FINAL DE INSIGHTS (CANÔNICO)
+    // =====================================================
+
+    // Média simples dos scores das músicas
+    const avg = (key) =>
+      (best.combo[0].insights[key] +
+        best.combo[1].insights[key] +
+        best.combo[2].insights[key]) /
+      3;
+
+    let seguranca = avg("seguranca");
+    let familiaridade = avg("familiaridade");
+    let desafio = avg("desafio");
+    let renovacao = avg("renovacao");
+
+    // ---------------------------
+    // Dados auxiliares
+    // ---------------------------
+    const dificuldades = best.combo.map((m) => m.metrics?.difficultyAvg || 0);
+    const dificuldadeMax = Math.max(...dificuldades);
+    const dificuldadeMedia =
+      dificuldades.reduce((a, b) => a + b, 0) / dificuldades.length;
+
+    const qtdClassicas = best.combo.filter(
+      (m) => m.metrics?.popNivel === "classic"
+    ).length;
+
+    const qtdIncomuns = best.combo.filter(
+      (m) => m.metrics?.popNivel === "rare"
+    ).length;
+
+    const temInedita = best.combo.some(
+      (m) => (m.metrics?.timesPlayed || 0) === 0
+    );
+
+    // =====================================================
+    // RENOVAÇÃO — média + regras hierárquicas (1–4)
+    // =====================================================
+    let renovacaoFinal = clamp01(renovacao);
+
+    // Regra 1 — ≥1 Incomum ⇒ nunca Vermelho
+    if (qtdIncomuns >= 1 && renovacaoFinal <= 0.45) {
+      renovacaoFinal = 0.46;
+    }
+
+    // Regra 2 — ≥1 Clássica ⇒ nunca Verde
+    if (qtdClassicas >= 1 && renovacaoFinal >= 0.7) {
+      renovacaoFinal = 0.69;
+    }
+
+    // Regra 3 — nenhuma Clássica ⇒ nunca Vermelho
+    if (qtdClassicas === 0 && renovacaoFinal <= 0.45) {
+      renovacaoFinal = 0.46;
+    }
+
+    // Regra 4 (prioridade máxima) — ≥2 Incomuns ⇒ SEMPRE Verde
+    if (qtdIncomuns >= 2) {
+      renovacaoFinal = 0.85;
+    }
+
+    // =====================================================
+    // SEGURANÇA — derivada + ajustes humanos finais
+    // =====================================================
+
+    // Base derivada
+    let segurancaFinal = clamp01(
+      0.5 * (1 - desafio) + 0.35 * familiaridade + 0.15 * (1 - renovacaoFinal)
+    );
+
+    // AJUSTE A — colchão clássico + time experiente
+    if (
+      // context?.nivelDominanteTime === "hard" &&
+      dificuldadeMax <= 1.5 &&
+      qtdClassicas >= 2
+    ) {
+      segurancaFinal = Math.max(segurancaFinal, 0.7); // VERDE
+    }
+
+    // AJUSTE B — seguro, porém cansado
+    if (renovacaoFinal <= 0.33 && !temInedita && dificuldadeMedia <= 1.8) {
+      segurancaFinal = Math.max(segurancaFinal, 0.7); // VERDE
+    }
+
+    // =====================================================
+    // OBJETO FINAL DO REPERTÓRIO
+    // =====================================================
+    const rep = {
+      titulo: estrategia.titulo,
+      categoria: best.cat,
+      musicas: best.combo.map((c) => c.musica),
+      insights: {
+        seguranca: segurancaFinal,
+        familiaridade,
+        desafio,
+        renovacao: renovacaoFinal,
+      },
+      badges: {
+        seguranca: scoreToLabel3(
+          segurancaFinal,
+          "Muito Segura",
+          "Moderada",
+          "Arriscada"
+        ),
+        familiaridade: scoreToLabel3(
+          familiaridade,
+          "Muito Familiar",
+          "Familiar",
+          "Pouco Familiar"
+        ),
+        desafio: scoreToLabel3(desafio, "Baixo", "Moderado", "Alto"),
+        renovacao: scoreToLabel3(renovacaoFinal, "Alta", "Moderada", "Baixa"),
+      },
+    };
+
+    // (debug opcional) — mantido silencioso por padrão
+    if (DEBUG_SUGESTOES_REPERTORIO) console.log("[SUGESTAO REP]", rep);
+
+    // Guardar para evitar repertórios idênticos e estimular variedade nos próximos
+    const ids = (rep.musicas || []).map((m) => m && m.id).filter(Boolean);
+    const key = ids.slice().sort().join("|");
+    if (key) priorComboKeys.add(key);
+    ids.forEach((id) => usedIds.add(id));
+
+    return rep;
   }
 
-  if (!best) return null;
-
-  // repertório: agrega badges (média dos 4 insights)
-  const avg = (key) =>
-    (best.combo[0].insights[key] + best.combo[1].insights[key] + best.combo[2].insights[key]) / 3;
-
-  const seguranca = avg("seguranca");
-  const familiaridade = avg("familiaridade");
-  const desafio = avg("desafio");
-  const renovacao = avg("renovacao");
-
-  // Renovação do repertório: média aritmética das músicas + sobreescritas (regras 1–4)
-  let renovacaoFinal = clamp01(renovacao);
-
-  const getPopNivel = (si) =>
-    (si && si.metrics && si.metrics.popNivel) ? si.metrics.popNivel : (caches.popNivel.get(si.musica.id) || null);
-
-  const qtdIncomuns = best.combo.filter((si) => getPopNivel(si) === "rare").length;
-  const temClassica = best.combo.some((si) => getPopNivel(si) === "classic");
-
-  // Regra 1: ≥1 Incomum => nunca Baixa (vermelho)
-  if (qtdIncomuns >= 1 && renovacaoFinal <= 0.45) renovacaoFinal = 0.46;
-
-  // Regra 2: ≥1 Clássica => nunca Alta (verde)
-  if (temClassica && renovacaoFinal >= 0.7) renovacaoFinal = 0.69;
-
-  // Regra 3: sem Clássica => nunca Baixa (vermelho)
-  if (!temClassica && renovacaoFinal <= 0.45) renovacaoFinal = 0.46;
-
-  // Regra 4 (maior prioridade): ≥2 Incomuns => tem que ser Alta (verde)
-  if (qtdIncomuns >= 2) renovacaoFinal = 0.85;
-
-  // Ordem: respeitar posição média histórica (reduz viés de “sempre a mesma primeira”)
-  const comboOrdenado = [...best.combo].sort((a, b) => {
-    const pa = (a && a.metrics && typeof a.metrics.orderAvgPos === "number") ? a.metrics.orderAvgPos : 2;
-    const pb = (b && b.metrics && typeof b.metrics.orderAvgPos === "number") ? b.metrics.orderAvgPos : 2;
-    if (pa !== pb) return pa - pb;
-    return 0;
-  });
-
-  const rep = {
-    estrategiaKey: estrategia.key,
-    titulo: estrategia.titulo,
-    musicas: comboOrdenado.map((x) => x.musica),
-    categoria: best.cat,
-    badges: {
-      seguranca: scoreToLabel3(seguranca, "Muito Segura", "Moderada", "Arriscada"),
-      familiaridade: scoreToLabel3(familiaridade, "Muito Familiar", "Familiar", "Pouco Familiar"),
-      desafio: scoreToLabel3(desafio, "Baixo", "Moderado", "Alto"),
-      renovacao: scoreToLabel3(renovacaoFinal, "Alta", "Moderada", "Baixa"),
-    },
-  };
-
-  // Guardar para evitar repertórios idênticos e estimular variedade nos próximos
-  const ids = (rep.musicas || []).map((m) => m && m.id).filter(Boolean);
-  const key = ids.slice().sort().join("|");
-  if (key) priorComboKeys.add(key);
-  ids.forEach((id) => usedIds.add(id));
-
-  return rep;
-}
-
-const sugestoes = [];
+  const sugestoes = [];
   REPERTORIOS_ESTRATEGIAS.forEach((estrategia) => {
     const rep = montarRepertorio(estrategia);
     if (rep) sugestoes.push(rep);
@@ -1449,12 +1649,386 @@ const sugestoes = [];
   return sugestoes;
 }
 
+// =========================================================
+// INSIGHTS — REPERTÓRIO EXISTENTE (ESCALAS FUTURAS + PRÓXIMO CULTO)
+// - Mesma base de cálculo das sugestões (badge helpers + regras hierárquicas)
+// - NÃO aplica pré-filtros (aqui é análise do que já foi escolhido)
+// =========================================================
+
+function analisarRepertorioDaEscala(escala, musicIds) {
+  const ids = Array.isArray(musicIds) ? musicIds.filter(Boolean) : [];
+  if (ids.length !== 3) return null;
+
+  const serviceDate = escala.dataObj || parseDate(escala.data);
+  if (!(serviceDate instanceof Date) || isNaN(serviceDate)) return null;
+
+  const popularidadeSnapshot = classificarNiveisDePopularidade(musicas);
+  const members = Array.isArray(escala.integrantes) ? escala.integrantes : [];
+  const headerIds = Array.isArray(escala.header) ? escala.header : [];
+  const eventosPassados = getEventosPassadosAte(serviceDate);
+  const teamDifficultyProfile =
+    calcPerfilDificuldadeDoTime(members, eventosPassados) || 2;
+
+  const context = {
+    serviceDate,
+    members,
+    headerIds,
+    eventosPassados,
+    teamDifficultyProfile,
+  };
+
+  const musicasRep = ids
+    .map((id) => musicas.find((m) => m && m.id === id))
+    .filter(Boolean);
+  if (musicasRep.length !== 3) return null;
+
+  // Cache mínimo (somente para as 3 músicas do repertório)
+  const caches = {
+    timesPlayed: new Map(),
+    lastPlayed: new Map(),
+    teamFamiliarity: new Map(),
+    headerAffinity: new Map(),
+    teamCompatibility: new Map(),
+    teamChallenge: new Map(),
+    popNivel: new Map(),
+    orderAvgPos: new Map(),
+    maxPlayed: 0,
+  };
+
+  // ordem média histórica (1..3) — fallback 2
+  (function buildOrderAvgPosCache() {
+    const soma = new Map();
+    const count = new Map();
+    (eventosPassados || []).forEach((ev) => {
+      const idsEv = Array.isArray(ev.musicas) ? ev.musicas : [];
+      idsEv.forEach((id, idx) => {
+        if (!id) return;
+        soma.set(id, (soma.get(id) || 0) + (idx + 1));
+        count.set(id, (count.get(id) || 0) + 1);
+      });
+    });
+    musicasRep.forEach((m) => {
+      const s = soma.get(m.id);
+      const c = count.get(m.id);
+      if (s && c) caches.orderAvgPos.set(m.id, s / c);
+      else caches.orderAvgPos.set(m.id, 2);
+    });
+  })();
+
+  musicasRep.forEach((m) => {
+    const times = (() => {
+      let total = 0;
+      eventosPassados.forEach((ev) => {
+        if (Array.isArray(ev.musicas) && ev.musicas.includes(m.id)) total++;
+      });
+      return total;
+    })();
+
+    caches.timesPlayed.set(m.id, times);
+    caches.maxPlayed = Math.max(caches.maxPlayed, times);
+
+    const snap = popularidadeSnapshot && popularidadeSnapshot[m.id];
+    caches.popNivel.set(
+      m.id,
+      snap && snap.nivel ? snap.nivel : getNivelPopularidadeMusica(m.id)
+    );
+
+    caches.lastPlayed.set(m.id, getUltimaDataTocadaAte(m.id, serviceDate));
+    caches.teamFamiliarity.set(
+      m.id,
+      calcFamiliaridadeDoTimeComMusica(m.id, members, eventosPassados)
+    );
+    caches.headerAffinity.set(
+      m.id,
+      calcAfinidadeHeaderComMusica(m.id, headerIds, eventosPassados)
+    );
+    caches.teamCompatibility.set(m.id, calcCompatibilidadeTimeMusica(m, members));
+    caches.teamChallenge.set(m.id, calcDesafioTecnicoDoTimeMusica(m, members));
+  });
+
+  const songInsights = musicasRep.map((m) => {
+    const si = buildSongInsightParaEscala(m, context, caches);
+
+    const dAvg = calcDificuldadeMediaMusica(m);
+    si._diffAvg = dAvg;
+    si._diffNivel = dAvg != null ? valorToNivel(dAvg) : null;
+    si._popNivel = caches.popNivel.get(m.id) || getNivelPopularidadeMusica(m.id);
+    if (!Array.isArray(si.categorias)) si.categorias = parseCategoriasMusica(m.categorias);
+    return si;
+  });
+
+  // Categoria dominante (mesma regra forte usada nas sugestões)
+  const categoria = calcCategoriaDominanteComboStrong100(songInsights);
+
+  // Média simples dos scores das músicas
+  const avg = (key) =>
+    (songInsights[0].insights[key] +
+      songInsights[1].insights[key] +
+      songInsights[2].insights[key]) /
+    3;
+
+  let familiaridade = avg("familiaridade");
+  let desafio = avg("desafio");
+  let renovacao = avg("renovacao");
+
+  const dificuldades = songInsights.map((m) => m.metrics?.difficultyAvg || 0);
+  const dificuldadeMax = Math.max(...dificuldades);
+  const dificuldadeMedia =
+    dificuldades.reduce((a, b) => a + b, 0) / (dificuldades.length || 1);
+
+  const qtdClassicas = songInsights.filter((m) => m.metrics?.popNivel === "classic").length;
+  const qtdIncomuns = songInsights.filter((m) => m.metrics?.popNivel === "rare").length;
+  const temInedita = songInsights.some((m) => (m.metrics?.timesPlayed || 0) === 0);
+
+  // RENOVAÇÃO — mesma hierarquia (1–4)
+  let renovacaoFinal = clamp01(renovacao);
+  if (qtdIncomuns >= 1 && renovacaoFinal <= 0.45) renovacaoFinal = 0.46;
+  if (qtdClassicas >= 1 && renovacaoFinal >= 0.7) renovacaoFinal = 0.69;
+  if (qtdClassicas === 0 && renovacaoFinal <= 0.45) renovacaoFinal = 0.46;
+  if (qtdIncomuns >= 2) renovacaoFinal = 0.85;
+
+  // SEGURANÇA — derivada + ajustes humanos finais
+  let segurancaFinal = clamp01(
+    0.5 * (1 - desafio) + 0.35 * familiaridade + 0.15 * (1 - renovacaoFinal)
+  );
+
+  // Ajuste A — colchão clássico + time experiente
+  if (dificuldadeMax <= 1.5 && qtdClassicas >= 2) {
+    segurancaFinal = Math.max(segurancaFinal, 0.7);
+  }
+
+  // Ajuste B — seguro, porém cansado
+  if (renovacaoFinal <= 0.33 && !temInedita && dificuldadeMedia <= 1.8) {
+    segurancaFinal = Math.max(segurancaFinal, 0.7);
+  }
+
+  const badges = {
+    seguranca: scoreToLabel3(segurancaFinal, "Muito Segura", "Moderada", "Arriscada"),
+    familiaridade: scoreToLabel3(familiaridade, "Muito Familiar", "Familiar", "Pouco Familiar"),
+    desafio: scoreToLabel3(desafio, "Baixo", "Moderado", "Alto"),
+    renovacao: scoreToLabel3(renovacaoFinal, "Alta", "Moderada", "Baixa"),
+  };
+
+  return {
+    categoria,
+    insights: { seguranca: segurancaFinal, familiaridade, desafio, renovacao: renovacaoFinal },
+    badges,
+    songInsights,
+    statsAux: {
+      dificuldadeMax,
+      dificuldadeMedia,
+      qtdClassicas,
+      qtdIncomuns,
+      temInedita,
+    },
+  };
+}
+
+function renderBadgesInsightsDoRepertorio(parentEl, repAnalysis) {
+  if (!parentEl || !repAnalysis || !repAnalysis.badges) return;
+
+  const badges = document.createElement("div");
+  badges.style.display = "flex";
+  badges.style.gap = "6px";
+  badges.style.flexWrap = "wrap";
+  badges.style.justifyContent = "flex-start";
+  badges.style.marginTop = "8px";
+
+  const catInsight = criarCategoriaVisual(repAnalysis.categoria);
+  if (catInsight) badges.appendChild(catInsight);
+
+  badges.appendChild(
+    criarInsightVisual({ icon: "🛡️", label: "Segurança", nivelLabel: repAnalysis.badges.seguranca })
+  );
+  badges.appendChild(
+    criarInsightVisual({ icon: "👥", label: "Familiaridade", nivelLabel: repAnalysis.badges.familiaridade })
+  );
+  badges.appendChild(
+    criarInsightVisual({ icon: "🔥", label: "Desafio", nivelLabel: repAnalysis.badges.desafio })
+  );
+  badges.appendChild(
+    criarInsightVisual({ icon: "🌱", label: "Renovação", nivelLabel: repAnalysis.badges.renovacao })
+  );
+
+  parentEl.appendChild(badges);
+}
+
+function renderInsightsVerboseDoRepertorio(parentEl, repAnalysis) {
+  if (!parentEl || !repAnalysis || !repAnalysis.songInsights) return;
+
+  const box = document.createElement("div");
+  box.style.marginTop = "10px";
+  box.style.display = "flex";
+  box.style.flexDirection = "column";
+  box.style.gap = "10px";
+
+  const makeSection = (titleText, bodyNodes) => {
+    const sec = document.createElement("div");
+    sec.style.padding = "10px";
+    sec.style.border = "1px solid rgba(255,255,255,0.08)";
+    sec.style.borderRadius = "12px";
+
+    const title = document.createElement("div");
+    title.style.fontWeight = "700";
+    title.style.marginBottom = "6px";
+    title.textContent = titleText;
+
+    const body = document.createElement("div");
+    body.style.fontSize = "0.9rem";
+    body.style.lineHeight = "1.35rem";
+
+    (bodyNodes || []).forEach((n) => body.appendChild(n));
+
+    sec.append(title, body);
+    return sec;
+  };
+
+  const p = (text) => {
+    const el = document.createElement("div");
+    el.textContent = text;
+    return el;
+  };
+
+  const si = repAnalysis.songInsights;
+  const stats = repAnalysis.statsAux || {};
+
+  const qtdIneditas = si.filter((x) => (x.metrics?.timesPlayed || 0) === 0).length;
+  const totalExec = si.reduce((acc, x) => acc + (x.metrics?.timesPlayed || 0), 0);
+  const execText = si
+    .map((x) => {
+      const m = x.musica;
+      const t = x.metrics?.timesPlayed || 0;
+      return `• ${m?.titulo || m?.nome || "Música"} — ${t}x`;
+    })
+    .join("\n");
+
+  const popCounts = {
+    classic: si.filter((x) => x.metrics?.popNivel === "classic").length,
+    common: si.filter((x) => x.metrics?.popNivel === "common").length,
+    rare: si.filter((x) => x.metrics?.popNivel === "rare").length,
+  };
+
+  const famAvg =
+    si.reduce((acc, x) => acc + (x.metrics?.teamFamiliarity || 0), 0) /
+    (si.length || 1);
+  const headerAvg =
+    si.reduce((acc, x) => acc + (x.metrics?.headerAffinity || 0), 0) /
+    (si.length || 1);
+  const compAvg =
+    si.reduce((acc, x) => acc + (x.metrics?.teamCompatibility || 0), 0) /
+    (si.length || 1);
+  const challAvg =
+    si.reduce((acc, x) => acc + (x.metrics?.teamChallenge || 0), 0) /
+    (si.length || 1);
+
+  // Renovação
+  const renovSec = [];
+  renovSec.push(
+    p(
+      `Renovação ${repAnalysis.badges.renovacao}: este repertório mistura ${popCounts.classic} clássica(s), ${popCounts.common} comum(ns) e ${popCounts.rare} incomum(ns).`
+    )
+  );
+  if (popCounts.rare >= 2) {
+    renovSec.push(p("• Há 2 ou mais músicas incomuns — isso puxa a Renovação para cima por oxigenação do set."));
+  } else if (popCounts.rare === 1) {
+    renovSec.push(p("• Há 1 música incomum — ajuda a oxigenar, mas ainda pode ficar 'Moderada' dependendo do resto."));
+  } else {
+    renovSec.push(p("• Não há músicas incomuns — a Renovação tende a cair, porque o set fica mais previsível/recorrente."));
+  }
+  if (popCounts.classic >= 1) {
+    renovSec.push(p("• Existe pelo menos 1 clássica — isso aumenta conforto, mas normalmente reduz oxigenação (Renovação não deve ficar 'Alta' com clássica)."));
+  }
+  if (qtdIneditas > 0) {
+    renovSec.push(p(`• Tem ${qtdIneditas} inédita(s) (nunca tocada antes) — isso adiciona novidade real.`));
+  }
+  renovSec.push(p(`• Execuções no histórico (total do set): ${totalExec} (quanto maior, mais "batido" tende a ser).`));
+
+  // Desafio
+  const desSec = [];
+  desSec.push(
+    p(
+      `Desafio ${repAnalysis.badges.desafio}: o set tem dificuldade média ~${(stats.dificuldadeMedia || 0).toFixed(
+        2
+      )} e pico ~${(stats.dificuldadeMax || 0).toFixed(2)} (0..3).`
+    )
+  );
+  if ((stats.dificuldadeMax || 0) >= 2.5) {
+    desSec.push(p("• Existe pelo menos uma música com exigência alta (pico elevado), o que pressiona o time."));
+  }
+  if (challAvg >= 0.7) {
+    desSec.push(p("• O encaixe técnico do time vs. as músicas está apertado (Desafio técnico médio alto)."));
+  } else if (challAvg <= 0.35) {
+    desSec.push(p("• O encaixe técnico está confortável (Desafio técnico médio baixo)."));
+  } else {
+    desSec.push(p("• O encaixe técnico está no meio do caminho: dá pra fazer, mas exige atenção."));
+  }
+
+  // Familiaridade
+  const famSec = [];
+  famSec.push(
+    p(
+      `Familiaridade ${repAnalysis.badges.familiaridade}: memória coletiva do time (média) ~${famAvg.toFixed(
+        2
+      )} e afinidade dos headers ~${headerAvg.toFixed(2)} (0..1).`
+    )
+  );
+  if (famAvg <= 0.35) {
+    famSec.push(p("• Pouco entrosamento com o set: o time já tocou pouco essas músicas (ou com essa configuração)."));
+  } else if (famAvg >= 0.7) {
+    famSec.push(p("• Set bem conhecido: o time tem memória coletiva forte (tende a fluir melhor)."));
+  } else {
+    famSec.push(p("• Set razoavelmente conhecido: existe base, mas ainda há pontos que podem surpreender."));
+  }
+  if (compAvg <= 0.5) {
+    famSec.push(p("• Compatibilidade geral time×músicas não está ideal (níveis/instrumentos podem estar no limite)."));
+  }
+
+  // Segurança
+  const segSec = [];
+  segSec.push(
+    p(
+      `Segurança ${repAnalysis.badges.seguranca}: é derivada de Familiaridade + Desafio + Renovação (risco operacional do culto).`
+    )
+  );
+  if (repAnalysis.badges.seguranca === "Muito Segura") {
+    segSec.push(p("• O conjunto indica baixa chance de 'surpresa' no ao vivo: ou é conhecido, ou tecnicamente confortável, ou ambos."));
+  } else if (repAnalysis.badges.seguranca === "Arriscada") {
+    segSec.push(p("• Risco operacional alto: normalmente vem de Desafio alto somado a Familiaridade baixa (pouco colchão)."));
+  } else {
+    segSec.push(p("• Risco moderado: dá pra executar bem, mas vale ensaio focado nos pontos críticos."));
+  }
+  if (qtdIneditas > 0) {
+    segSec.push(p("• Há inédita(s): isso aumenta risco de execução (mesmo quando a música é tecnicamente simples)."));
+  }
+
+  // bloco de execuções por música (bem detalhado)
+  const execPre = document.createElement("pre");
+  execPre.style.whiteSpace = "pre-wrap";
+  execPre.style.margin = "8px 0 0 0";
+  execPre.style.fontSize = "0.85rem";
+  execPre.style.opacity = "0.9";
+  execPre.textContent = execText;
+
+  const execWrap = document.createElement("div");
+  execWrap.appendChild(p("Detalhe — quantas vezes cada música já foi tocada:"));
+  execWrap.appendChild(execPre);
+
+  box.appendChild(makeSection("🌱 Renovação", renovSec));
+  box.appendChild(makeSection("🔥 Desafio", desSec));
+  box.appendChild(makeSection("👥 Familiaridade", famSec));
+  box.appendChild(makeSection("🛡️ Segurança", segSec));
+  box.appendChild(execWrap);
+
+  parentEl.appendChild(box);
+}
+
 function renderSugestoesRepertorioNoCard(parentEl, escala) {
   const sugestoes = gerarSugestoesRepertoriosParaEscala(escala);
   if (!sugestoes.length) {
     const msg = document.createElement("div");
     msg.className = "placeholder-text";
-    msg.textContent = "Sem sugestões disponíveis para esta escala (regras muito restritivas).";
+    msg.textContent =
+      "Sem sugestões disponíveis para esta escala (regras muito restritivas).";
     parentEl.appendChild(msg);
     return;
   }
@@ -1477,10 +2051,10 @@ function renderSugestoesRepertorioNoCard(parentEl, escala) {
 
     const topRow = document.createElement("div");
     topRow.style.display = "flex";
-    topRow.style.justifyContent = "space-between";
-    topRow.style.gap = "10px";
-    topRow.style.flexWrap = "wrap";
-    topRow.style.alignItems = "center";
+    // Alinhar insights à esquerda (evita bloco "encostado" à direita)
+    topRow.style.flexDirection = "column";
+    topRow.style.alignItems = "flex-start";
+    topRow.style.gap = "8px";
 
     const repTitle = document.createElement("div");
     repTitle.style.fontWeight = "700";
@@ -1490,6 +2064,7 @@ function renderSugestoesRepertorioNoCard(parentEl, escala) {
     badges.style.display = "flex";
     badges.style.gap = "6px";
     badges.style.flexWrap = "wrap";
+    badges.style.justifyContent = "flex-start";
 
     const makeBadge = (text) => {
       const b = document.createElement("span");
@@ -1501,55 +2076,47 @@ function renderSugestoesRepertorioNoCard(parentEl, escala) {
       return b;
     };
 
-badges.innerHTML = "";
+    badges.innerHTML = "";
 
-// 🏷️ Categoria (primeiro)
-const catInsight = criarCategoriaVisual(rep.categoria);
-if (catInsight) badges.appendChild(catInsight);
+    // 🏷️ Categoria (primeiro)
+    const catInsight = criarCategoriaVisual(rep.categoria);
+    if (catInsight) badges.appendChild(catInsight);
 
-// 🛡️ Segurança
-badges.appendChild(
-  criarInsightVisual({
-    icon: "🛡️",
-    label: "Segurança",
-    nivelLabel: rep.badges.seguranca,
-  })
-);
+    // 🛡️ Segurança
+    badges.appendChild(
+      criarInsightVisual({
+        icon: "🛡️",
+        label: "Segurança",
+        nivelLabel: rep.badges.seguranca,
+      })
+    );
 
-// 👥 Familiaridade
-badges.appendChild(
-  criarInsightVisual({
-    icon: "👥",
-    label: "Familiaridade",
-    nivelLabel: rep.badges.familiaridade,
-  })
-);
+    // 👥 Familiaridade
+    badges.appendChild(
+      criarInsightVisual({
+        icon: "👥",
+        label: "Familiaridade",
+        nivelLabel: rep.badges.familiaridade,
+      })
+    );
 
-// 🔥 Desafio
-badges.appendChild(
-  criarInsightVisual({
-    icon: "🔥",
-    label: "Desafio",
-    nivelLabel: rep.badges.desafio,
-  })
-);
+    // 🔥 Desafio
+    badges.appendChild(
+      criarInsightVisual({
+        icon: "🔥",
+        label: "Desafio",
+        nivelLabel: rep.badges.desafio,
+      })
+    );
 
-// 🌱 Renovação
-badges.appendChild(
-  criarInsightVisual({
-    icon: "🌱",
-    label: "Renovação",
-    nivelLabel: rep.badges.renovacao,
-  })
-);
-
-    // if (rep.categoria && rep.categoria.categoria) {
-    //   badges.appendChild(
-    //     makeBadge(
-    //       `🏷️ ${rep.categoria.categoria} (${rep.categoria.intensidade})`
-    //     )
-    //   );
-    // }
+    // 🌱 Renovação
+    badges.appendChild(
+      criarInsightVisual({
+        icon: "🌱",
+        label: "Renovação",
+        nivelLabel: rep.badges.renovacao,
+      })
+    );
 
     topRow.appendChild(repTitle);
     topRow.appendChild(badges);
@@ -1634,18 +2201,13 @@ function insightLabelToDotClass(label) {
   }
 
   // Amarelo (intermediário)
-  if (
-    label === "Moderada" ||
-    label === "Familiar" ||
-    label === "Moderado"
-  ) {
+  if (label === "Moderada" || label === "Familiar" || label === "Moderado") {
     return "dot-medium";
   }
 
   // Vermelho (exigente / crítica)
   return "dot-hard";
 }
-
 
 // ===== Helper: card de música (idêntico ao usado em Escalas Futuras) =====
 function criarSongCardEscalaFutura(musica) {
@@ -1725,7 +2287,6 @@ function criarSongCardEscalaFutura(musica) {
 
   return songCard;
 }
-
 
 function criarBadgesDificuldadesMusica(musica) {
   const badges = [];
@@ -2038,6 +2599,7 @@ function renderEscalaAtualResumo(escala) {
 
   const stats = calcularEstatisticasRepertorio(escala);
   const cats = calcularIntensidadeCategorias(escala);
+  const repAnalysis = analisarRepertorioDaEscala(escala, escala.musicas);
 
   const extra = document.createElement("div");
   extra.className = "escala-resumo-extra";
@@ -2115,6 +2677,17 @@ function renderEscalaAtualResumo(escala) {
 
   catSec.append(catTitle, catList);
   extra.appendChild(catSec);
+
+  // ======== INSIGHTS (verbo...)
+  if (repAnalysis) {
+    const insTitle = document.createElement("div");
+    insTitle.className = "escala-resumo-section-title";
+    insTitle.textContent = "Insights do repertório";
+
+    extra.appendChild(insTitle);
+    renderBadgesInsightsDoRepertorio(extra, repAnalysis);
+    renderInsightsVerboseDoRepertorio(extra, repAnalysis);
+  }
 
   container.appendChild(extra);
 }
@@ -2289,9 +2862,9 @@ function renderEscalaAtualMusicas(escala) {
 
     thumbWrapper.appendChild(execBadge);
 
-  // ===== BADGE: DIFICULDADE MÉDIA (TOP-RIGHT) =====
-  const diffBadge = criarBadgeDificuldadeMediaMusica(musica);
-  if (diffBadge) thumbWrapper.appendChild(diffBadge);
+    // ===== BADGE: DIFICULDADE MÉDIA (TOP-RIGHT) =====
+    const diffBadge = criarBadgeDificuldadeMediaMusica(musica);
+    if (diffBadge) thumbWrapper.appendChild(diffBadge);
 
     thumbWrapper.className = "song-thumb-wrapper";
 
@@ -2597,8 +3170,13 @@ function renderEscalasFuturas(lista) {
     const list = document.createElement("div");
     list.className = "escala-musicas-list";
 
-
     const musicIds = Array.isArray(escala.musicas) ? escala.musicas : [];
+
+    // Insights também para repertórios já definidos (não só sugestões)
+    if (musicIds.length) {
+      const repAnalysis = analisarRepertorioDaEscala(escala, musicIds);
+      if (repAnalysis) renderBadgesInsightsDoRepertorio(musicSec, repAnalysis);
+    }
 
     // Se não há repertório definido, mostra sugestões automáticas (não persiste nada)
     if (!musicIds.length) {
@@ -2606,7 +3184,6 @@ function renderEscalasFuturas(lista) {
     }
 
     musicIds.forEach((id) => {
-
       const musica = musicas.find((m) => m.id === id);
       if (!musica) return;
 
@@ -2637,9 +3214,9 @@ function renderEscalasFuturas(lista) {
 
       thumbWrapper.appendChild(execBadge);
 
-  // ===== BADGE: DIFICULDADE MÉDIA (TOP-RIGHT) =====
-  const diffBadge = criarBadgeDificuldadeMediaMusica(musica);
-  if (diffBadge) thumbWrapper.appendChild(diffBadge);
+      // ===== BADGE: DIFICULDADE MÉDIA (TOP-RIGHT) =====
+      const diffBadge = criarBadgeDificuldadeMediaMusica(musica);
+      if (diffBadge) thumbWrapper.appendChild(diffBadge);
 
       thumbWrapper.className = "song-thumb-wrapper";
 
@@ -2743,7 +3320,9 @@ function copiarEscala(escala) {
   texto += `_${formatarData(escala.dataObj)}_\n`;
 
   if (catDom?.categoria) {
-    texto += `\n${corDominancia(catDom.intensidade)} *Categoria predominante*\n`;
+    texto += `\n${corDominancia(
+      catDom.intensidade
+    )} *Categoria predominante*\n`;
     texto += `• ${catDom.categoria} (${catDom.percentual.toFixed(0)}%)\n`;
   }
 
@@ -2760,9 +3339,9 @@ function copiarEscala(escala) {
   if (cats.length) {
     texto += `\n🏷️ *Categorias do repertório*\n`;
     cats.forEach((c) => {
-      texto += `• ${corDominancia(c.intensidade)} ${c.categoria} (${c.percentual.toFixed(
-        0
-      )}%)\n`;
+      texto += `• ${corDominancia(c.intensidade)} ${
+        c.categoria
+      } (${c.percentual.toFixed(0)}%)\n`;
     });
   }
 
@@ -2820,8 +3399,7 @@ function copiarEscala(escala) {
 
     texto += `\n${idx + 1}. *${musica.titulo}* — ${musica.artista}\n`;
     if (yt) texto += `🔗 ${yt}\n`;
-    if (catsMus.length)
-      texto += `🏷️ ${catsMus.join(" · ")}\n`;
+    if (catsMus.length) texto += `🏷️ ${catsMus.join(" · ")}\n`;
     if (diffs) texto += `🎚️ ${diffs}\n`;
   });
 
@@ -2829,7 +3407,6 @@ function copiarEscala(escala) {
     alert("Escala copiada para a área de transferência!");
   });
 }
-
 
 // =========================================================
 // REPERTÓRIO — RENDERIZAÇÃO COMPLETA
@@ -2996,9 +3573,9 @@ function renderRepertorio() {
       musica._exec === 0 ? "✨ Nova" : `🎯 Tocada ${musica._exec} vezes`;
     thumbWrapper.appendChild(execBadge);
 
-  // ===== BADGE: DIFICULDADE MÉDIA (TOP-RIGHT) =====
-  const diffBadge = criarBadgeDificuldadeMediaMusica(musica);
-  if (diffBadge) thumbWrapper.appendChild(diffBadge);
+    // ===== BADGE: DIFICULDADE MÉDIA (TOP-RIGHT) =====
+    const diffBadge = criarBadgeDificuldadeMediaMusica(musica);
+    if (diffBadge) thumbWrapper.appendChild(diffBadge);
 
     // Ribbon status
     if (musica._status !== "available") {
@@ -3106,7 +3683,7 @@ function calcularDiasParaLiberar(idMusica) {
 }
 
 function renderMusicaEscalaFutura(musica) {
-  if (!musica) return '';
+  if (!musica) return "";
 
   // --- Dificuldade média ---
   let dificuldadeMedia = null;
@@ -3120,7 +3697,7 @@ function renderMusicaEscalaFutura(musica) {
       ${
         dificuldadeMedia !== null
           ? `<div class="badge-dificuldade">${dificuldadeMedia}</div>`
-          : ''
+          : ""
       }
 
       <!-- Conteúdo EXISTENTE do card (inalterado) -->
