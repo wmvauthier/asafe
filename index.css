@@ -1195,3 +1195,55 @@ body {
   }
 }
 
+/* =========================================================
+   INSIGHTS — PADRÃO UNIFICADO (Repertório, Próximo Culto, Escalas)
+   ========================================================= */
+
+.insight-repertorio {
+  display: block;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--gray-50);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Garante que insights antigos herdem o mesmo visual */
+.insight-detalhe,
+.insight-categoria {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--gray-50);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   PRÓXIMO CULTO — INSIGHTS VERBOSOS
+   ========================================================= */
+
+.proximo-culto-insights {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.insight-bloco {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--gray-100);
+}
+
+.insight-bloco h4 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.insight-bloco p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}

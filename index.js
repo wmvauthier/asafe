@@ -1234,7 +1234,7 @@ const REPERTORIOS_ESTRATEGIAS = [
   {
     key: "incomum",
     // Nome novo sugerido (PO): foca no objetivo humano de oxigenação sem parecer "estranho".
-    titulo: "Oxigenação",
+    titulo: "Renovação",
     pesos: { seguranca: 0.4, familiaridade: 0.2, desafio: 0.5, renovacao: 1.0 },
   },
 ];
@@ -1929,7 +1929,7 @@ function renderInsightsVerboseDoRepertorio(parentEl, repAnalysis) {
     )
   );
   if (popCounts.rare >= 2) {
-    renovSec.push(p("• Há 2 ou mais músicas incomuns — isso puxa a Renovação para cima por oxigenação do set."));
+    renovSec.push(p("• Há 2 ou mais músicas Incomuns — isso puxa a Renovação para cima por oxigenação do set."));
   } else if (popCounts.rare === 1) {
     renovSec.push(p("• Há 1 música incomum — ajuda a oxigenar, mas ainda pode ficar 'Moderada' dependendo do resto."));
   } else {
@@ -2009,15 +2009,15 @@ function renderInsightsVerboseDoRepertorio(parentEl, repAnalysis) {
   execPre.style.opacity = "0.9";
   execPre.textContent = execText;
 
-  const execWrap = document.createElement("div");
-  execWrap.appendChild(p("Detalhe — quantas vezes cada música já foi tocada:"));
-  execWrap.appendChild(execPre);
+  // const execWrap = document.createElement("div");
+  // execWrap.appendChild(p("Detalhe — quantas vezes cada música já foi tocada:"));
+  // execWrap.appendChild(execPre);
 
   box.appendChild(makeSection("🌱 Renovação", renovSec));
   box.appendChild(makeSection("🔥 Desafio", desSec));
   box.appendChild(makeSection("👥 Familiaridade", famSec));
   box.appendChild(makeSection("🛡️ Segurança", segSec));
-  box.appendChild(execWrap);
+  // box.appendChild(execWrap);
 
   parentEl.appendChild(box);
 }
