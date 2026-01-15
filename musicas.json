@@ -1443,10 +1443,10 @@
         "versiculos": "",
         "level": {
             "vocal": "medium",
-            "guitarra": "easy",
-            "baixo": "easy",
+            "guitarra": "medium",
+            "baixo": "medium",
             "violao": "",
-            "bateria": "easy",
+            "bateria": "medium",
             "teclado": "easy",
             "sax": ""
         }
