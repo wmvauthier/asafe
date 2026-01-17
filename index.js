@@ -178,29 +178,22 @@ function nivelLabel(nivel) {
   if (nivel === "easy") return "Fácil";
   if (nivel === "medium") return "Médio";
   if (nivel === "hard") return "Difícil";
-  return "-";
+  // Mantém compatibilidade com a definição efetiva do arquivo (a última)
+  // onde nível desconhecido retorna string vazia.
+  return "";
 }
 
 // =========================================================
 // DIFICULDADE MÉDIA POR MÚSICA (badge no canto superior direito)
 // =========================================================
 function calcularDificuldadeMediaDaMusica(musica) {
-  if (!musica || !musica.level || typeof musica.level !== "object") return null;
-
-  const valores = Object.values(musica.level)
-    .map((n) => nivelToValor(n))
-    .filter((v) => v > 0);
-
-  if (!valores.length) return null;
-
-  const avg = valores.reduce((acc, v) => acc + v, 0) / valores.length;
+  // Wrapper histórico: mantém a API ({avg, nivel}) usada pela UI,
+  // mas centraliza o cálculo numérico na função canônica (calcDificuldadeMediaMusica).
+  const avg = calcDificuldadeMediaMusica(musica);
+  if (!avg) return null;
   const nivel = valorToNivel(avg);
   if (!nivel) return null;
-
-  return {
-    avg,
-    nivel,
-  };
+  return { avg, nivel };
 }
 
 function criarBadgeDificuldadeMediaMusica(musica) {
@@ -533,31 +526,46 @@ function calcularCategoriaDominante(escala) {
 }
 
 function calcularIntensidadeCategorias(escala) {
-  const ids = escala.musicas || [];
-  const total = ids.length;
-  if (!total) return [];
+  // ✅ Versão canônica (usada pela UI inteira):
+  // - aceita categorias como array ou string "A;B;C"
+  // - conta apenas músicas que possuem ao menos 1 categoria
+  // - ordena por predominância desc (e desempate alfabético)
+  const ids = Array.isArray(escala.musicas) ? escala.musicas : [];
+  if (!ids.length) return [];
 
-  const freq = new Map();
+  const contagem = new Map();
+  let totalComCategoria = 0;
 
   ids.forEach((id) => {
     const musica = musicas.find((m) => m.id === id);
     if (!musica) return;
 
-    const unicas = [...new Set(musica.categorias || [])];
-    unicas.forEach((cat) => {
-      freq.set(cat, (freq.get(cat) || 0) + 1);
+    const cats = parseCategoriasMusica(musica.categorias);
+    if (!cats.length) return;
+
+    totalComCategoria++;
+    [...new Set(cats)].forEach((cat) => {
+      contagem.set(cat, (contagem.get(cat) || 0) + 1);
     });
   });
 
-  return [...freq.entries()].map(([cat, count]) => {
-    const p = (count / total) * 100;
+  const out = Array.from(contagem.entries()).map(([cat, count]) => {
+    const perc = totalComCategoria ? (count / totalComCategoria) * 100 : 0;
+
     let intensidade;
-    if (p >= 80) intensidade = "strong";
-    else if (p >= 60) intensidade = "medium";
+    if (perc >= 80) intensidade = "strong";
+    else if (perc >= 60) intensidade = "medium";
     else intensidade = "weak";
 
-    return { categoria: cat, percentual: p, intensidade };
+    return { categoria: cat, percentual: perc, intensidade };
   });
+
+  out.sort((a, b) => {
+    if (b.percentual !== a.percentual) return b.percentual - a.percentual;
+    return a.categoria.localeCompare(b.categoria);
+  });
+
+  return out;
 }
 
 // =========================================================
@@ -2541,53 +2549,7 @@ function obterCategoriaPrincipal(escala) {
 // RESUMO DO PRÓXIMO CULTO
 // =========================================================
 
-function calcularIntensidadeCategorias(escala) {
-  const ids = Array.isArray(escala.musicas) ? escala.musicas : [];
-  if (!ids.length) return [];
-
-  const contagem = new Map();
-  let totalComCategoria = 0;
-
-  ids.forEach((id) => {
-    const musica = musicas.find((m) => m.id === id);
-    if (!musica) return;
-
-    const cats = Array.isArray(musica.categorias)
-      ? musica.categorias
-      : typeof musica.categorias === "string"
-      ? musica.categorias
-          .split(";")
-          .map((s) => s.trim())
-          .filter(Boolean)
-      : [];
-
-    if (!cats.length) return;
-
-    totalComCategoria++;
-    [...new Set(cats)].forEach((cat) => {
-      contagem.set(cat, (contagem.get(cat) || 0) + 1);
-    });
-  });
-
-  const out = Array.from(contagem.entries()).map(([cat, count]) => {
-    const perc = totalComCategoria ? (count / totalComCategoria) * 100 : 0;
-
-    let intensidade;
-    if (perc >= 80) intensidade = "strong";
-    else if (perc >= 60) intensidade = "medium";
-    else intensidade = "weak";
-
-    return { categoria: cat, percentual: perc, intensidade };
-  });
-
-  // ✅ ORDENAR: mais predominante -> menos predominante
-  out.sort((a, b) => {
-    if (b.percentual !== a.percentual) return b.percentual - a.percentual;
-    return a.categoria.localeCompare(b.categoria);
-  });
-
-  return out;
-}
+// (calcularIntensidadeCategorias) definido no bloco de categorias (evita duplicidade)
 
 // =========================================================
 // RESUMO DO PRÓXIMO CULTO
@@ -3719,12 +3681,7 @@ function renderMusicaEscalaFutura(musica) {
   `;
 }
 
-function nivelLabel(nivel) {
-  if (nivel === "easy") return "Fácil";
-  if (nivel === "medium") return "Médio";
-  if (nivel === "hard") return "Difícil";
-  return "";
-}
+// (nivelLabel) definido no bloco de utilitários gerais (evita duplicidade)
 
 function calcularCategoriaDominanteDaEscala(escala) {
   const cats = calcularIntensidadeCategorias(escala);
