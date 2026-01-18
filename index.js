@@ -1619,6 +1619,10 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
         renovacao: renovacaoFinal,
       },
       badges: {
+        dificuldade: (() => {
+          const nivel = valorToNivel(dificuldadeMedia);
+          return nivel ? nivelLabel(nivel) : null;
+        })(),
         seguranca: scoreToLabel3(
           segurancaFinal,
           "Muito Segura",
@@ -1754,6 +1758,31 @@ function analisarRepertorioDaEscala(escala, musicIds) {
     caches.teamChallenge.set(m.id, calcDesafioTecnicoDoTimeMusica(m, members));
   });
 
+  // Contagem de execuções por integrante (por música) — para insights verbosos no Próximo Culto.
+  // Regra: conta apenas eventos passados (antes de serviceDate) e onde o integrante participou.
+  const memberObjs = (members || [])
+    .map((x) => (typeof x === "object" ? x : integrantes.find((i) => i.id === x)))
+    .filter(Boolean);
+  const memberIds = memberObjs.map((m) => m.id);
+
+  const memberPlaysBySong = new Map();
+  musicasRep.forEach((m) => {
+    const counts = new Map();
+    memberIds.forEach((mid) => counts.set(mid, 0));
+
+    (eventosPassados || []).forEach((ev) => {
+      const evMembers = Array.isArray(ev.integrantes) ? ev.integrantes : [];
+      const hasSong = Array.isArray(ev.musicas) && ev.musicas.includes(m.id);
+      if (!hasSong || !evMembers.length) return;
+
+      memberIds.forEach((mid) => {
+        if (evMembers.includes(mid)) counts.set(mid, (counts.get(mid) || 0) + 1);
+      });
+    });
+
+    memberPlaysBySong.set(m.id, counts);
+  });
+
   const songInsights = musicasRep.map((m) => {
     const si = buildSongInsightParaEscala(m, context, caches);
 
@@ -1762,6 +1791,18 @@ function analisarRepertorioDaEscala(escala, musicIds) {
     si._diffNivel = dAvg != null ? valorToNivel(dAvg) : null;
     si._popNivel = caches.popNivel.get(m.id) || getNivelPopularidadeMusica(m.id);
     if (!Array.isArray(si.categorias)) si.categorias = parseCategoriasMusica(m.categorias);
+
+    // Enriquecimento: execuções por integrante (para explicações mais diretas).
+    const counts = memberPlaysBySong.get(m.id);
+    if (counts) {
+      const summary = memberObjs.map((mem) => ({
+        id: mem.id,
+        nome: mem.nome || "Integrante",
+        count: counts.get(mem.id) || 0,
+      }));
+      si.metrics = si.metrics || {};
+      si.metrics.memberPlays = summary;
+    }
     return si;
   });
 
@@ -1811,6 +1852,10 @@ function analisarRepertorioDaEscala(escala, musicIds) {
   }
 
   const badges = {
+    dificuldade: (() => {
+      const nivel = valorToNivel(dificuldadeMedia);
+      return nivel ? nivelLabel(nivel) : null;
+    })(),
     seguranca: scoreToLabel3(segurancaFinal, "Muito Segura", "Moderada", "Arriscada"),
     familiaridade: scoreToLabel3(familiaridade, "Muito Familiar", "Familiar", "Pouco Familiar"),
     desafio: scoreToLabel3(desafio, "Baixo", "Moderado", "Alto"),
@@ -1844,6 +1889,17 @@ function renderBadgesInsightsDoRepertorio(parentEl, repAnalysis) {
 
   const catInsight = criarCategoriaVisual(repAnalysis.categoria);
   if (catInsight) badges.appendChild(catInsight);
+
+  // 🎚️ Dificuldade do set (média do repertório)
+  if (repAnalysis.badges.dificuldade) {
+    badges.appendChild(
+      criarInsightVisual({
+        icon: "🎚️",
+        label: "Dificuldade",
+        nivelLabel: repAnalysis.badges.dificuldade,
+      })
+    );
+  }
 
   badges.appendChild(
     criarInsightVisual({ icon: "🛡️", label: "Segurança", nivelLabel: repAnalysis.badges.seguranca })
@@ -2025,6 +2081,49 @@ function renderInsightsVerboseDoRepertorio(parentEl, repAnalysis) {
   box.appendChild(makeSection("🔥 Desafio", desSec));
   box.appendChild(makeSection("👥 Familiaridade", famSec));
   box.appendChild(makeSection("🛡️ Segurança", segSec));
+
+  // =============================================
+  // Evidências diretas (valores por música / integrante)
+  // - deixa o Próximo Culto mais "objetivo" como pedido
+  // =============================================
+  const evidSec = [];
+  (si || []).forEach((x) => {
+    const m = x.musica;
+    const titulo = m?.titulo || m?.nome || "Música";
+    const times = x.metrics?.timesPlayed || 0;
+    const diffAvg = x.metrics?.difficultyAvg;
+    const diffNivel = x.metrics?.difficultyNivel || (diffAvg != null ? valorToNivel(diffAvg) : null);
+
+    // Linha 1 — música
+    const linhaMusica = `• ${titulo} — tocada ${times}x` +
+      (diffNivel ? ` • dificuldade ${nivelLabel(diffNivel)}` : "") +
+      (diffAvg != null ? ` (${diffAvg.toFixed(2)} / 0..3)` : "");
+    evidSec.push(p(linhaMusica));
+
+    // Linha 2 — integrantes (se disponível)
+    const plays = Array.isArray(x.metrics?.memberPlays) ? x.metrics.memberPlays : [];
+    if (plays.length) {
+      const nunca = plays.filter((p) => (p.count || 0) === 0).map((p) => p.nome);
+      const mais = plays
+        .slice()
+        .sort((a, b) => (b.count || 0) - (a.count || 0))
+        .filter((p) => (p.count || 0) > 0);
+
+      if (nunca.length) {
+        evidSec.push(p(`   ↳ nunca tocou: ${nunca.slice(0, 4).join(", ")}${nunca.length > 4 ? "…" : ""}`));
+      }
+
+      if (mais.length) {
+        const top = mais.slice(0, 2).map((p) => `${p.nome} (${p.count}x)`).join("; ");
+        evidSec.push(p(`   ↳ quem mais tocou: ${top}`));
+      }
+    }
+  });
+
+  if (evidSec.length) {
+    box.appendChild(makeSection("🎯 Evidências", evidSec));
+  }
+
   // box.appendChild(execWrap);
 
   parentEl.appendChild(box);
@@ -2089,6 +2188,17 @@ function renderSugestoesRepertorioNoCard(parentEl, escala) {
     // 🏷️ Categoria (primeiro)
     const catInsight = criarCategoriaVisual(rep.categoria);
     if (catInsight) badges.appendChild(catInsight);
+
+    // 🎚️ Dificuldade
+    if (rep.badges?.dificuldade) {
+      badges.appendChild(
+        criarInsightVisual({
+          icon: "🎚️",
+          label: "Dificuldade",
+          nivelLabel: rep.badges.dificuldade,
+        })
+      );
+    }
 
     // 🛡️ Segurança
     badges.appendChild(
@@ -2394,64 +2504,9 @@ function renderEscalaAtualHeaderDireito(escala) {
   const container = document.getElementById("escalaAtualBadges");
   if (!container) return;
 
+  // (UI) Removido: categoria predominante + dificuldade no topo do repertório.
+  // As duas informações passam a viver nos insights do repertório.
   container.innerHTML = "";
-
-  const stats = calcularStatsRepertorioDaEscala(escala);
-  const catDom = calcularCategoriaDominanteDaEscala(escala);
-
-  const wrap = document.createElement("div");
-  wrap.className = "escala-badges-header";
-
-  // ======================
-  // Categoria predominante
-  // ======================
-  if (catDom && catDom.categoria) {
-    const badgeCat = document.createElement("span");
-    badgeCat.className = "escala-cat-dominante";
-
-    const dot = document.createElement("span");
-    dot.className = "cat-dot";
-    dot.classList.add(
-      catDom.intensidade === "strong"
-        ? "cat-strong"
-        : catDom.intensidade === "medium"
-        ? "cat-medium"
-        : "cat-weak"
-    );
-
-    const label = document.createElement("span");
-    label.textContent = catDom.categoria;
-
-    badgeCat.append(dot, label);
-    wrap.appendChild(badgeCat);
-  }
-
-  // ======================
-  // Dificuldade média
-  // ======================
-  if (stats && stats.dificuldadeGeralNivel) {
-    const badgeDiff = document.createElement("span");
-    badgeDiff.className = "escala-dificuldade-geral";
-
-    const dot = document.createElement("span");
-    dot.className = "dot";
-
-    dot.classList.add(
-      stats.dificuldadeGeralNivel === "easy"
-        ? "dot-easy"
-        : stats.dificuldadeGeralNivel === "medium"
-        ? "dot-medium"
-        : "dot-hard"
-    );
-
-    const label = document.createElement("span");
-    label.textContent = nivelLabel(stats.dificuldadeGeralNivel);
-
-    badgeDiff.append(dot, label);
-    wrap.appendChild(badgeDiff);
-  }
-
-  container.appendChild(wrap);
 }
 
 // =========================================================
@@ -2462,79 +2517,9 @@ function renderEscalaAtualHeaderBadges(escala) {
   const container = document.getElementById("escalaAtualBadges");
   if (!container) return;
 
+  // (UI) Removido: badges no header do Próximo Culto.
+  // Categoria/Dificuldade agora aparecem nos insights do repertório.
   container.innerHTML = "";
-
-  const stats = calcularEstatisticasRepertorio(escala);
-  const catInfo = calcularCategoriaDominante(escala);
-
-  const headerBox = document.createElement("div");
-  headerBox.className = "escala-badges-header";
-
-  // Categoria dominante
-  if (catInfo && catInfo.categoria) {
-    const catTag = document.createElement("span");
-    catTag.className = "escala-cat-dominante";
-
-    const dot = document.createElement("span");
-    dot.className = "cat-dot";
-
-    if (catInfo.intensidade === "strong") dot.classList.add("cat-strong");
-    else if (catInfo.intensidade === "medium") dot.classList.add("cat-medium");
-    else dot.classList.add("cat-weak");
-
-    const label = document.createElement("span");
-    label.textContent = catInfo.categoria;
-
-    catTag.append(dot, label);
-    headerBox.appendChild(catTag);
-  }
-
-  // Dificuldade geral
-  if (stats.dificuldadeMediaNivel) {
-    const diffTag = document.createElement("span");
-    diffTag.className = "escala-dificuldade-geral";
-
-    const dot = document.createElement("span");
-    dot.className = "dot";
-
-    if (stats.dificuldadeMediaNivel === "easy") dot.classList.add("dot-easy");
-    else if (stats.dificuldadeMediaNivel === "medium")
-      dot.classList.add("dot-medium");
-    else if (stats.dificuldadeMediaNivel === "hard")
-      dot.classList.add("dot-hard");
-
-    const lbl = document.createElement("span");
-    lbl.textContent = nivelLabel(stats.dificuldadeMediaNivel);
-
-    diffTag.append(dot, lbl);
-    headerBox.appendChild(diffTag);
-  }
-
-  // Categorias associadas (todas)
-  const cats = calcularIntensidadeCategorias(escala);
-
-  cats.forEach((c) => {
-    const tag = document.createElement("span");
-    tag.className = "escala-cat-dominante";
-
-    const dot = document.createElement("span");
-    dot.className = "cat-dot";
-    dot.classList.add(
-      c.intensidade === "strong"
-        ? "cat-strong"
-        : c.intensidade === "medium"
-        ? "cat-medium"
-        : "cat-weak"
-    );
-
-    const label = document.createElement("span");
-    label.textContent = c.categoria;
-
-    tag.append(dot, label);
-    headerBox.appendChild(tag);
-  });
-
-  container.appendChild(headerBox);
 }
 
 // Usa a primeira música da escala para determinar a "categoria principal"
@@ -2559,86 +2544,10 @@ function renderEscalaAtualResumo(escala) {
   if (!container) return;
   container.innerHTML = "";
 
-  const stats = calcularEstatisticasRepertorio(escala);
-  const cats = calcularIntensidadeCategorias(escala);
   const repAnalysis = analisarRepertorioDaEscala(escala, escala.musicas);
 
   const extra = document.createElement("div");
   extra.className = "escala-resumo-extra";
-
-  // ======== DIFICULDADE POR INSTRUMENTO ========
-  const difSec = document.createElement("div");
-
-  const difTitle = document.createElement("div");
-  difTitle.className = "escala-resumo-section-title";
-  difTitle.textContent = "Dificuldade média por instrumento";
-
-  const difList = document.createElement("div");
-  difList.className = "escala-resumo-dif-list";
-
-  Object.entries(stats.dificuldadesPorInstrumento).forEach(([inst, nivel]) => {
-    const chip = document.createElement("div");
-    chip.className = `dificuldade-chip dificuldade-${nivel}`;
-
-    const dot = document.createElement("div");
-    dot.className = "dificuldade-dot";
-
-    const text = document.createElement("span");
-    text.textContent = formatInstrumentName(inst);
-
-    chip.append(dot, text);
-    difList.appendChild(chip);
-  });
-
-  if (!difList.childElementCount) {
-    const vazio = document.createElement("span");
-    vazio.style.fontSize = "0.75rem";
-    vazio.style.color = "#9ca3af";
-    vazio.textContent = "Sem dados suficientes.";
-    difList.appendChild(vazio);
-  }
-
-  difSec.append(difTitle, difList);
-  extra.appendChild(difSec);
-
-  // ======== CATEGORIAS DO REPERTÓRIO ========
-  const catSec = document.createElement("div");
-
-  const catTitle = document.createElement("div");
-  catTitle.className = "escala-resumo-section-title";
-  catTitle.textContent = "Categorias do repertório";
-
-  const catList = document.createElement("div");
-  catList.className = "escala-resumo-dif-list"; // mesmo layout das dificuldades
-
-  if (cats.length) {
-    cats.forEach((c) => {
-      const chip = document.createElement("div");
-      chip.className = "dificuldade-chip";
-
-      const dot = document.createElement("div");
-      dot.className = "dificuldade-dot";
-
-      if (c.intensidade === "strong") dot.classList.add("cat-strong");
-      else if (c.intensidade === "medium") dot.classList.add("cat-medium");
-      else dot.classList.add("cat-weak");
-
-      const label = document.createElement("span");
-      label.textContent = c.categoria;
-
-      chip.append(dot, label);
-      catList.appendChild(chip);
-    });
-  } else {
-    const vazio = document.createElement("span");
-    vazio.style.fontSize = "0.75rem";
-    vazio.style.color = "#9ca3af";
-    vazio.textContent = "Sem categorias cadastradas.";
-    catList.appendChild(vazio);
-  }
-
-  catSec.append(catTitle, catList);
-  extra.appendChild(catSec);
 
   // ======== INSIGHTS (verbo...)
   if (repAnalysis) {
@@ -2674,6 +2583,23 @@ function renderEscalaAtualIntegrantes(escala) {
   if (!container) return;
   container.innerHTML = "";
 
+  // Layout: sempre 8 por linha (sem nomes/caixas) — apenas fotos circulares + dots.
+  // Mantém a coroa (header) no canto superior direito via classe existente (has-crown).
+  container.style.display = "flex";
+  container.style.flexWrap = "wrap";
+  container.style.gap = "8px";
+  container.style.alignItems = "flex-start";
+
+  // (UI) Compacto: 8 avatares em linha + badges (nível do integrante + dificuldade do repertório para o instrumento)
+  // Mantém coroa nos headers.
+  const statsRep = calcularEstatisticasRepertorio(escala);
+  const diffsNorm = new Map(
+    Object.entries(statsRep?.dificuldadesPorInstrumento || {}).map(([inst, nivel]) => [
+      normalizarInstrumentoKey(inst),
+      nivel,
+    ])
+  );
+
   const ids = escala.integrantes || [];
   if (!ids.length) {
     const p = document.createElement("div");
@@ -2686,6 +2612,79 @@ function renderEscalaAtualIntegrantes(escala) {
   // 👑 ids de quem escolhe o repertório nesse culto
   const headerIds = getHeaderIdsFromEscala(escala);
 
+  // Helper local: cria um avatar circular com dois dots (nível do integrante e nível do repertório no instrumento)
+  function criarAvatarIntegrante({ membro, isHeader, membroNivel, repNivel, repNivelConhecido }) {
+    const chip = document.createElement("div");
+    chip.title = membro.nome || "Integrante";
+    // 8 por linha
+    chip.style.flex = "0 0 calc(12.5% - 7px)";
+    chip.style.display = "flex";
+    chip.style.justifyContent = "center";
+
+    const avatarWrap = document.createElement("div");
+    avatarWrap.className = "member-avatar-wrap";
+    // remove aparência de card/caixa: deixa só o círculo
+    avatarWrap.style.width = "100%";
+    avatarWrap.style.height = "100%";
+    avatarWrap.style.borderRadius = "999px";
+    avatarWrap.style.overflow = "hidden";
+    avatarWrap.style.position = "relative";
+    avatarWrap.style.padding = "0";
+    avatarWrap.style.margin = "0";
+    avatarWrap.style.background = "transparent";
+    avatarWrap.style.boxShadow = "none";
+    avatarWrap.style.border = "none";
+
+    if (isHeader) avatarWrap.classList.add("has-crown");
+
+    const img = document.createElement("img");
+    img.className = "member-avatar";
+    img.style.width = "100%";
+    img.style.height = "100%";
+    img.style.objectFit = "cover";
+    img.style.borderRadius = "999px";
+    img.src = `integrantes/${(membro.nome || "").toLowerCase()}.jpeg`;
+    img.onerror = function () {
+      this.onerror = null;
+      this.src = "integrantes/default.jpeg";
+    };
+    avatarWrap.appendChild(img);
+
+    const makeDot = (nivel, pos) => {
+      const dot = document.createElement("span");
+      dot.className = "dot";
+      dot.style.position = "absolute";
+      dot.style.width = "14px";
+      dot.style.height = "14px";
+      dot.style.borderRadius = "999px";
+      dot.style.boxShadow = "0 0 0 2px rgba(255,255,255,0.85)";
+      if (pos === "bl") {
+        dot.style.left = "2px";
+        dot.style.bottom = "2px";
+      } else if (pos === "br") {
+        dot.style.right = "2px";
+        dot.style.bottom = "2px";
+      }
+
+      if (nivel === "easy") dot.classList.add("dot-easy");
+      else if (nivel === "medium") dot.classList.add("dot-medium");
+      else if (nivel === "hard") dot.classList.add("dot-hard");
+      else {
+        // cinza (quando ainda não há repertório escolhido)
+        dot.style.background = "#b7b7b7";
+      }
+      return dot;
+    };
+
+    // Canto inferior esquerdo: nível do integrante
+    avatarWrap.appendChild(makeDot(membroNivel, "bl"));
+    // Canto inferior direito: dificuldade do repertório no instrumento (ou cinza se desconhecido)
+    avatarWrap.appendChild(makeDot(repNivelConhecido ? repNivel : null, "br"));
+
+    chip.appendChild(avatarWrap);
+    return chip;
+  }
+
   ids.forEach((id) => {
     let membro = null;
 
@@ -2697,68 +2696,23 @@ function renderEscalaAtualIntegrantes(escala) {
 
     if (!membro) return;
 
-    const card = document.createElement("div");
-    card.className = "member-card";
+    const instRaw = extrairFuncaoPrincipal(membro) || getInstrumentoDoIntegrante(membro) || "";
+    const instKey = normalizarInstrumentoKey(instRaw);
 
-    // wrapper do avatar pra permitir overlay da coroa sem mexer no layout existente
-    const avatarWrap = document.createElement("div");
-    avatarWrap.className = "member-avatar-wrap";
+    const membroNivel = getNivelDoIntegrante(membro, instKey);
+    const repNivel = instKey ? diffsNorm.get(instKey) : null;
+    const repNivelConhecido = !!(escala.musicas && escala.musicas.length && repNivel);
 
     const isHeader = headerIds.includes(membro.id);
-    if (isHeader) avatarWrap.classList.add("has-crown");
+    const chip = criarAvatarIntegrante({
+      membro,
+      isHeader,
+      membroNivel: membroNivel || null,
+      repNivel: repNivel || null,
+      repNivelConhecido,
+    });
 
-    const img = document.createElement("img");
-    img.className = "member-avatar";
-    img.src = `integrantes/${membro.nome.toLowerCase()}.jpeg`;
-    img.onerror = function () {
-      this.onerror = null;
-      this.src = "integrantes/default.jpeg";
-    };
-
-    avatarWrap.appendChild(img);
-
-    const info = document.createElement("div");
-
-    const nome = document.createElement("div");
-    nome.className = "member-name";
-    nome.textContent = membro.nome || "Integrante";
-
-    const papel = document.createElement("div");
-    papel.className = "member-role";
-    papel.textContent = formatFunctions(membro.function);
-
-    const expertiseDiv = document.createElement("div");
-    expertiseDiv.className = "member-expertise";
-
-    if (Array.isArray(membro.function)) {
-      membro.function.forEach((obj) => {
-        const inst = Object.keys(obj)[0];
-        const nivel = obj[inst];
-
-        const line = document.createElement("div");
-        line.className = "member-expertise-line";
-
-        const dot = document.createElement("div");
-        dot.className = "expertise-dot";
-
-        if (nivel === "easy") dot.classList.add("expertise-easy");
-        else if (nivel === "medium") dot.classList.add("expertise-medium");
-        else if (nivel === "hard") dot.classList.add("expertise-hard");
-
-        const lbl = document.createElement("span");
-        lbl.textContent = formatInstrumentName(inst);
-
-        line.append(dot, lbl);
-        expertiseDiv.appendChild(line);
-      });
-    }
-
-    info.append(nome, papel, expertiseDiv);
-
-    // antes era: card.append(img, info);
-    card.append(avatarWrap, info);
-
-    container.appendChild(card);
+    container.appendChild(chip);
   });
 }
 
@@ -2941,65 +2895,101 @@ function renderEscalasFuturas(lista) {
 
     left.append(title);
 
-    // badges do header (somente predominante + dificuldade)
-    const badgeContainer = document.createElement("div");
-    badgeContainer.className = "escala-badges-header";
-
-    const catDom = calcularCategoriaDominanteDaEscala(escala);
-    if (catDom && catDom.categoria) {
-      const badgeCat = document.createElement("span");
-      badgeCat.className = "escala-cat-dominante";
-
-      const dot = document.createElement("span");
-      dot.className = "cat-dot";
-      dot.classList.add(
-        catDom.intensidade === "strong"
-          ? "cat-strong"
-          : catDom.intensidade === "medium"
-          ? "cat-medium"
-          : "cat-weak"
-      );
-
-      const label = document.createElement("span");
-      label.textContent = catDom.categoria;
-
-      badgeCat.append(dot, label);
-      badgeContainer.appendChild(badgeCat);
-    }
-
-    const stats = calcularStatsRepertorioDaEscala(escala);
-    if (stats && stats.dificuldadeGeralNivel) {
-      const badgeDiff = document.createElement("span");
-      badgeDiff.className = "escala-dificuldade-geral";
-
-      const dot = document.createElement("span");
-      dot.className = "dot";
-      dot.classList.add(
-        stats.dificuldadeGeralNivel === "easy"
-          ? "dot-easy"
-          : stats.dificuldadeGeralNivel === "medium"
-          ? "dot-medium"
-          : "dot-hard"
-      );
-
-      const label = document.createElement("span");
-      label.textContent = nivelLabel(stats.dificuldadeGeralNivel);
-
-      badgeDiff.append(dot, label);
-      badgeContainer.appendChild(badgeDiff);
-    }
-
-    header.append(left, badgeContainer);
+    // (UI) Removido: categoria predominante + dificuldade no topo do card.
+    // Essas informações agora aparecem nos insights do repertório.
+    header.append(left);
     card.appendChild(header);
 
     // ------ INTEGRANTES ------
     const intContainer = document.createElement("div");
     intContainer.className = "escala-integrantes";
 
+    // Layout: 8 fotos por linha (sem nomes/caixas) — apenas fotos circulares + dots.
+    intContainer.style.display = "flex";
+    intContainer.style.flexWrap = "wrap";
+    intContainer.style.gap = "8px";
+    intContainer.style.alignItems = "flex-start";
+
+    // Dificuldades do repertório por instrumento (normalizadas) — para exibir junto aos integrantes.
+    const statsRep = calcularEstatisticasRepertorio(escala);
+    const diffsNorm = new Map(
+      Object.entries(statsRep?.dificuldadesPorInstrumento || {}).map(([inst, nivel]) => [
+        normalizarInstrumentoKey(inst),
+        nivel,
+      ])
+    );
+
     const ids = Array.isArray(escala.integrantes) ? escala.integrantes : [];
 
     // 👑 quem escolhe repertório nesta escala
     const headerIds = getHeaderIdsFromEscala(escala);
+
+    function criarAvatarIntegranteFuturo({ membro, isHeader, membroNivel, repNivel, repNivelConhecido }) {
+      const chip = document.createElement("div");
+      chip.title = membro.nome || "Integrante";
+      chip.style.flex = "0 0 calc(12.5% - 7px)";
+      chip.style.display = "flex";
+      chip.style.justifyContent = "center";
+
+      const avatarWrap = document.createElement("div");
+      avatarWrap.className = "escala-integrante-avatar-wrap";
+      avatarWrap.style.width = "44px";
+      avatarWrap.style.height = "44px";
+      avatarWrap.style.borderRadius = "999px";
+      avatarWrap.style.overflow = "hidden";
+      avatarWrap.style.position = "relative";
+      avatarWrap.style.padding = "0";
+      avatarWrap.style.margin = "0";
+      avatarWrap.style.background = "transparent";
+      avatarWrap.style.boxShadow = "none";
+      avatarWrap.style.border = "none";
+
+      if (isHeader) avatarWrap.classList.add("has-crown");
+
+      const avatar = document.createElement("img");
+      avatar.className = "escala-integrante-avatar";
+      avatar.style.width = "100%";
+      avatar.style.height = "100%";
+      avatar.style.objectFit = "cover";
+      avatar.style.borderRadius = "999px";
+      avatar.src = `integrantes/${(membro.nome || "").toLowerCase()}.jpeg`;
+      avatar.onerror = function () {
+        this.onerror = null;
+        this.src = "integrantes/default.jpeg";
+      };
+      avatarWrap.appendChild(avatar);
+
+      const makeDot = (nivel, pos) => {
+        const dot = document.createElement("span");
+        dot.className = "dot";
+        dot.style.position = "absolute";
+        dot.style.width = "14px";
+        dot.style.height = "14px";
+        dot.style.borderRadius = "999px";
+        dot.style.boxShadow = "0 0 0 2px rgba(255,255,255,0.85)";
+        if (pos === "bl") {
+          dot.style.left = "2px";
+          dot.style.bottom = "2px";
+        } else if (pos === "br") {
+          dot.style.right = "2px";
+          dot.style.bottom = "2px";
+        }
+
+        if (nivel === "easy") dot.classList.add("dot-easy");
+        else if (nivel === "medium") dot.classList.add("dot-medium");
+        else if (nivel === "hard") dot.classList.add("dot-hard");
+        else dot.style.background = "#b7b7b7"; // cinza
+        return dot;
+      };
+
+      // Canto inferior esquerdo: nível do integrante
+      avatarWrap.appendChild(makeDot(membroNivel, "bl"));
+      // Canto inferior direito: dificuldade do repertório no instrumento (ou cinza se não houver repertório)
+      avatarWrap.appendChild(makeDot(repNivelConhecido ? repNivel : null, "br"));
+
+      chip.appendChild(avatarWrap);
+      return chip;
+    }
 
     ids.forEach((id) => {
       const membro =
@@ -3007,119 +2997,31 @@ function renderEscalasFuturas(lista) {
         null;
       if (!membro) return;
 
-      const chip = document.createElement("div");
-      chip.className = "escala-integrante-chip";
+      const instRaw = extrairFuncaoPrincipal(membro) || getInstrumentoDoIntegrante(membro) || "";
+      const instKey = normalizarInstrumentoKey(instRaw);
+      const membroNivel = getNivelDoIntegrante(membro, instKey);
+      const repNivel = instKey ? diffsNorm.get(instKey) : null;
 
-      // === wrapper para permitir a coroa sobre o avatar ===
-      const avatarWrap = document.createElement("div");
-      avatarWrap.className = "escala-integrante-avatar-wrap";
-
+      const repNivelConhecido = !!(escala.musicas && escala.musicas.length && repNivel);
       const isHeader = headerIds.includes(membro.id);
-      if (isHeader) avatarWrap.classList.add("has-crown");
 
-      const avatar = document.createElement("img");
-      avatar.className = "escala-integrante-avatar";
-      const slug = slugify(membro.nome || "");
-      avatar.src = `integrantes/${membro.nome.toLowerCase()}.jpeg`;
-      avatar.onerror = function () {
-        this.onerror = null;
-        this.src = "integrantes/default.jpeg";
-      };
-
-      avatarWrap.appendChild(avatar);
-
-      const nome = document.createElement("span");
-      nome.className = "escala-integrante-nome";
-      nome.textContent = membro.nome || "Integrante";
-
-      // antes: chip.append(avatar, nome);
-      chip.append(avatarWrap, nome);
-      intContainer.appendChild(chip);
+      intContainer.appendChild(
+        criarAvatarIntegranteFuturo({
+          membro,
+          isHeader,
+          membroNivel: membroNivel || null,
+          repNivel: repNivel || null,
+          repNivelConhecido,
+        })
+      );
     });
 
     card.appendChild(intContainer);
 
-    // ------ DIFICULDADES POR INSTRUMENTO ------
-    const difSec = document.createElement("div");
-    difSec.className = "escala-dificuldades";
-
-    const difTitle = document.createElement("div");
-    difTitle.className = "escala-resumo-section-title";
-    difTitle.textContent = "Dificuldade média por instrumento";
-
-    const difList = document.createElement("div");
-    difList.className = "escala-resumo-dif-list";
-
-    const stats2 = calcularEstatisticasRepertorio(escala);
-    Object.entries(stats2.dificuldadesPorInstrumento || {}).forEach(
-      ([inst, nivel]) => {
-        const chip = document.createElement("div");
-        chip.className = `dificuldade-chip dificuldade-${nivel}`;
-
-        const dot = document.createElement("div");
-        dot.className = "dificuldade-dot";
-
-        const text = document.createElement("span");
-        text.textContent = formatInstrumentName(inst);
-
-        chip.append(dot, text);
-        difList.appendChild(chip);
-      }
-    );
-
-    if (!difList.childElementCount) {
-      const vazio = document.createElement("span");
-      vazio.style.fontSize = "0.75rem";
-      vazio.style.color = "#9ca3af";
-      vazio.textContent = "Sem dados suficientes.";
-      difList.appendChild(vazio);
-    }
-
-    difSec.append(difTitle, difList);
-    card.appendChild(difSec);
-
-    // ------ CATEGORIAS DO REPERTÓRIO (IGUAL PRÓXIMO CULTO, ORDENADO) ------
-    const cats = calcularIntensidadeCategorias(escala); // já vem ordenado desc
-    const catSec = document.createElement("div");
-
-    const catTitle = document.createElement("div");
-    catTitle.className = "escala-resumo-section-title";
-    catTitle.textContent = "Categorias do repertório";
-
-    const catList = document.createElement("div");
-    catList.className = "escala-resumo-dif-list";
-
-    if (cats.length) {
-      cats.forEach((c) => {
-        const chip = document.createElement("div");
-        chip.className = "dificuldade-chip";
-
-        const dot = document.createElement("div");
-        dot.className = "dificuldade-dot";
-        dot.classList.add(
-          c.intensidade === "strong"
-            ? "cat-strong"
-            : c.intensidade === "medium"
-            ? "cat-medium"
-            : "cat-weak"
-        );
-
-        const label = document.createElement("span");
-        label.textContent = c.categoria;
-
-        chip.append(dot, label);
-        catList.appendChild(chip);
-      });
-    } else {
-      const vazio = document.createElement("span");
-      vazio.style.fontSize = "0.75rem";
-      vazio.style.color = "#9ca3af";
-      vazio.textContent = "Sem categorias cadastradas.";
-      catList.appendChild(vazio);
-    }
-
-    catSec.append(catTitle, catList);
-    card.appendChild(catSec);
+    // (UI) Removidos:
+    // - "Categorias do repertório"
+    // - "Dificuldade média por instrumento"
+    // A dificuldade por instrumento agora aparece junto às fotos dos integrantes.
 
     // ------ MÚSICAS (SEM categorias/dificuldades por música, como você pediu) ------
     const musicSec = document.createElement("div");
@@ -3255,12 +3157,6 @@ function renderEscalasFuturas(lista) {
 // =========================================================
 
 function copiarEscala(escala) {
-  const catDom = calcularCategoriaDominanteDaEscala(escala);
-  const stats = calcularStatsRepertorioDaEscala(escala);
-  const cats = calcularIntensidadeCategorias(escala).filter(
-    (c) => c.percentual >= 60
-  );
-
   const corPorNivel = (nivel) =>
     nivel === "easy"
       ? "🟢"
@@ -3270,9 +3166,6 @@ function copiarEscala(escala) {
       ? "🔴"
       : "⚪";
 
-  const corDominancia = (i) =>
-    i === "strong" ? "🟢" : i === "medium" ? "🟡" : "🔴";
-
   let texto = "";
 
   // =========================
@@ -3280,32 +3173,6 @@ function copiarEscala(escala) {
   // =========================
   texto += `📅 *Escala do dia*\n`;
   texto += `_${formatarData(escala.dataObj)}_\n`;
-
-  if (catDom?.categoria) {
-    texto += `\n${corDominancia(
-      catDom.intensidade
-    )} *Categoria predominante*\n`;
-    texto += `• ${catDom.categoria} (${catDom.percentual.toFixed(0)}%)\n`;
-  }
-
-  if (stats?.dificuldadeGeralNivel) {
-    texto += `\n${corPorNivel(
-      stats.dificuldadeGeralNivel
-    )} *Dificuldade média*\n`;
-    texto += `• ${nivelLabel(stats.dificuldadeGeralNivel)}\n`;
-  }
-
-  // =========================
-  // CATEGORIAS
-  // =========================
-  if (cats.length) {
-    texto += `\n🏷️ *Categorias do repertório*\n`;
-    cats.forEach((c) => {
-      texto += `• ${corDominancia(c.intensidade)} ${
-        c.categoria
-      } (${c.percentual.toFixed(0)}%)\n`;
-    });
-  }
 
   // =========================
   // INTEGRANTES
