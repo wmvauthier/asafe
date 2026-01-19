@@ -1197,12 +1197,12 @@
     "categorias": "Intimidade com Deus; Engrandecimento e Exaltação; Confiança e Esperança",
     "versiculos": "",
     "level": {
-      "vocal": "easy",
+      "vocal": "medium",
       "guitarra": "easy",
       "baixo": "easy",
       "violao": "",
       "bateria": "easy",
-      "teclado": "easy",
+      "teclado": "medium",
       "sax": ""
     }
   },
@@ -1253,7 +1253,7 @@
       "baixo": "easy",
       "violao": "",
       "bateria": "hard",
-      "teclado": "easy",
+      "teclado": "medium",
       "sax": ""
     }
   },

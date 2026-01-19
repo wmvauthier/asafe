@@ -608,6 +608,26 @@ function getInstrumentoDoIntegrante(member) {
 // Se não existir nos dados, assume "medium" para não bloquear sugestões.
 function getNivelDoIntegrante(member, instKey) {
   const fallback = "medium";
+
+  // Normaliza níveis vindos do JSON (aceita variações numéricas/pt-BR).
+  function mapNivelIntegrante(v) {
+    if (v == null) return null;
+    if (typeof v === "number") {
+      if (v <= 1) return "easy";
+      if (v === 2) return "medium";
+      return "hard";
+    }
+    const s = v.toString().toLowerCase().trim();
+    if (!s) return null;
+    if (s === "easy" || s === "medium" || s === "hard") return s;
+    if (s === "facil" || s === "fácil" || s === "iniciante" || s === "beginner") return "easy";
+    if (s === "medio" || s === "médio" || s === "intermediario" || s === "intermediário" || s === "intermediate") return "medium";
+    if (s === "dificil" || s === "difícil" || s === "avancado" || s === "avançado" || s === "advanced") return "hard";
+    if (s === "1") return "easy";
+    if (s === "2") return "medium";
+    if (s === "3") return "hard";
+    return null;
+  }
   if (!member) return fallback;
 
   // Possíveis formatos (mantém robusto):
@@ -617,7 +637,24 @@ function getNivelDoIntegrante(member, instKey) {
   // - member.nivel: { ... }
   // - member.niveis: { ... }
   // - member.expertise: "easy" | ...
-  const candidates = [
+  
+  // Suporte: integrantes.json usa member.function: [{ instrumento: "hard" }]
+  if (Array.isArray(member.function) && member.function.length) {
+    const obj = member.function[0];
+    if (obj && typeof obj === "object") {
+      if (instKey && obj[instKey] != null) {
+        const mapped = mapNivelIntegrante(obj[instKey]);
+        if (mapped) return mapped;
+      }
+      // Fallback: pega o primeiro valor do objeto
+      const firstKey = Object.keys(obj)[0];
+      if (firstKey && obj[firstKey] != null) {
+        const mapped = mapNivelIntegrante(obj[firstKey]);
+        if (mapped) return mapped;
+      }
+    }
+  }
+const candidates = [
     member.level,
     member.nivel,
     member.niveis,
@@ -626,16 +663,21 @@ function getNivelDoIntegrante(member, instKey) {
 
   for (const c of candidates) {
     if (!c) continue;
-    if (typeof c === "string") {
-      return c;
+    if (typeof c === "string" || typeof c === "number") {
+      const mapped = mapNivelIntegrante(c);
+      if (mapped) return mapped;
     }
-    if (typeof c === "object" && instKey && c[instKey]) {
-      return c[instKey];
+    if (typeof c === "object" && instKey && c[instKey] != null) {
+      const mapped = mapNivelIntegrante(c[instKey]);
+      if (mapped) return mapped;
     }
   }
 
   // Alternativas por chaves de instrumento no root (ex.: member.guitarra="medium")
-  if (instKey && typeof member[instKey] === "string") return member[instKey];
+  if (instKey && member[instKey] != null) {
+    const mapped = mapNivelIntegrante(member[instKey]);
+    if (mapped) return mapped;
+  }
 
   return fallback;
 }
@@ -1444,8 +1486,7 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
     const scoreComboBase = (a, b, c) =>
       (scoreSongForStrategy(a, estrategia) +
         scoreSongForStrategy(b, estrategia) +
-        scoreSongForStrategy(c, estrategia)) /
-      3;
+        scoreSongForStrategy(c, estrategia)) / 3;
 
     let best = null;
 
@@ -1529,8 +1570,7 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
     const avg = (key) =>
       (best.combo[0].insights[key] +
         best.combo[1].insights[key] +
-        best.combo[2].insights[key]) /
-      3;
+        best.combo[2].insights[key]) / 3;
 
     let seguranca = avg("seguranca");
     let familiaridade = avg("familiaridade");
@@ -1669,7 +1709,7 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
 
 function analisarRepertorioDaEscala(escala, musicIds) {
   const ids = Array.isArray(musicIds) ? musicIds.filter(Boolean) : [];
-  if (ids.length !== 3) return null;
+  if (ids.length < 3 || ids.length > 4) return null;
 
   const serviceDate = escala.dataObj || parseDate(escala.data);
   if (!(serviceDate instanceof Date) || isNaN(serviceDate)) return null;
@@ -1692,7 +1732,7 @@ function analisarRepertorioDaEscala(escala, musicIds) {
   const musicasRep = ids
     .map((id) => musicas.find((m) => m && m.id === id))
     .filter(Boolean);
-  if (musicasRep.length !== 3) return null;
+  if (musicasRep.length !== ids.length) return null;
 
   // Cache mínimo (somente para as 3 músicas do repertório)
   const caches = {
@@ -1813,8 +1853,7 @@ function analisarRepertorioDaEscala(escala, musicIds) {
   const avg = (key) =>
     (songInsights[0].insights[key] +
       songInsights[1].insights[key] +
-      songInsights[2].insights[key]) /
-    3;
+      songInsights[2].insights[key]) / 3;
 
   let familiaridade = avg("familiaridade");
   let desafio = avg("desafio");
@@ -1890,16 +1929,16 @@ function renderBadgesInsightsDoRepertorio(parentEl, repAnalysis) {
   const catInsight = criarCategoriaVisual(repAnalysis.categoria);
   if (catInsight) badges.appendChild(catInsight);
 
-  // 🎚️ Dificuldade do set (média do repertório)
-  if (repAnalysis.badges.dificuldade) {
-    badges.appendChild(
-      criarInsightVisual({
-        icon: "🎚️",
-        label: "Dificuldade",
-        nivelLabel: repAnalysis.badges.dificuldade,
-      })
-    );
-  }
+  // // 🎚️ Dificuldade do set (média do repertório)
+  // if (repAnalysis.badges.dificuldade) {
+  //   badges.appendChild(
+  //     criarInsightVisual({
+  //       icon: "🎚️",
+  //       label: "Dificuldade",
+  //       nivelLabel: repAnalysis.badges.dificuldade,
+  //     })
+  //   );
+  // }
 
   badges.appendChild(
     criarInsightVisual({ icon: "🛡️", label: "Segurança", nivelLabel: repAnalysis.badges.seguranca })
@@ -2189,16 +2228,16 @@ function renderSugestoesRepertorioNoCard(parentEl, escala) {
     const catInsight = criarCategoriaVisual(rep.categoria);
     if (catInsight) badges.appendChild(catInsight);
 
-    // 🎚️ Dificuldade
-    if (rep.badges?.dificuldade) {
-      badges.appendChild(
-        criarInsightVisual({
-          icon: "🎚️",
-          label: "Dificuldade",
-          nivelLabel: rep.badges.dificuldade,
-        })
-      );
-    }
+    // // 🎚️ Dificuldade
+    // if (rep.badges?.dificuldade) {
+    //   badges.appendChild(
+    //     criarInsightVisual({
+    //       icon: "🎚️",
+    //       label: "Dificuldade",
+    //       nivelLabel: rep.badges.dificuldade,
+    //     })
+    //   );
+    // }
 
     // 🛡️ Segurança
     badges.appendChild(
@@ -2553,7 +2592,7 @@ function renderEscalaAtualResumo(escala) {
   if (repAnalysis) {
     const insTitle = document.createElement("div");
     insTitle.className = "escala-resumo-section-title";
-    insTitle.textContent = "Insights do repertório";
+    // insTitle.textContent = "Insights do repertório";
 
     extra.appendChild(insTitle);
     renderBadgesInsightsDoRepertorio(extra, repAnalysis);
@@ -2622,18 +2661,20 @@ function renderEscalaAtualIntegrantes(escala) {
     chip.style.justifyContent = "center";
 
     const avatarWrap = document.createElement("div");
+    avatarWrap.style.position = "relative";
+    avatarWrap.style.overflow = "hidden";
     avatarWrap.className = "member-avatar-wrap";
     // remove aparência de card/caixa: deixa só o círculo
     avatarWrap.style.width = "100%";
     avatarWrap.style.height = "100%";
-    avatarWrap.style.borderRadius = "999px";
+    avatarWrap.style.borderRadius = "0";
     avatarWrap.style.overflow = "hidden";
     avatarWrap.style.position = "relative";
     avatarWrap.style.padding = "0";
     avatarWrap.style.margin = "0";
     avatarWrap.style.background = "transparent";
     avatarWrap.style.boxShadow = "none";
-    avatarWrap.style.border = "none";
+    
 
     if (isHeader) avatarWrap.classList.add("has-crown");
 
@@ -2654,10 +2695,10 @@ function renderEscalaAtualIntegrantes(escala) {
       const dot = document.createElement("span");
       dot.className = "dot";
       dot.style.position = "absolute";
-      dot.style.width = "14px";
-      dot.style.height = "14px";
+      dot.style.width = "9px";
+      dot.style.height = "9px";
       dot.style.borderRadius = "999px";
-      dot.style.boxShadow = "0 0 0 2px rgba(255,255,255,0.85)";
+      
       if (pos === "bl") {
         dot.style.left = "2px";
         dot.style.bottom = "2px";
@@ -2932,17 +2973,19 @@ function renderEscalasFuturas(lista) {
       chip.style.justifyContent = "center";
 
       const avatarWrap = document.createElement("div");
+    avatarWrap.style.position = "relative";
+    avatarWrap.style.overflow = "hidden";
       avatarWrap.className = "escala-integrante-avatar-wrap";
-      avatarWrap.style.width = "44px";
-      avatarWrap.style.height = "44px";
-      avatarWrap.style.borderRadius = "999px";
+      avatarWrap.style.width = "100%";
+      avatarWrap.style.height = "100%";
+      avatarWrap.style.borderRadius = "0";
       avatarWrap.style.overflow = "hidden";
       avatarWrap.style.position = "relative";
       avatarWrap.style.padding = "0";
       avatarWrap.style.margin = "0";
       avatarWrap.style.background = "transparent";
       avatarWrap.style.boxShadow = "none";
-      avatarWrap.style.border = "none";
+      
 
       if (isHeader) avatarWrap.classList.add("has-crown");
 
@@ -2963,10 +3006,10 @@ function renderEscalasFuturas(lista) {
         const dot = document.createElement("span");
         dot.className = "dot";
         dot.style.position = "absolute";
-        dot.style.width = "14px";
-        dot.style.height = "14px";
+        dot.style.width = "9px";
+        dot.style.height = "9px";
         dot.style.borderRadius = "999px";
-        dot.style.boxShadow = "0 0 0 2px rgba(255,255,255,0.85)";
+        
         if (pos === "bl") {
           dot.style.left = "2px";
           dot.style.bottom = "2px";
@@ -3029,7 +3072,7 @@ function renderEscalasFuturas(lista) {
 
     const musicHeader = document.createElement("div");
     musicHeader.className = "escala-musicas-header";
-    musicHeader.textContent = "Repertório";
+    // musicHeader.textContent = "Repertório";
 
     const list = document.createElement("div");
     list.className = "escala-musicas-list";
