@@ -29,8 +29,8 @@
       "baixo": "easy",
       "violao": "",
       "bateria": "easy",
-      "teclado": "easy",
-      "sax": ""
+      "teclado": "medium",
+      "sax": "hard"
     }
   },
   {
@@ -467,10 +467,10 @@
     "versiculos": "",
     "level": {
       "vocal": "medium",
-      "guitarra": "medium",
-      "baixo": "medium",
+      "guitarra": "easy",
+      "baixo": "easy",
       "violao": "",
-      "bateria": "medium",
+      "bateria": "easy",
       "teclado": "medium",
       "sax": ""
     }
@@ -585,7 +585,7 @@
     "categorias": "Morte e Ressurreição",
     "versiculos": "",
     "level": {
-      "vocal": "easy",
+      "vocal": "medium",
       "guitarra": "easy",
       "baixo": "easy",
       "violao": "",
@@ -1010,11 +1010,11 @@
     "categorias": "Confiança e Esperança",
     "versiculos": "",
     "level": {
-      "vocal": "easy",
+      "vocal": "medium",
       "guitarra": "medium",
       "baixo": "hard",
       "violao": "",
-      "bateria": "medium",
+      "bateria": "hard",
       "teclado": "medium",
       "sax": ""
     }
@@ -1249,7 +1249,7 @@
     "versiculos": "",
     "level": {
       "vocal": "medium",
-      "guitarra": "easy",
+      "guitarra": "medium",
       "baixo": "easy",
       "violao": "",
       "bateria": "hard",
