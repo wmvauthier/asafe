@@ -4351,7 +4351,7 @@ function classificarNiveisDePopularidade(musicas) {
 
     let nivel;
     if (perc <= 0.15) nivel = "classic";
-    else if (perc <= 0.6) nivel = "common";
+    else if (perc <= 0.55) nivel = "common";
     else nivel = "rare";
 
     mapa[item.id] = {
