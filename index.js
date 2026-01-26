@@ -10,6 +10,55 @@ let categoriasUnicas = [];
 let activeCategories = [];
 let CACHE_POPULARIDADE = null;
 
+
+// =========================
+// Subtextos padronizados de Insights (fonte única)
+// =========================
+function gerarSubtextosInsights(repAnalysis) {
+  if (!repAnalysis?.statsAux) return null;
+
+  const s = repAnalysis.statsAux;
+  return {
+    seguranca: (() => {
+      if (s.dificuldadeMax > 2.2)
+        return ["Músicas mais Complexas necessitam de atenção!"];
+      if (s.qtdClassicas >= 2 || s.dificuldadeMax <= 1.8)
+        return ["Músicas Clássicas e/ou Fáceis nos trazem mais Segurança."];
+      return ["Músicas equilibradas entre desafio e segurança."];
+    })(),
+
+    familiaridade: (() => {
+      const out = [];
+      if (s.temInedita) out.push("O repertório contém música(s) Nova(s) para o time.");
+      if (s.qtdIncomuns === 1) out.push("O repertório contém uma música Incomum para o time.");
+      if (s.qtdClassicas === 1) out.push("O repertório contém uma música Clássica para o time.");
+      if (s.qtdIncomuns >= 2) out.push("O repertório é majoritariamente composto por músicas Incomuns.");
+      if (s.qtdClassicas >= 2) out.push("O repertório é majoritariamente composto por músicas Clássicas.");
+      if (!out.length)
+        out.push("O repertório contém somente músicas que são Comuns para o time.");
+      return out;
+    })(),
+
+    desafio: (() => {
+      if (s.dificuldadeMax > 2.2 || s.dificuldadeMedia > 2.2)
+        return ["O repertório apresenta um desafio técnico Alto."];
+      if (s.dificuldadeMedia <= 1.6)
+        return ["O repertório apresenta um desafio técnico Baixo."];
+      return ["O repertório apresenta um desafio técnico Moderado."];
+    })(),
+
+    renovacao: (() => {
+      if (s.temInedita)
+        return ["O repertório busca explorar novas possibilidades."];
+      if (s.qtdIncomuns >= 1)
+        return ["O repertório busca resgatar músicas pouco tocadas."];
+      if (s.qtdClassicas >= 1)
+        return ["O repertório busca a continuidade e familiaridade."];
+      return ["O repertório busca um meio termo entre Conhecidas e Desconhecidas."];
+    })(),
+  };
+}
+
 // Constantes
 const TOCADA_NOS_ULTIMOS_X_DIAS = 56; // ~8 semanas
 const DEBUG_SUGESTOES_REPERTORIO = false; // Checkpoint 3: logs desativados por padrão
@@ -620,24 +669,9 @@ function getNivelDoIntegrante(member, instKey) {
     const s = v.toString().toLowerCase().trim();
     if (!s) return null;
     if (s === "easy" || s === "medium" || s === "hard") return s;
-    if (s === "facil" || s === "fácil" || s === "iniciante" || s === "beginner")
-      return "easy";
-    if (
-      s === "medio" ||
-      s === "médio" ||
-      s === "intermediario" ||
-      s === "intermediário" ||
-      s === "intermediate"
-    )
-      return "medium";
-    if (
-      s === "dificil" ||
-      s === "difícil" ||
-      s === "avancado" ||
-      s === "avançado" ||
-      s === "advanced"
-    )
-      return "hard";
+    if (s === "facil" || s === "fácil" || s === "iniciante" || s === "beginner") return "easy";
+    if (s === "medio" || s === "médio" || s === "intermediario" || s === "intermediário" || s === "intermediate") return "medium";
+    if (s === "dificil" || s === "difícil" || s === "avancado" || s === "avançado" || s === "advanced") return "hard";
     if (s === "1") return "easy";
     if (s === "2") return "medium";
     if (s === "3") return "hard";
@@ -652,7 +686,7 @@ function getNivelDoIntegrante(member, instKey) {
   // - member.nivel: { ... }
   // - member.niveis: { ... }
   // - member.expertise: "easy" | ...
-
+  
   // Suporte: integrantes.json usa member.function: [{ instrumento: "hard" }]
   if (Array.isArray(member.function) && member.function.length) {
     const obj = member.function[0];
@@ -669,7 +703,7 @@ function getNivelDoIntegrante(member, instKey) {
       }
     }
   }
-  const candidates = [
+const candidates = [
     member.level,
     member.nivel,
     member.niveis,
@@ -1501,8 +1535,7 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
     const scoreComboBase = (a, b, c) =>
       (scoreSongForStrategy(a, estrategia) +
         scoreSongForStrategy(b, estrategia) +
-        scoreSongForStrategy(c, estrategia)) /
-      3;
+        scoreSongForStrategy(c, estrategia)) / 3;
 
     let best = null;
 
@@ -1586,8 +1619,7 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
     const avg = (key) =>
       (best.combo[0].insights[key] +
         best.combo[1].insights[key] +
-        best.combo[2].insights[key]) /
-      3;
+        best.combo[2].insights[key]) / 3;
 
     let seguranca = avg("seguranca");
     let familiaridade = avg("familiaridade");
@@ -1811,19 +1843,14 @@ function analisarRepertorioDaEscala(escala, musicIds) {
       m.id,
       calcAfinidadeHeaderComMusica(m.id, headerIds, eventosPassados)
     );
-    caches.teamCompatibility.set(
-      m.id,
-      calcCompatibilidadeTimeMusica(m, members)
-    );
+    caches.teamCompatibility.set(m.id, calcCompatibilidadeTimeMusica(m, members));
     caches.teamChallenge.set(m.id, calcDesafioTecnicoDoTimeMusica(m, members));
   });
 
   // Contagem de execuções por integrante (por música) — para insights verbosos no Próximo Culto.
   // Regra: conta apenas eventos passados (antes de serviceDate) e onde o integrante participou.
   const memberObjs = (members || [])
-    .map((x) =>
-      typeof x === "object" ? x : integrantes.find((i) => i.id === x)
-    )
+    .map((x) => (typeof x === "object" ? x : integrantes.find((i) => i.id === x)))
     .filter(Boolean);
   const memberIds = memberObjs.map((m) => m.id);
 
@@ -1838,8 +1865,7 @@ function analisarRepertorioDaEscala(escala, musicIds) {
       if (!hasSong || !evMembers.length) return;
 
       memberIds.forEach((mid) => {
-        if (evMembers.includes(mid))
-          counts.set(mid, (counts.get(mid) || 0) + 1);
+        if (evMembers.includes(mid)) counts.set(mid, (counts.get(mid) || 0) + 1);
       });
     });
 
@@ -1852,10 +1878,8 @@ function analisarRepertorioDaEscala(escala, musicIds) {
     const dAvg = calcDificuldadeMediaMusica(m);
     si._diffAvg = dAvg;
     si._diffNivel = dAvg != null ? valorToNivel(dAvg) : null;
-    si._popNivel =
-      caches.popNivel.get(m.id) || getNivelPopularidadeMusica(m.id);
-    if (!Array.isArray(si.categorias))
-      si.categorias = parseCategoriasMusica(m.categorias);
+    si._popNivel = caches.popNivel.get(m.id) || getNivelPopularidadeMusica(m.id);
+    if (!Array.isArray(si.categorias)) si.categorias = parseCategoriasMusica(m.categorias);
 
     // Enriquecimento: execuções por integrante (para explicações mais diretas).
     const counts = memberPlaysBySong.get(m.id);
@@ -1878,8 +1902,7 @@ function analisarRepertorioDaEscala(escala, musicIds) {
   const avg = (key) =>
     (songInsights[0].insights[key] +
       songInsights[1].insights[key] +
-      songInsights[2].insights[key]) /
-    3;
+      songInsights[2].insights[key]) / 3;
 
   let familiaridade = avg("familiaridade");
   let desafio = avg("desafio");
@@ -1890,15 +1913,9 @@ function analisarRepertorioDaEscala(escala, musicIds) {
   const dificuldadeMedia =
     dificuldades.reduce((a, b) => a + b, 0) / (dificuldades.length || 1);
 
-  const qtdClassicas = songInsights.filter(
-    (m) => m.metrics?.popNivel === "classic"
-  ).length;
-  const qtdIncomuns = songInsights.filter(
-    (m) => m.metrics?.popNivel === "rare"
-  ).length;
-  const temInedita = songInsights.some(
-    (m) => (m.metrics?.timesPlayed || 0) === 0
-  );
+  const qtdClassicas = songInsights.filter((m) => m.metrics?.popNivel === "classic").length;
+  const qtdIncomuns = songInsights.filter((m) => m.metrics?.popNivel === "rare").length;
+  const temInedita = songInsights.some((m) => (m.metrics?.timesPlayed || 0) === 0);
 
   // RENOVAÇÃO — mesma hierarquia (1–4)
   let renovacaoFinal = clamp01(renovacao);
@@ -1927,30 +1944,15 @@ function analisarRepertorioDaEscala(escala, musicIds) {
       const nivel = valorToNivel(dificuldadeMedia);
       return nivel ? nivelLabel(nivel) : null;
     })(),
-    seguranca: scoreToLabel3(
-      segurancaFinal,
-      "Muito Segura",
-      "Moderada",
-      "Arriscada"
-    ),
-    familiaridade: scoreToLabel3(
-      familiaridade,
-      "Muito Familiar",
-      "Familiar",
-      "Pouco Familiar"
-    ),
+    seguranca: scoreToLabel3(segurancaFinal, "Muito Segura", "Moderada", "Arriscada"),
+    familiaridade: scoreToLabel3(familiaridade, "Muito Familiar", "Familiar", "Pouco Familiar"),
     desafio: scoreToLabel3(desafio, "Baixo", "Moderado", "Alto"),
     renovacao: scoreToLabel3(renovacaoFinal, "Alta", "Moderada", "Baixa"),
   };
 
   return {
     categoria,
-    insights: {
-      seguranca: segurancaFinal,
-      familiaridade,
-      desafio,
-      renovacao: renovacaoFinal,
-    },
+    insights: { seguranca: segurancaFinal, familiaridade, desafio, renovacao: renovacaoFinal },
     badges,
     songInsights,
     statsAux: {
@@ -1988,38 +1990,22 @@ function renderBadgesInsightsDoRepertorio(parentEl, repAnalysis) {
   // }
 
   badges.appendChild(
-    criarInsightVisual({
-      icon: "🛡️",
-      label: "Segurança",
-      nivelLabel: repAnalysis.badges.seguranca,
-    })
+    criarInsightVisual({ icon: "🛡️", label: "Segurança", nivelLabel: repAnalysis.badges.seguranca })
   );
   badges.appendChild(
-    criarInsightVisual({
-      icon: "👥",
-      label: "Familiaridade",
-      nivelLabel: repAnalysis.badges.familiaridade,
-    })
+    criarInsightVisual({ icon: "👥", label: "Familiaridade", nivelLabel: repAnalysis.badges.familiaridade })
   );
   badges.appendChild(
-    criarInsightVisual({
-      icon: "🔥",
-      label: "Desafio",
-      nivelLabel: repAnalysis.badges.desafio,
-    })
+    criarInsightVisual({ icon: "🔥", label: "Desafio", nivelLabel: repAnalysis.badges.desafio })
   );
   badges.appendChild(
-    criarInsightVisual({
-      icon: "🌱",
-      label: "Renovação",
-      nivelLabel: repAnalysis.badges.renovacao,
-    })
+    criarInsightVisual({ icon: "🌱", label: "Renovação", nivelLabel: repAnalysis.badges.renovacao })
   );
 
   parentEl.appendChild(badges);
 }
 
-function renderInsightsVerboseDoRepertorio(parentEl, repAnalysis, escala) {
+function renderInsightsVerboseDoRepertorio(parentEl, repAnalysis) {
   if (!parentEl || !repAnalysis || !repAnalysis.songInsights) return;
 
   const box = document.createElement("div");
@@ -2055,129 +2041,18 @@ function renderInsightsVerboseDoRepertorio(parentEl, repAnalysis, escala) {
     return el;
   };
 
-  const makeInlineRow = (...nodes) => {
-    const row = document.createElement("div");
-    row.style.display = "flex";
-    row.style.alignItems = "center";
-    row.style.gap = "8px";
-    row.style.flexWrap = "wrap";
-    nodes.filter(Boolean).forEach((n) => row.appendChild(n));
-    return row;
-  };
-
-  const makeMuted = (text) => {
-    const el = document.createElement("span");
-    el.style.opacity = "0.8";
-    el.textContent = text;
-    return el;
-  };
-
-  // Dots (1–3) para nível easy/medium/hard
-  const makeDotsNivel = (nivel, opts) => {
-    const size = opts && opts.size ? opts.size : 8;
-    const gap = opts && opts.gap ? opts.gap : 4;
-    const wrap = document.createElement("span");
-    wrap.style.display = "inline-flex";
-    wrap.style.alignItems = "center";
-    wrap.style.gap = `${gap}px`;
-
-    const v = nivelToValor(nivel);
-    const count = v ? Math.max(1, Math.min(3, v)) : 0;
-
-    for (let i = 0; i < count; i++) {
-      const dot = document.createElement("span");
-      dot.className = "dot";
-      dot.style.width = `${size}px`;
-      dot.style.height = `${size}px`;
-      dot.style.borderRadius = "999px";
-      dot.style.position = "relative";
-      if (nivel === "easy") dot.classList.add("dot-easy");
-      else if (nivel === "medium") dot.classList.add("dot-medium");
-      else if (nivel === "hard") dot.classList.add("dot-hard");
-      else dot.style.background = "#b7b7b7";
-      wrap.appendChild(dot);
-    }
-
-    return wrap;
-  };
-
-  // Avatar quadrado (com dot interno opcional)
-  const makeAvatarQuadrado = ({ nome, nivel, size, showDot }) => {
-    const s = size || 34;
-
-    const wrap = document.createElement("div");
-    wrap.style.width = `${s}px`;
-    wrap.style.height = `${s}px`;
-    wrap.style.borderRadius = "8px";
-    wrap.style.overflow = "hidden";
-    wrap.style.position = "relative";
-    wrap.style.flex = "0 0 auto";
-    wrap.style.background = "rgba(255,255,255,0.06)";
-
-    const img = document.createElement("img");
-    img.style.width = "100%";
-    img.style.height = "100%";
-    img.style.objectFit = "cover";
-    img.src = nome
-      ? `integrantes/${String(nome).toLowerCase()}.jpeg`
-      : "integrantes/default.jpeg";
-    img.onerror = function () {
-      this.onerror = null;
-      this.src = "integrantes/default.jpeg";
-    };
-
-    wrap.appendChild(img);
-
-    if (showDot) {
-      const dot = document.createElement("span");
-      dot.className = "dot";
-      dot.style.position = "absolute";
-      dot.style.width = "9px";
-      dot.style.height = "9px";
-      dot.style.borderRadius = "999px";
-      dot.style.left = "3px";
-      dot.style.bottom = "3px";
-      if (nivel === "easy") dot.classList.add("dot-easy");
-      else if (nivel === "medium") dot.classList.add("dot-medium");
-      else if (nivel === "hard") dot.classList.add("dot-hard");
-      else dot.style.background = "#b7b7b7";
-      wrap.appendChild(dot);
-    }
-
-    wrap.title = nome || "Integrante";
-    return wrap;
-  };
-
-  const makeSongThumb = (musica, size) => {
-    const s = size || 42;
-    const wrap = document.createElement("div");
-    wrap.style.width = `${s}px`;
-    wrap.style.height = `${s}px`;
-    wrap.style.borderRadius = "10px";
-    wrap.style.overflow = "hidden";
-    wrap.style.flex = "0 0 auto";
-    wrap.style.background = "rgba(255,255,255,0.06)";
-
-    const img = document.createElement("img");
-    img.style.width = "100%";
-    img.style.height = "100%";
-    img.style.objectFit = "cover";
-    img.src =
-      (musica && musica._thumbUrl) ||
-      (musica && musica.referLink
-        ? `https://img.youtube.com/vi/${musica.referLink}/0.jpg`
-        : "artistas/default.jpg");
-    img.onerror = function () {
-      this.onerror = null;
-      this.src = "artistas/default.jpg";
-    };
-
-    wrap.appendChild(img);
-    return wrap;
-  };
-
   const si = repAnalysis.songInsights;
   const stats = repAnalysis.statsAux || {};
+
+  const qtdIneditas = si.filter((x) => (x.metrics?.timesPlayed || 0) === 0).length;
+  const totalExec = si.reduce((acc, x) => acc + (x.metrics?.timesPlayed || 0), 0);
+  const execText = si
+    .map((x) => {
+      const m = x.musica;
+      const t = x.metrics?.timesPlayed || 0;
+      return `• ${m?.titulo || m?.nome || "Música"} — ${t}x`;
+    })
+    .join("\n");
 
   const popCounts = {
     classic: si.filter((x) => x.metrics?.popNivel === "classic").length,
@@ -2198,366 +2073,171 @@ function renderInsightsVerboseDoRepertorio(parentEl, repAnalysis, escala) {
     si.reduce((acc, x) => acc + (x.metrics?.teamChallenge || 0), 0) /
     (si.length || 1);
 
-  const qtdIneditas = si.filter(
-    (x) => (x.metrics?.timesPlayed || 0) === 0
-  ).length;
-
   // Renovação
   const renovSec = [];
-  // renovSec.push(
-  //   p(
-  //     `Renovação ${repAnalysis.badges.renovacao}: este repertório mistura ${popCounts.classic} clássica(s), ${popCounts.common} comum(ns) e ${popCounts.rare} incomum(ns).`
-  //   )
-  // );
+  renovSec.push(
+    p(
+      `Renovação ${repAnalysis.badges.renovacao}: este repertório mistura ${popCounts.classic} clássica(s), ${popCounts.common} comum(ns) e ${popCounts.rare} incomum(ns).`
+    )
+  );
   if (popCounts.rare >= 2) {
-    renovSec.push(
-      p(
-        "• Há 2 ou mais músicas Incomuns — isso puxa a Renovação para cima por oxigenação do set."
-      )
-    );
+    renovSec.push(p("• Há 2 ou mais músicas Incomuns — isso puxa a Renovação para cima por oxigenação do set."));
   } else if (popCounts.rare === 1) {
-    renovSec.push(
-      p(
-        "• Há 1 música incomum — ajuda a oxigenar, mas ainda pode ficar 'Moderada' dependendo do resto."
-      )
-    );
+    renovSec.push(p("• Há 1 música incomum — ajuda a oxigenar, mas ainda pode ficar 'Moderada' dependendo do resto."));
   } else {
-    renovSec.push(
-      p(
-        "• Não há músicas incomuns — a Renovação tende a cair, porque o set fica mais previsível/recorrente."
-      )
-    );
+    renovSec.push(p("• Não há músicas incomuns — a Renovação tende a cair, porque o set fica mais previsível/recorrente."));
   }
   if (popCounts.classic >= 1) {
-    renovSec.push(
-      p(
-        "• Existe pelo menos 1 clássica — isso aumenta conforto, mas normalmente reduz oxigenação."
-      )
-    );
-  }
-  if (popCounts.classic >= 1) {
-    renovSec.push(
-      p(
-        "• Existe pelo menos 1 clássica — isso aumenta conforto, mas normalmente reduz oxigenação."
-      )
-    );
+    renovSec.push(p("• Existe pelo menos 1 clássica — isso aumenta conforto, mas normalmente reduz oxigenação."));
   }
   if (qtdIneditas > 0) {
-    renovSec.push(
-      p(
-        `• Tem ${qtdIneditas} inédita(s) (nunca tocada antes) — isso adiciona novidade real.`
-      )
-    );
+    renovSec.push(p(`• Tem ${qtdIneditas} inédita(s) (nunca tocada antes) — isso adiciona novidade real.`));
   }
+  renovSec.push(p(`• Execuções no histórico (total do set): ${totalExec} (quanto maior, mais "batido" tende a ser).`));
 
-  // Desafio (com dots ao citar dificuldade)
+  // Desafio
   const desSec = [];
-  const nivelMed = valorToNivel(stats.dificuldadeMedia || 0);
-  const nivelMax = valorToNivel(stats.dificuldadeMax || 0);
-  // desSec.push(
-  //   makeInlineRow(
-  //     makeMuted(`Desafio ${repAnalysis.badges.desafio}:`),
-  //     makeMuted("dificuldade média"),
-  //     makeDotsNivel(nivelMed, { size: 8, gap: 3 }),
-  //     makeMuted("pico"),
-  //     makeDotsNivel(nivelMax, { size: 8, gap: 3 })
-  //   )
-  // );
+  desSec.push(
+    p(
+      `Desafio ${repAnalysis.badges.desafio}: o set tem dificuldade média ~${(stats.dificuldadeMedia || 0).toFixed(
+        2
+      )} e pico ~${(stats.dificuldadeMax || 0).toFixed(2)} (0..3).`
+    )
+  );
   if ((stats.dificuldadeMax || 0) >= 2.5) {
-    desSec.push(
-      p(
-        "• Existe pelo menos uma música com exigência alta (pico elevado), o que pressiona o time."
-      )
-    );
+    desSec.push(p("• Existe pelo menos uma música com exigência alta (pico elevado), o que pressiona o time."));
   }
   if (challAvg >= 0.7) {
-    desSec.push(
-      p(
-        "• O encaixe técnico do time vs. as músicas está apertado (Desafio técnico médio alto)."
-      )
-    );
+    desSec.push(p("• O encaixe técnico do time vs. as músicas está apertado (Desafio técnico médio alto)."));
   } else if (challAvg <= 0.35) {
-    desSec.push(
-      p("• O encaixe técnico está confortável (Desafio técnico médio baixo).")
-    );
+    desSec.push(p("• O encaixe técnico está confortável (Desafio técnico médio baixo)."));
   } else {
-    desSec.push(
-      p(
-        "• O encaixe técnico está no meio do caminho: dá pra fazer, mas exige atenção."
-      )
-    );
+    desSec.push(p("• O encaixe técnico está no meio do caminho: dá pra fazer, mas exige atenção."));
   }
 
   // Familiaridade
   const famSec = [];
-  // famSec.push(
-  //   p(
-  //     `Familiaridade ${repAnalysis.badges.familiaridade}: memória coletiva do time (média) ~${famAvg.toFixed(
-  //       2
-  //     )} e afinidade dos headers ~${headerAvg.toFixed(2)} (0..1).`
-  //   )
-  // );
+  famSec.push(
+    p(
+      `Familiaridade ${repAnalysis.badges.familiaridade}: memória coletiva do time (média) ~${famAvg.toFixed(
+        2
+      )} e afinidade dos headers ~${headerAvg.toFixed(2)} (0..1).`
+    )
+  );
   if (famAvg <= 0.35) {
-    famSec.push(
-      p(
-        "• Pouco entrosamento com o Set: o time tocou pouco essas músicas (ou com essa configuração)."
-      )
-    );
+    famSec.push(p("• Pouco entrosamento com o set: o time já tocou pouco essas músicas (ou com essa configuração)."));
   } else if (famAvg >= 0.7) {
-    famSec.push(
-      p(
-        "• Set bem conhecido: o time tem memória coletiva forte (tende a fluir melhor)."
-      )
-    );
+    famSec.push(p("• Set bem conhecido: o time tem memória coletiva forte (tende a fluir melhor)."));
   } else {
-    famSec.push(
-      p(
-        "• Set razoavelmente conhecido: existe base, mas ainda há pontos que podem surpreender."
-      )
-    );
+    famSec.push(p("• Set razoavelmente conhecido: existe base, mas ainda há pontos que podem surpreender."));
   }
   if (compAvg <= 0.5) {
-    famSec.push(
-      p(
-        "• Compatibilidade geral Time X músicas não está ideal (níveis/instrumentos podem estar no limite)."
-      )
-    );
+    famSec.push(p("• Compatibilidade geral time×músicas não está ideal (níveis/instrumentos podem estar no limite)."));
   }
 
   // Segurança
   const segSec = [];
-  // segSec.push(
-  //   p(
-  //     `Segurança ${repAnalysis.badges.seguranca}: é derivada de Familiaridade + Desafio + Renovação (risco operacional do culto).`
-  //   )
-  // );
+  segSec.push(
+    p(
+      `Segurança ${repAnalysis.badges.seguranca}: é derivada de Familiaridade + Desafio + Renovação (risco operacional do culto).`
+    )
+  );
   if (repAnalysis.badges.seguranca === "Muito Segura") {
-    segSec.push(
-      p(
-        "• O conjunto indica baixa chance de 'surpresa' no ao vivo: ou é conhecido, ou tecnicamente confortável, ou ambos."
-      )
-    );
+    segSec.push(p("• O conjunto indica baixa chance de 'surpresa' no ao vivo: ou é conhecido, ou tecnicamente confortável, ou ambos."));
   } else if (repAnalysis.badges.seguranca === "Arriscada") {
-    segSec.push(
-      p(
-        "• Risco operacional alto: normalmente vem de Desafio alto somado a Familiaridade baixa (pouco colchão)."
-      )
-    );
+    segSec.push(p("• Risco operacional alto: normalmente vem de Desafio alto somado a Familiaridade baixa (pouco colchão)."));
   } else {
-    segSec.push(
-      p(
-        "• Risco Moderado: dá pra executar bem, mas vale uma atenção nas músicas ou detalhes mais críticos."
-      )
-    );
+    segSec.push(p("• Risco moderado: dá pra executar bem, mas vale ensaio focado nos pontos críticos."));
   }
   if (qtdIneditas > 0) {
-    segSec.push(
-      p(
-        "• Há inédita(s): isso aumenta risco de execução (mesmo quando a música é tecnicamente simples)."
-      )
-    );
+    segSec.push(p("• Há inédita(s): isso aumenta risco de execução (mesmo quando a música é tecnicamente simples)."));
   }
 
-  box.appendChild(makeSection("🌱 Renovação", renovSec));
-  box.appendChild(makeSection("🔥 Desafio", desSec));
-  box.appendChild(makeSection("👥 Familiaridade", famSec));
-  box.appendChild(makeSection("🛡️ Segurança", segSec));
+  // bloco de execuções por música (bem detalhado)
+  const execPre = document.createElement("pre");
+  execPre.style.whiteSpace = "pre-wrap";
+  execPre.style.margin = "8px 0 0 0";
+  execPre.style.fontSize = "0.85rem";
+  execPre.style.opacity = "0.9";
+  execPre.textContent = execText;
+
+  // const execWrap = document.createElement("div");
+  // execWrap.appendChild(p("Detalhe — quantas vezes cada música já foi tocada:"));
+  // execWrap.appendChild(execPre);
+
+  // box.appendChild(makeSection("🌱 Renovação", renovSec));
+  // box.appendChild(makeSection("🔥 Desafio", desSec));
+  // box.appendChild(makeSection("👥 Familiaridade", famSec));
+  // box.appendChild(makeSection("🛡️ Segurança", segSec));
 
   // =============================================
-  // Integrantes para ficar de olho (alerta humano)
-  // - critério: integrante abaixo da exigência HARD do repertório
-  // - máximo 3
+  // Evidências diretas (valores por música / integrante)
+  // - deixa o Próximo Culto mais "objetivo" como pedido
   // =============================================
-  const watch = [];
-  try {
-    const musicIds = Array.isArray(escala?.musicas) ? escala.musicas : null;
-    const memberIds = Array.isArray(escala?.integrantes)
-      ? escala.integrantes
-      : null;
-
-    if (musicIds && musicIds.length && memberIds && memberIds.length) {
-      // Máxima exigência por instrumento no set
-      const reqByInst = new Map();
-      musicIds.forEach((id) => {
-        const musica = musicas.find((m) => m.id === id);
-        if (!musica || !musica.level || typeof musica.level !== "object")
-          return;
-        Object.entries(musica.level).forEach(([instRaw, reqNivel]) => {
-          if (!reqNivel) return;
-          const inst = normalizarInstrumentoKey(instRaw);
-          if (!inst) return;
-          const reqVal = nivelToValor(reqNivel) || 0;
-          const prev = reqByInst.get(inst) || 0;
-          if (reqVal > prev) reqByInst.set(inst, reqVal);
-        });
-      });
-
-      memberIds.forEach((id) => {
-        const membro =
-          (typeof id === "object"
-            ? id
-            : integrantes.find((i) => i.id === id)) || null;
-        if (!membro) return;
-        const instRaw =
-          extrairFuncaoPrincipal(membro) ||
-          getInstrumentoDoIntegrante(membro) ||
-          "";
-        const inst = normalizarInstrumentoKey(instRaw);
-        if (!inst) return;
-
-        const reqVal = reqByInst.get(inst) || 0;
-        // Apenas risco HARD
-        if (reqVal < 3) return;
-
-        const membroNivel = getNivelDoIntegrante(membro, inst);
-        const membroVal = nivelToValor(membroNivel) || 0;
-        if (membroVal >= reqVal) return;
-
-        watch.push({
-          membro,
-          inst,
-          membroNivel: membroNivel || null,
-          reqNivel: "hard",
-          delta: reqVal - membroVal,
-        });
-      });
-    }
-  } catch (e) {
-    // Se algo falhar aqui, não quebra a UI; apenas não mostra a seção.
-    // console.warn("Watchlist falhou:", e);
-  }
-
-  if (watch.length) {
-    watch.sort((a, b) => (b.delta || 0) - (a.delta || 0));
-    const top = watch.slice(0, 3);
-
-    const nodes = top.map((w) => {
-      const row = document.createElement("div");
-      row.style.display = "flex";
-      row.style.alignItems = "center";
-      row.style.gap = "10px";
-      row.style.padding = "8px";
-      row.style.borderRadius = "10px";
-      row.style.background = "rgba(255,255,255,0.04)";
-
-      const av = makeAvatarQuadrado({
-        nome: w.membro?.nome,
-        nivel: w.membroNivel,
-        size: 36,
-        showDot: true,
-      });
-
-      const col = document.createElement("div");
-      col.style.display = "flex";
-      col.style.flexDirection = "column";
-      col.style.gap = "2px";
-
-      const line1 = document.createElement("div");
-      line1.style.fontWeight = "600";
-      line1.textContent = w.membro?.nome || "Integrante";
-
-      const line2 = document.createElement("div");
-      line2.style.opacity = "0.9";
-      line2.style.fontSize = "0.85rem";
-      line2.appendChild(document.createTextNode("nível "));
-      line2.appendChild(makeDotsNivel(w.membroNivel, { size: 8, gap: 3 }));
-      line2.appendChild(document.createTextNode("  •  repertório exige "));
-      line2.appendChild(makeDotsNivel("hard", { size: 8, gap: 3 }));
-      line2.appendChild(
-        document.createTextNode(` (${formatInstrumentName(w.inst)})`)
-      );
-
-      col.append(line1, line2);
-      row.append(av, col);
-      return row;
-    });
-
-    box.appendChild(makeSection("👀 Integrantes para ficar de olho", nodes));
-  }
-
-  // =============================================
-  // Evidências diretas (agrupadas por integrante)
-  // =============================================
-  const evidNodes = [];
-  const evidPorIntegrante = new Map();
-
+  const evidSec = [];
   (si || []).forEach((x) => {
-    const musica = x.musica;
-    const titulo = musica?.titulo || musica?.nome || "Música";
-    const dificuldade = x.metrics?.difficulty;
-    const plays = Array.isArray(x.metrics?.memberPlays)
-      ? x.metrics.memberPlays
-      : [];
+    const m = x.musica;
+    const titulo = m?.titulo || m?.nome || "Música";
+    const times = x.metrics?.timesPlayed || 0;
+    const diffAvg = x.metrics?.difficultyAvg;
+    const diffNivel = x.metrics?.difficultyNivel || (diffAvg != null ? valorToNivel(diffAvg) : null);
 
-    if (!plays.length) return;
+    // Linha 1 — música
+    const linhaMusica = `• ${titulo} — tocada ${times}x` +
+      (diffNivel ? ` • dificuldade ${nivelLabel(diffNivel)}` : "") +
+      (diffAvg != null ? ` (${diffAvg.toFixed(2)} / 0..3)` : "");
+    evidSec.push(p(linhaMusica));
 
-    const minCount = Math.min(...plays.map((p) => p.count ?? 0));
+    // Linha 2 — integrantes (se disponível)
+    const plays = Array.isArray(x.metrics?.memberPlays) ? x.metrics.memberPlays : [];
+    if (plays.length) {
+      const nunca = plays.filter((p) => (p.count || 0) === 0).map((p) => p.nome);
+      const mais = plays
+        .slice()
+        .sort((a, b) => (b.count || 0) - (a.count || 0))
+        .filter((p) => (p.count || 0) > 0);
 
-    plays.forEach((p) => {
-      const nome = p.memberName || p.nome;
-      if (!nome) return;
-
-      if (!evidPorIntegrante.has(nome)) {
-        evidPorIntegrante.set(nome, {
-          nome,
-          nivel: p.nivel,
-          avisos: [],
-        });
+      if (nunca.length) {
+        evidSec.push(p(`   ↳ nunca tocou: ${nunca.slice(0, 4).join(", ")}${nunca.length > 4 ? "…" : ""}`));
       }
 
-      const entry = evidPorIntegrante.get(nome);
-
-      if ((p.count ?? 0) === 0) {
-        entry.avisos.push(`Nunca tocou “${titulo}”`);
-      } else if ((p.count ?? 0) === minCount) {
-        entry.avisos.push(`É um dos que menos tocaram “${titulo}”`);
+      if (mais.length) {
+        const top = mais.slice(0, 2).map((p) => `${p.nome} (${p.count}x)`).join("; ");
+        evidSec.push(p(`   ↳ quem mais tocou: ${top}`));
       }
-
-      if (dificuldade === "hard" && p.nivel !== "hard") {
-        entry.avisos.push(`“${titulo}” é difícil para o nível atual`);
-      }
-    });
+    }
   });
 
-  evidPorIntegrante.forEach((data) => {
-    if (!data.avisos.length) return;
+  if (evidSec.length) {
+    // box.appendChild(makeSection("🎯 Evidências", evidSec));
+  }
 
-    const row = document.createElement("div");
-    row.style.display = "flex";
-    row.style.gap = "12px";
-    row.style.alignItems = "flex-start";
-    row.style.padding = "10px";
-    row.style.borderRadius = "12px";
-    row.style.background = "rgba(255,255,255,0.04)";
+  // box.appendChild(execWrap);
 
-    const av = makeAvatarQuadrado({
-      nome: data.nome,
-      nivel: data.nivel,
-      size: 40,
-      showDot: true,
+  
+  // =============================
+  // INSIGHTS PADRONIZADOS (ÚNICA FONTE)
+  // =============================
+  const subtexts = gerarSubtextosInsights(repAnalysis);
+  if (subtexts) {
+    const iconMap = {
+      seguranca: "🛡️ Segurança",
+      familiaridade: "✨ Familiaridade",
+      desafio: "🔥 Desafio",
+      renovacao: "🌱 Renovação",
+    };
+
+    Object.entries(subtexts).forEach(([key, texts]) => {
+      if (!texts || !texts.length) return;
+      const nodes = texts.map((t) => {
+        const d = document.createElement("div");
+        d.textContent = t;
+        d.style.fontSize = "0.9rem";
+        d.style.opacity = "0.9";
+        return d;
+      });
+      box.appendChild(makeSection(iconMap[key] || key, nodes));
     });
-
-    const col = document.createElement("div");
-    col.style.display = "flex";
-    col.style.flexDirection = "column";
-    col.style.gap = "6px";
-
-    data.avisos.slice(0, 3).forEach((txt) => {
-      const t = document.createElement("div");
-      t.textContent = txt;
-      t.style.fontSize = "13px";
-      t.style.opacity = "0.9";
-      col.appendChild(t);
-    });
-
-    row.appendChild(av);
-    row.appendChild(col);
-    evidNodes.push(row);
-  });
-
-  if (evidNodes.length) {
-    //VOU DEIXAR COMENTADO POR ENQUANTO, TÁ BEM RUIMZINHO AS EVIDÊNCIAS
-    // box.appendChild(makeSection("🎯 Evidências", evidNodes));
   }
 
   parentEl.appendChild(box);
@@ -2991,7 +2671,7 @@ function renderEscalaAtualResumo(escala) {
 
     extra.appendChild(insTitle);
     renderBadgesInsightsDoRepertorio(extra, repAnalysis);
-    renderInsightsVerboseDoRepertorio(extra, repAnalysis, escala);
+    renderInsightsVerboseDoRepertorio(extra, repAnalysis);
   }
 
   container.appendChild(extra);
@@ -3028,9 +2708,10 @@ function renderEscalaAtualIntegrantes(escala) {
   // Mantém coroa nos headers.
   const statsRep = calcularEstatisticasRepertorio(escala);
   const diffsNorm = new Map(
-    Object.entries(statsRep?.dificuldadesPorInstrumento || {}).map(
-      ([inst, nivel]) => [normalizarInstrumentoKey(inst), nivel]
-    )
+    Object.entries(statsRep?.dificuldadesPorInstrumento || {}).map(([inst, nivel]) => [
+      normalizarInstrumentoKey(inst),
+      nivel,
+    ])
   );
 
   const ids = escala.integrantes || [];
@@ -3046,13 +2727,7 @@ function renderEscalaAtualIntegrantes(escala) {
   const headerIds = getHeaderIdsFromEscala(escala);
 
   // Helper local: cria um avatar circular com dois dots (nível do integrante e nível do repertório no instrumento)
-  function criarAvatarIntegrante({
-    membro,
-    isHeader,
-    membroNivel,
-    repNivel,
-    repNivelConhecido,
-  }) {
+  function criarAvatarIntegrante({ membro, isHeader, membroNivel, repNivel, repNivelConhecido }) {
     const chip = document.createElement("div");
     chip.title = membro.nome || "Integrante";
     // 8 por linha
@@ -3074,6 +2749,7 @@ function renderEscalaAtualIntegrantes(escala) {
     avatarWrap.style.margin = "0";
     avatarWrap.style.background = "transparent";
     avatarWrap.style.boxShadow = "none";
+    
 
     if (isHeader) avatarWrap.classList.add("has-crown");
 
@@ -3097,7 +2773,7 @@ function renderEscalaAtualIntegrantes(escala) {
       dot.style.width = "9px";
       dot.style.height = "9px";
       dot.style.borderRadius = "999px";
-
+      
       if (pos === "bl") {
         dot.style.left = "2px";
         dot.style.bottom = "2px";
@@ -3136,19 +2812,12 @@ function renderEscalaAtualIntegrantes(escala) {
 
     if (!membro) return;
 
-    const instRaw =
-      extrairFuncaoPrincipal(membro) ||
-      getInstrumentoDoIntegrante(membro) ||
-      "";
+    const instRaw = extrairFuncaoPrincipal(membro) || getInstrumentoDoIntegrante(membro) || "";
     const instKey = normalizarInstrumentoKey(instRaw);
 
     const membroNivel = getNivelDoIntegrante(membro, instKey);
     const repNivel = instKey ? diffsNorm.get(instKey) : null;
-    const repNivelConhecido = !!(
-      escala.musicas &&
-      escala.musicas.length &&
-      repNivel
-    );
+    const repNivelConhecido = !!(escala.musicas && escala.musicas.length && repNivel);
 
     const isHeader = headerIds.includes(membro.id);
     const chip = criarAvatarIntegrante({
@@ -3360,9 +3029,10 @@ function renderEscalasFuturas(lista) {
     // Dificuldades do repertório por instrumento (normalizadas) — para exibir junto aos integrantes.
     const statsRep = calcularEstatisticasRepertorio(escala);
     const diffsNorm = new Map(
-      Object.entries(statsRep?.dificuldadesPorInstrumento || {}).map(
-        ([inst, nivel]) => [normalizarInstrumentoKey(inst), nivel]
-      )
+      Object.entries(statsRep?.dificuldadesPorInstrumento || {}).map(([inst, nivel]) => [
+        normalizarInstrumentoKey(inst),
+        nivel,
+      ])
     );
 
     const ids = Array.isArray(escala.integrantes) ? escala.integrantes : [];
@@ -3370,13 +3040,7 @@ function renderEscalasFuturas(lista) {
     // 👑 quem escolhe repertório nesta escala
     const headerIds = getHeaderIdsFromEscala(escala);
 
-    function criarAvatarIntegranteFuturo({
-      membro,
-      isHeader,
-      membroNivel,
-      repNivel,
-      repNivelConhecido,
-    }) {
+    function criarAvatarIntegranteFuturo({ membro, isHeader, membroNivel, repNivel, repNivelConhecido }) {
       const chip = document.createElement("div");
       chip.title = membro.nome || "Integrante";
       chip.style.flex = "0 0 calc(12.5% - 7px)";
@@ -3384,8 +3048,8 @@ function renderEscalasFuturas(lista) {
       chip.style.justifyContent = "center";
 
       const avatarWrap = document.createElement("div");
-      avatarWrap.style.position = "relative";
-      avatarWrap.style.overflow = "hidden";
+    avatarWrap.style.position = "relative";
+    avatarWrap.style.overflow = "hidden";
       avatarWrap.className = "escala-integrante-avatar-wrap";
       avatarWrap.style.width = "100%";
       avatarWrap.style.height = "100%";
@@ -3396,6 +3060,7 @@ function renderEscalasFuturas(lista) {
       avatarWrap.style.margin = "0";
       avatarWrap.style.background = "transparent";
       avatarWrap.style.boxShadow = "none";
+      
 
       if (isHeader) avatarWrap.classList.add("has-crown");
 
@@ -3419,7 +3084,7 @@ function renderEscalasFuturas(lista) {
         dot.style.width = "9px";
         dot.style.height = "9px";
         dot.style.borderRadius = "999px";
-
+        
         if (pos === "bl") {
           dot.style.left = "2px";
           dot.style.bottom = "2px";
@@ -3438,9 +3103,7 @@ function renderEscalasFuturas(lista) {
       // Canto inferior esquerdo: nível do integrante
       avatarWrap.appendChild(makeDot(membroNivel, "bl"));
       // Canto inferior direito: dificuldade do repertório no instrumento (ou cinza se não houver repertório)
-      avatarWrap.appendChild(
-        makeDot(repNivelConhecido ? repNivel : null, "br")
-      );
+      avatarWrap.appendChild(makeDot(repNivelConhecido ? repNivel : null, "br"));
 
       chip.appendChild(avatarWrap);
       return chip;
@@ -3452,19 +3115,12 @@ function renderEscalasFuturas(lista) {
         null;
       if (!membro) return;
 
-      const instRaw =
-        extrairFuncaoPrincipal(membro) ||
-        getInstrumentoDoIntegrante(membro) ||
-        "";
+      const instRaw = extrairFuncaoPrincipal(membro) || getInstrumentoDoIntegrante(membro) || "";
       const instKey = normalizarInstrumentoKey(instRaw);
       const membroNivel = getNivelDoIntegrante(membro, instKey);
       const repNivel = instKey ? diffsNorm.get(instKey) : null;
 
-      const repNivelConhecido = !!(
-        escala.musicas &&
-        escala.musicas.length &&
-        repNivel
-      );
+      const repNivelConhecido = !!(escala.musicas && escala.musicas.length && repNivel);
       const isHeader = headerIds.includes(membro.id);
 
       intContainer.appendChild(
@@ -3619,46 +3275,55 @@ function renderEscalasFuturas(lista) {
 // =========================================================
 
 function copiarEscala(escala) {
-  if (!escala) return;
+  const corPorNivel = (nivel) =>
+    nivel === "easy"
+      ? "🟢"
+      : nivel === "medium"
+      ? "🟡"
+      : nivel === "hard"
+      ? "🔴"
+      : "⚪";
 
-  const repAnalysis = analisarRepertorioDaEscala(escala, escala.musicas);
   let texto = "";
 
   // =========================
   // CABEÇALHO
   // =========================
-  texto += `📅 *ESCALA DO DIA - ${escala.data || ""}*\n`;
+  texto += `📅 *Escala do dia*\n`;
+  texto += `_${formatarData(escala.dataObj)}_\n`;
 
   // =========================
   // INTEGRANTES
   // =========================
-  if (Array.isArray(escala.integrantes) && escala.integrantes.length) {
-    texto += `\n🎤 *INTEGRANTES*\n`;
-    escala.integrantes.forEach((id) => {
-      const i = integrantes.find((x) => x.id === id);
-      if (i) texto += `• ${i.nome}\n`;
-    });
-  }
+  texto += `\n🎤 *Integrantes*\n`;
 
-  // =========================
-  // INSIGHTS
-  // =========================
-  if (repAnalysis?.insights) {
-    const label = (v) =>
-      v >= 0.66 ? "Alta" : v >= 0.45 ? "Média" : "Baixa";
+  const ints = Array.isArray(escala.integrantes) ? escala.integrantes : [];
+  ints.forEach((iobj) => {
+    const membro =
+      typeof iobj === "object"
+        ? integrantes.find((x) => x.nome === iobj.nome) || iobj
+        : integrantes.find((x) => x.id === iobj) || null;
 
-    texto += `\n📊 *INSIGHTS*\n`;
-    texto += `🛡️ Segurança: ${Math.round(repAnalysis.insights.seguranca * 100)}% (${label(repAnalysis.insights.seguranca)})\n`;
-    texto += `✨ Familiaridade: ${Math.round(repAnalysis.insights.familiaridade * 100)}% (${label(repAnalysis.insights.familiaridade)})\n`;
-    texto += `🔥 Desafio: ${Math.round(repAnalysis.insights.desafio * 100)}% (${label(repAnalysis.insights.desafio)})\n`;
-    texto += `🌱 Renovação: ${Math.round(repAnalysis.insights.renovacao * 100)}% (${label(repAnalysis.insights.renovacao)})\n`;
-  }
+    if (!membro) return;
+
+    const nome = membro.nome || iobj.nome || "Integrante";
+    const func =
+      membro.funcao ||
+      (Array.isArray(membro.function) && membro.function[0]
+        ? Object.keys(membro.function[0])[0]
+        : iobj.funcao) ||
+      "função";
+
+    texto += `• *${nome}* — ${func}\n`;
+  });
 
   // =========================
   // MÚSICAS
   // =========================
-  texto += `\n🎧 *MÚSICAS*\n`;
-  (escala.musicas || []).forEach((id, idx) => {
+  texto += `\n🎧 *Músicas*\n`;
+
+  const ids = Array.isArray(escala.musicas) ? escala.musicas : [];
+  ids.forEach((id, idx) => {
     const musica = musicas.find((m) => m.id === id);
     if (!musica) return;
 
@@ -3666,8 +3331,23 @@ function copiarEscala(escala) {
       ? `https://www.youtube.com/watch?v=${musica.referLink}`
       : "";
 
-    texto += `\n${idx + 1}. *${musica.titulo.toUpperCase()}* — ${musica.artista}\n`;
+    const catsMus =
+      typeof musica.categorias === "string"
+        ? musica.categorias
+            .split(";")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [];
+
+    const diffs = Object.entries(musica.level || {})
+      .filter(([, v]) => v)
+      .map(([inst, v]) => `${corPorNivel(v)} ${inst}`)
+      .join(" · ");
+
+    texto += `\n${idx + 1}. *${musica.titulo}* — ${musica.artista}\n`;
     if (yt) texto += `🔗 ${yt}\n`;
+    if (catsMus.length) texto += `🏷️ ${catsMus.join(" · ")}\n`;
+    if (diffs) texto += `🎚️ ${diffs}\n`;
   });
 
   navigator.clipboard.writeText(texto).then(() => {
@@ -4351,7 +4031,7 @@ function classificarNiveisDePopularidade(musicas) {
 
     let nivel;
     if (perc <= 0.15) nivel = "classic";
-    else if (perc <= 0.55) nivel = "common";
+    else if (perc <= 0.6) nivel = "common";
     else nivel = "rare";
 
     mapa[item.id] = {
