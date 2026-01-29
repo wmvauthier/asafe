@@ -3275,79 +3275,91 @@ function renderEscalasFuturas(lista) {
 // =========================================================
 
 function copiarEscala(escala) {
-  const corPorNivel = (nivel) =>
-    nivel === "easy"
-      ? "🟢"
-      : nivel === "medium"
-      ? "🟡"
-      : nivel === "hard"
-      ? "🔴"
-      : "⚪";
+  if (!escala) return;
 
+  const repAnalysis = analisarRepertorioDaEscala(escala, escala.musicas);
   let texto = "";
 
-  // =========================
-  // CABEÇALHO
-  // =========================
-  texto += `📅 *Escala do dia*\n`;
-  texto += `_${formatarData(escala.dataObj)}_\n`;
+  texto += `📅 *ESCALA DO DIA - ${escala.data || ""}*\n`;
 
-  // =========================
-  // INTEGRANTES
-  // =========================
-  texto += `\n🎤 *Integrantes*\n`;
+  if (Array.isArray(escala.header) && escala.header.length) {
+    const nomesHeader = escala.header
+      .map((id) => integrantes.find((x) => x.id === id)?.nome)
+      .filter(Boolean);
+    if (nomesHeader.length) {
+      texto += `👑 Repertório escolhido por: ${nomesHeader.join(", ")}\n`;
+    }
+  }
 
-  const ints = Array.isArray(escala.integrantes) ? escala.integrantes : [];
-  ints.forEach((iobj) => {
-    const membro =
-      typeof iobj === "object"
-        ? integrantes.find((x) => x.nome === iobj.nome) || iobj
-        : integrantes.find((x) => x.id === iobj) || null;
+  if (Array.isArray(escala.integrantes) && escala.integrantes.length) {
+    texto += `\n🎤 *INTEGRANTES*\n`;
+    escala.integrantes.forEach((id) => {
+      const i = integrantes.find((x) => x.id === id);
+      if (i) texto += `• ${i.nome}\n`;
+    });
+  }
 
-    if (!membro) return;
+  if (repAnalysis?.insights && repAnalysis?.badges && repAnalysis?.statsAux) {
+    const s = repAnalysis.statsAux;
+    texto += `\n📊 *INSIGHTS DO REPERTÓRIO*\n`;
 
-    const nome = membro.nome || iobj.nome || "Integrante";
-    const func =
-      membro.funcao ||
-      (Array.isArray(membro.function) && membro.function[0]
-        ? Object.keys(membro.function[0])[0]
-        : iobj.funcao) ||
-      "função";
+    texto += `🛡️ Segurança: ${Math.round(repAnalysis.insights.seguranca * 100)}% — ${repAnalysis.badges.seguranca}\n`;
+    if (s.dificuldadeMax > 2.2) texto += `→ Músicas mais Complexas que necessitam de atenção!\n`;
+    else if (s.qtdClassicas >= 2 || s.dificuldadeMax <= 1.8)
+      texto += `→ Músicas Clássicas e/ou Fáceis nos trazem mais Segurança.\n`;
+    else texto += `→ Músicas bem equilibradas entre desafio e segurança.\n`;
 
-    texto += `• *${nome}* — ${func}\n`;
-  });
+    texto += `\n✨ Familiaridade: ${Math.round(repAnalysis.insights.familiaridade * 100)}% — ${repAnalysis.badges.familiaridade}\n`;
+    if (s.temInedita) texto += `→ O repertório contém música(s) Nova(s) para o time.\n`;
+    if (s.qtdIncomuns === 1) texto += `→ O repertório contém uma música Incomum para o time.\n`;
+    if (s.qtdClassicas === 1) texto += `→ O repertório contém uma música Clássica para o time.\n`;
+    if (s.qtdIncomuns >= 2) texto += `→ O repertório é majoritariamente composto por músicas Incomuns.\n`;
+    if (s.qtdClassicas >= 2) texto += `→ O repertório é majoritariamente composto por músicas Clássicas.\n`;
+    if (!s.temInedita && s.qtdIncomuns === 0 && s.qtdClassicas === 0)
+      texto += `→ O repertório contém somente músicas que são Comuns para o time.\n`;
 
-  // =========================
-  // MÚSICAS
-  // =========================
-  texto += `\n🎧 *Músicas*\n`;
+    texto += `\n🔥 Desafio: ${Math.round(repAnalysis.insights.desafio * 100)}% — ${repAnalysis.badges.desafio}\n`;
+    if (s.dificuldadeMax > 2.2 || s.dificuldadeMedia > 2.2)
+      texto += `→ O repertório apresenta um desafio técnico Alto.\n`;
+    else if (s.dificuldadeMedia <= 1.6)
+      texto += `→ O repertório apresenta um desafio técnico Baixo.\n`;
+    else texto += `→ O repertório apresenta um desafio técnico Moderado.\n`;
 
-  const ids = Array.isArray(escala.musicas) ? escala.musicas : [];
-  ids.forEach((id, idx) => {
-    const musica = musicas.find((m) => m.id === id);
-    if (!musica) return;
+    texto += `\n🌱 Renovação: ${Math.round(repAnalysis.insights.renovacao * 100)}% — ${repAnalysis.badges.renovacao}\n`;
+    if (s.temInedita) texto += `→ O repertório busca explorar novas possibilidades.\n`;
+    else if (s.qtdIncomuns >= 1) texto += `→ O repertório busca resgatar músicas pouco tocadas.\n`;
+    else if (s.qtdClassicas >= 1) texto += `→ O repertório busca a continuidade e familiaridade.\n`;
+    else texto += `→ O repertório busca um meio termo entre Conhecidas e Desconhecidas.\n`;
+  }
 
-    const yt = musica.referLink
-      ? `https://www.youtube.com/watch?v=${musica.referLink}`
+  texto += `\n🎧 *MÚSICAS*\n`;
+  (repAnalysis?.songInsights || []).forEach((si, idx) => {
+    const m = si.musica;
+    if (!m) return;
+
+    const yt = m.referLink
+      ? `https://www.youtube.com/watch?v=${m.referLink}`
       : "";
 
-    const catsMus =
-      typeof musica.categorias === "string"
-        ? musica.categorias
-            .split(";")
-            .map((s) => s.trim())
-            .filter(Boolean)
-        : [];
+    const diff =
+      si._diffNivel === "easy" ? "🟢 Fácil" :
+      si._diffNivel === "medium" ? "🟡 Médio" :
+      si._diffNivel === "hard" ? "🔴 Difícil" : "";
 
-    const diffs = Object.entries(musica.level || {})
-      .filter(([, v]) => v)
-      .map(([inst, v]) => `${corPorNivel(v)} ${inst}`)
-      .join(" · ");
+    const pop =
+      si._popNivel === "classic" ? "🏆 Clássica" :
+      si._popNivel === "rare" ? "🕵️ Incomum" : "🎧 Comum";
 
-    texto += `\n${idx + 1}. *${musica.titulo}* — ${musica.artista}\n`;
+    const play =
+      (si.metrics?.timesPlayed || 0) === 0
+        ? "✨ Nova"
+        : (si.metrics?.timesPlayed || 0) <= 2
+        ? "🕰️ Pouco tocada"
+        : "🔁 Muito tocada";
+
+    texto += `\n${idx + 1}. *${m.titulo.toUpperCase()}* — ${m.artista}\n`;
+    texto += `${diff} | ${pop} | ${play}\n`;
     if (yt) texto += `🔗 ${yt}\n`;
-    if (catsMus.length) texto += `🏷️ ${catsMus.join(" · ")}\n`;
-    if (diffs) texto += `🎚️ ${diffs}\n`;
   });
 
   navigator.clipboard.writeText(texto).then(() => {
