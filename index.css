@@ -1045,13 +1045,33 @@ body {
 .escala-integrante-avatar-wrap.has-crown::after {
   content: "👑";
   position: absolute;
-  top: -6px;
-  right: -6px;
+  top: 0px;
+  right: 0px;
   font-size: 1.05em;
   background: rgba(0,0,0,0.85);
   border-radius: 999px;
   padding: 2px 5px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  /* box-shadow: 0 2px 8px rgba(0,0,0,0.35); */
+}
+
+/* 🎤 Ministro de louvor (mesmo padrão visual da coroa) */
+.member-avatar-wrap.has-mic::before,
+.escala-integrante-avatar-wrap.has-mic::before {
+  content: "🎤";
+  position: absolute;
+  top: 0px;
+  right: 31px; /* deixa espaço para a coroa quando ambos existem */
+  font-size: 1.05em;
+  background: rgba(0,0,0,0.85);
+  border-radius: 999px;
+  padding: 2px 5px;
+  /* box-shadow: 0 2px 8px rgba(0,0,0,0.35); */
+}
+
+/* Ajuste fino quando só existe 🎤 (sem 👑): encosta no canto direito */
+.member-avatar-wrap.has-mic:not(.has-crown)::before,
+.escala-integrante-avatar-wrap.has-mic:not(.has-crown)::before {
+  right: 0px;
 }
 
 .rep-insight {

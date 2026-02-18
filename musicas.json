@@ -735,7 +735,7 @@
     "titulo": "Tua Graça me basta",
     "artista": "Trazendo a Arca",
     "referLink": "F9hWwTQ4MKQ",
-    "categorias": "Intimidade com Deus; Confiança e Esperança; Glória de Deus",
+    "categorias": "Intimidade com Deus; Engrandecimento e Exaltação; Glória de Deus",
     "versiculos": "",
     "level": {
       "vocal": "hard",
@@ -1049,7 +1049,7 @@
       "baixo": "medium",
       "violao": "",
       "bateria": "medium",
-      "teclado": "medium",
+      "teclado": "hard",
       "sax": ""
     }
   },
@@ -1185,7 +1185,7 @@
       "baixo": "medium",
       "violao": "",
       "bateria": "medium",
-      "teclado": "easy",
+      "teclado": "medium",
       "sax": ""
     }
   },
@@ -1282,12 +1282,12 @@
     "categorias": "Engrandecimento e Exaltação; Intimidade com Deus",
     "versiculos": "",
     "level": {
-      "vocal": "medium",
+      "vocal": "hard",
       "guitarra": "medium",
       "baixo": "easy",
       "violao": "",
       "bateria": "easy",
-      "teclado": "medium",
+      "teclado": "hard",
       "sax": ""
     }
   },

@@ -2725,9 +2725,10 @@ function renderEscalaAtualIntegrantes(escala) {
 
   // 👑 ids de quem escolhe o repertório nesse culto
   const headerIds = getHeaderIdsFromEscala(escala);
+  const ministerIds = getMinisterIdsFromEscala(escala);
 
   // Helper local: cria um avatar circular com dois dots (nível do integrante e nível do repertório no instrumento)
-  function criarAvatarIntegrante({ membro, isHeader, membroNivel, repNivel, repNivelConhecido }) {
+  function criarAvatarIntegrante({ membro, isHeader, isMinister, membroNivel, repNivel, repNivelConhecido }) {
     const chip = document.createElement("div");
     chip.title = membro.nome || "Integrante";
     // 8 por linha
@@ -2752,6 +2753,7 @@ function renderEscalaAtualIntegrantes(escala) {
     
 
     if (isHeader) avatarWrap.classList.add("has-crown");
+    if (isMinister) avatarWrap.classList.add("has-mic");
 
     const img = document.createElement("img");
     img.className = "member-avatar";
@@ -2820,9 +2822,11 @@ function renderEscalaAtualIntegrantes(escala) {
     const repNivelConhecido = !!(escala.musicas && escala.musicas.length && repNivel);
 
     const isHeader = headerIds.includes(membro.id);
+    const isMinister = ministerIds.includes(membro.id);
     const chip = criarAvatarIntegrante({
       membro,
       isHeader,
+      isMinister,
       membroNivel: membroNivel || null,
       repNivel: repNivel || null,
       repNivelConhecido,
@@ -3039,8 +3043,9 @@ function renderEscalasFuturas(lista) {
 
     // 👑 quem escolhe repertório nesta escala
     const headerIds = getHeaderIdsFromEscala(escala);
+  const ministerIds = getMinisterIdsFromEscala(escala);
 
-    function criarAvatarIntegranteFuturo({ membro, isHeader, membroNivel, repNivel, repNivelConhecido }) {
+    function criarAvatarIntegranteFuturo({ membro, isHeader, isMinister, membroNivel, repNivel, repNivelConhecido }) {
       const chip = document.createElement("div");
       chip.title = membro.nome || "Integrante";
       chip.style.flex = "0 0 calc(12.5% - 7px)";
@@ -3063,6 +3068,7 @@ function renderEscalasFuturas(lista) {
       
 
       if (isHeader) avatarWrap.classList.add("has-crown");
+    if (isMinister) avatarWrap.classList.add("has-mic");
 
       const avatar = document.createElement("img");
       avatar.className = "escala-integrante-avatar";
@@ -3122,11 +3128,13 @@ function renderEscalasFuturas(lista) {
 
       const repNivelConhecido = !!(escala.musicas && escala.musicas.length && repNivel);
       const isHeader = headerIds.includes(membro.id);
+    const isMinister = ministerIds.includes(membro.id);
 
       intContainer.appendChild(
         criarAvatarIntegranteFuturo({
           membro,
           isHeader,
+      isMinister,
           membroNivel: membroNivel || null,
           repNivel: repNivel || null,
           repNivelConhecido,
@@ -3965,6 +3973,50 @@ function getHeaderIdsFromEscala(escala) {
   const one = normalizeId(raw);
   return one != null ? [one] : [];
 }
+
+
+function getMinisterIdsFromEscala(escala) {
+  // campo canônico: "minister" (array de ids)
+  // mantém fallback básico para variações, sem quebrar dados antigos
+  const raw =
+    escala?.minister ??
+    escala?.ministro ??
+    escala?.ministros ??
+    escala?.ministerios ??
+    null;
+
+  if (!raw) return [];
+
+  const normalizeId = (x) => {
+    if (x == null) return null;
+    if (typeof x === "object") {
+      const v = x.id ?? x.integranteId ?? x.memberId ?? null;
+      return v == null ? null : v;
+    }
+    if (typeof x === "string") {
+      const s = x.trim();
+      if (!s) return null;
+      const n = Number(s);
+      return Number.isFinite(n) ? n : s;
+    }
+    return x;
+  };
+
+  if (Array.isArray(raw)) {
+    return raw.map(normalizeId).filter((v) => v != null);
+  }
+
+  if (typeof raw === "string") {
+    return raw
+      .split(/[;,]/g)
+      .map((s) => normalizeId(s))
+      .filter((v) => v != null);
+  }
+
+  const one = normalizeId(raw);
+  return one == null ? [] : [one];
+}
+
 
 function formatFunctions(functions) {
   if (!functions) return "";
