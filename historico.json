@@ -1336,7 +1336,7 @@
     "data": "01/03/2026",
     "integrantes": [
       4,
-      14,
+      9,
       5,
       2,
       6,
@@ -1349,7 +1349,7 @@
     ],
     "musicas": [],
     "faltas": [],
-    "minister": [5]
+    "minister": [4]
   },
   {
     "data": "08/03/2026",
@@ -1364,11 +1364,11 @@
       18
     ],
     "header": [
-      8
+      5
     ],
     "musicas": [],
     "faltas": [],
-    "minister": [4]
+    "minister": [5]
   },
   {
     "data": "15/03/2026",

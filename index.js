@@ -3288,7 +3288,7 @@ function copiarEscala(escala) {
   const repAnalysis = analisarRepertorioDaEscala(escala, escala.musicas);
   let texto = "";
 
-  texto += `📅 *ESCALA DO DIA - ${escala.data || ""}*\n`;
+  texto += `📅 *ESCALA DO DIA - ${escala.data || ""}*\n\n`;
 
   if (Array.isArray(escala.header) && escala.header.length) {
     const nomesHeader = escala.header
@@ -3296,6 +3296,15 @@ function copiarEscala(escala) {
       .filter(Boolean);
     if (nomesHeader.length) {
       texto += `👑 Repertório escolhido por: ${nomesHeader.join(", ")}\n`;
+    }
+  }
+
+  if (Array.isArray(escala.minister) && escala.minister.length) {
+    const nomesMinister = escala.minister
+      .map((id) => integrantes.find((x) => x.id === id)?.nome)
+      .filter(Boolean);
+    if (nomesMinister.length) {
+      texto += `🎤 Ministração: ${nomesMinister.join(", ")}\n`;
     }
   }
 
@@ -3370,11 +3379,40 @@ function copiarEscala(escala) {
     if (yt) texto += `🔗 ${yt}\n`;
   });
 
-  navigator.clipboard.writeText(texto).then(() => {
-    alert("Escala copiada para a área de transferência!");
-  });
-}
+  (async () => {
+    try {
+      const canWriteImage =
+        typeof ClipboardItem !== "undefined" &&
+        navigator.clipboard &&
+        typeof navigator.clipboard.write === "function" &&
+        window.html2canvas;
 
+      if (canWriteImage) {
+        const el = document.querySelector('#view-escala');
+        const canvas = await window.html2canvas(el, { backgroundColor: null, scale: 2 });
+        const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+        const item = new ClipboardItem({
+          "text/plain": new Blob([texto], { type: "text/plain" }),
+          "image/png": blob,
+        });
+        await navigator.clipboard.write([item]);
+        alert("Escala (texto + imagem) copiada para a área de transferência!");
+        return;
+      }
+
+      await navigator.clipboard.writeText(texto);
+      alert("Escala copiada para a área de transferência!");
+    } catch (e) {
+      // fallback bem conservador: texto apenas
+      try {
+        await navigator.clipboard.writeText(texto);
+        alert("Escala copiada para a área de transferência!");
+      } catch (e2) {
+        alert("Não foi possível copiar a escala. Seu navegador pode bloquear a área de transferência.");
+      }
+    }
+  })();
+}
 // =========================================================
 // REPERTÓRIO — RENDERIZAÇÃO COMPLETA
 // =========================================================
