@@ -657,8 +657,8 @@
       "guitarra": "hard",
       "baixo": "hard",
       "violao": "",
-      "bateria": "hard",
-      "teclado": "hard",
+      "bateria": "medium",
+      "teclado": "medium",
       "sax": ""
     }
   },
@@ -910,9 +910,9 @@
     "level": {
       "vocal": "medium",
       "guitarra": "medium",
-      "baixo": "easy",
+      "baixo": "medium",
       "violao": "",
-      "bateria": "medium",
+      "bateria": "easy",
       "teclado": "medium",
       "sax": ""
     }
