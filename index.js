@@ -10,7 +10,6 @@ let categoriasUnicas = [];
 let activeCategories = [];
 let CACHE_POPULARIDADE = null;
 
-
 // =========================
 // Subtextos padronizados de Insights (fonte única)
 // =========================
@@ -29,13 +28,24 @@ function gerarSubtextosInsights(repAnalysis) {
 
     familiaridade: (() => {
       const out = [];
-      if (s.temInedita) out.push("O repertório contém música(s) Nova(s) para o time.");
-      if (s.qtdIncomuns === 1) out.push("O repertório contém uma música Incomum para o time.");
-      if (s.qtdClassicas === 1) out.push("O repertório contém uma música Clássica para o time.");
-      if (s.qtdIncomuns >= 2) out.push("O repertório é majoritariamente composto por músicas Incomuns.");
-      if (s.qtdClassicas >= 2) out.push("O repertório é majoritariamente composto por músicas Clássicas.");
+      if (s.temInedita)
+        out.push("O repertório contém música(s) Nova(s) para o time.");
+      if (s.qtdIncomuns === 1)
+        out.push("O repertório contém uma música Incomum para o time.");
+      if (s.qtdClassicas === 1)
+        out.push("O repertório contém uma música Clássica para o time.");
+      if (s.qtdIncomuns >= 2)
+        out.push(
+          "O repertório é majoritariamente composto por músicas Incomuns.",
+        );
+      if (s.qtdClassicas >= 2)
+        out.push(
+          "O repertório é majoritariamente composto por músicas Clássicas.",
+        );
       if (!out.length)
-        out.push("O repertório contém somente músicas que são Comuns para o time.");
+        out.push(
+          "O repertório contém somente músicas que são Comuns para o time.",
+        );
       return out;
     })(),
 
@@ -54,7 +64,9 @@ function gerarSubtextosInsights(repAnalysis) {
         return ["O repertório busca resgatar músicas pouco tocadas."];
       if (s.qtdClassicas >= 1)
         return ["O repertório busca a continuidade e familiaridade."];
-      return ["O repertório busca um meio termo entre Conhecidas e Desconhecidas."];
+      return [
+        "O repertório busca um meio termo entre Conhecidas e Desconhecidas.",
+      ];
     })(),
   };
 }
@@ -408,11 +420,11 @@ function renderCategoriasFiltros() {
     const cats = Array.isArray(m.categorias)
       ? m.categorias
       : typeof m.categorias === "string"
-      ? m.categorias
-          .split(";")
-          .map((s) => s.trim())
-          .filter(Boolean)
-      : [];
+        ? m.categorias
+            .split(";")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [];
 
     cats.forEach((c) => counts.set(c, (counts.get(c) || 0) + 1));
   });
@@ -669,9 +681,24 @@ function getNivelDoIntegrante(member, instKey) {
     const s = v.toString().toLowerCase().trim();
     if (!s) return null;
     if (s === "easy" || s === "medium" || s === "hard") return s;
-    if (s === "facil" || s === "fácil" || s === "iniciante" || s === "beginner") return "easy";
-    if (s === "medio" || s === "médio" || s === "intermediario" || s === "intermediário" || s === "intermediate") return "medium";
-    if (s === "dificil" || s === "difícil" || s === "avancado" || s === "avançado" || s === "advanced") return "hard";
+    if (s === "facil" || s === "fácil" || s === "iniciante" || s === "beginner")
+      return "easy";
+    if (
+      s === "medio" ||
+      s === "médio" ||
+      s === "intermediario" ||
+      s === "intermediário" ||
+      s === "intermediate"
+    )
+      return "medium";
+    if (
+      s === "dificil" ||
+      s === "difícil" ||
+      s === "avancado" ||
+      s === "avançado" ||
+      s === "advanced"
+    )
+      return "hard";
     if (s === "1") return "easy";
     if (s === "2") return "medium";
     if (s === "3") return "hard";
@@ -686,7 +713,7 @@ function getNivelDoIntegrante(member, instKey) {
   // - member.nivel: { ... }
   // - member.niveis: { ... }
   // - member.expertise: "easy" | ...
-  
+
   // Suporte: integrantes.json usa member.function: [{ instrumento: "hard" }]
   if (Array.isArray(member.function) && member.function.length) {
     const obj = member.function[0];
@@ -703,7 +730,7 @@ function getNivelDoIntegrante(member, instKey) {
       }
     }
   }
-const candidates = [
+  const candidates = [
     member.level,
     member.nivel,
     member.niveis,
@@ -737,7 +764,7 @@ function getEventosPassadosAte(dataObj) {
     .map((h) => ({ ...h, dataObj: parseDate(h.data) }))
     .filter(
       (h) =>
-        h.dataObj instanceof Date && !isNaN(h.dataObj) && h.dataObj < dataObj
+        h.dataObj instanceof Date && !isNaN(h.dataObj) && h.dataObj < dataObj,
     )
     .sort((a, b) => a.dataObj - b.dataObj);
 }
@@ -771,11 +798,13 @@ function foiProgramadaEmEscalaFuturaApos(idMusica, dataRefObj) {
     .map((ev) => ({ ev, dataObj: parseDate(ev.data) }))
     .filter(
       (x) =>
-        x.dataObj instanceof Date && !isNaN(x.dataObj) && x.dataObj > dataRefObj
+        x.dataObj instanceof Date &&
+        !isNaN(x.dataObj) &&
+        x.dataObj > dataRefObj,
     );
 
   return futuros.some(
-    ({ ev }) => Array.isArray(ev.musicas) && ev.musicas.includes(idMusica)
+    ({ ev }) => Array.isArray(ev.musicas) && ev.musicas.includes(idMusica),
   );
 }
 
@@ -800,7 +829,7 @@ function calcDificuldadeMediaMusica(musica) {
 // Perfil de dificuldade médio do time (com base no histórico passado)
 function calcPerfilDificuldadeDoTime(members, eventosPassados) {
   const memberSet = new Set(
-    (members || []).map((x) => (typeof x === "object" ? x.id : x))
+    (members || []).map((x) => (typeof x === "object" ? x.id : x)),
   );
 
   let soma = 0;
@@ -921,13 +950,37 @@ function calcAfinidadeHeaderComMusica(idMusica, headerIds, eventosPassados) {
   return hits / totalHeaderEventos;
 }
 
+function calcAfinidadeMinisterComMusica(
+  idMusica,
+  ministerIds,
+  eventosPassados,
+) {
+  const ministers = (ministerIds || []).filter(Boolean);
+  if (!ministers.length) return 0;
+
+  let totalMinisterEventos = 0;
+  let hits = 0;
+
+  (eventosPassados || []).forEach((ev) => {
+    const evMinisters = Array.isArray(ev.minister) ? ev.minister : [];
+    const intersect = evMinisters.some((mid) => ministers.includes(mid));
+    if (!intersect) return;
+
+    totalMinisterEventos += 1;
+    if (Array.isArray(ev.musicas) && ev.musicas.includes(idMusica)) hits += 1;
+  });
+
+  if (!totalMinisterEventos) return 0;
+  return hits / totalMinisterEventos;
+}
+
 // Preferência do time/header por artista (para desempate)
 function buildPreferenciaArtistas(headerIds, members, eventosPassados) {
   const headers = new Set((headerIds || []).filter(Boolean));
   const memberSet = new Set(
     (members || [])
       .map((x) => (typeof x === "object" ? x.id : x))
-      .filter(Boolean)
+      .filter(Boolean),
   );
 
   const artistCounts = new Map();
@@ -966,7 +1019,7 @@ function buildPreferenciaArtistas(headerIds, members, eventosPassados) {
 function calcCompatibilidadeTimeMusica(musica, members) {
   const memberObjs = (members || [])
     .map((x) =>
-      typeof x === "object" ? x : integrantes.find((i) => i.id === x)
+      typeof x === "object" ? x : integrantes.find((i) => i.id === x),
     )
     .filter(Boolean);
   if (!memberObjs.length) return 0.6; // fallback neutro
@@ -1006,7 +1059,7 @@ function calcDesafioTecnicoDoTimeMusica(musica, members) {
 
   const memberObjs = (members || [])
     .map((x) =>
-      typeof x === "object" ? x : integrantes.find((i) => i.id === x)
+      typeof x === "object" ? x : integrantes.find((i) => i.id === x),
     )
     .filter(Boolean);
 
@@ -1102,6 +1155,7 @@ function buildSongInsightParaEscala(musica, context, caches) {
   const pop01 = calcPopularidadeLocal(timesPlayed, caches.maxPlayed);
 
   const headerAffinity = caches.headerAffinity.get(musica.id) || 0;
+  const ministerAffinity = caches.ministerAffinity?.get(musica.id) || 0;
   const teamFamiliarity = caches.teamFamiliarity.get(musica.id) || 0;
   const teamCompatibility = caches.teamCompatibility.get(musica.id) || 0.6;
 
@@ -1120,7 +1174,7 @@ function buildSongInsightParaEscala(musica, context, caches) {
       ? caches.teamChallenge.get(musica.id) || 0
       : calcDesafioTecnicoDoTimeMusica(
           musica,
-          context && context.members ? context.members : []
+          context && context.members ? context.members : [],
         );
 
   // Checkpoint 3: Familiaridade é memória coletiva ponderada (não exige time completo)
@@ -1130,7 +1184,7 @@ function buildSongInsightParaEscala(musica, context, caches) {
   let seguranca = clamp01(
     0.55 * (1 - teamChallenge) +
       0.35 * familiaridade +
-      0.1 * clamp01(teamCompatibility)
+      0.1 * clamp01(teamCompatibility),
   );
 
   // Desafio (0..1) agora é o desafio técnico real
@@ -1143,7 +1197,7 @@ function buildSongInsightParaEscala(musica, context, caches) {
     const MS_DIA = 1000 * 60 * 60 * 24;
     const dias = Math.max(
       0,
-      Math.floor((context.serviceDate - lastPlayed) / MS_DIA)
+      Math.floor((context.serviceDate - lastPlayed) / MS_DIA),
     );
     // 0..180 dias => 0..1 (cap)
     tempo01 = clamp01(dias / 180);
@@ -1151,7 +1205,7 @@ function buildSongInsightParaEscala(musica, context, caches) {
   const raridade01 =
     popNivel === "rare" ? 0.9 : popNivel === "classic" ? 0.2 : 0.5;
   const renovacao = clamp01(
-    0.35 * (1 - pop01) + 0.3 * novidadeFreq + 0.2 * tempo01 + 0.15 * raridade01
+    0.35 * (1 - pop01) + 0.3 * novidadeFreq + 0.2 * tempo01 + 0.15 * raridade01,
   );
 
   // ===============================
@@ -1193,6 +1247,7 @@ function buildSongInsightParaEscala(musica, context, caches) {
       timesPlayed,
       lastPlayed,
       headerAffinity,
+      ministerAffinity,
       teamFamiliarity: familiaridade,
       teamCompatibility,
       teamChallenge,
@@ -1208,13 +1263,13 @@ function buildSongInsightParaEscala(musica, context, caches) {
           seguranca,
           "Muito Segura",
           "Moderada",
-          "Arriscada"
+          "Arriscada",
         ),
         familiaridade: scoreToLabel3(
           familiaridade,
           "Muito Familiar",
           "Familiar",
-          "Pouco Familiar"
+          "Pouco Familiar",
         ),
         desafio: scoreToLabel3(desafio, "Baixo", "Moderado", "Alto"),
         renovacao: scoreToLabel3(renovacao, "Alta", "Moderada", "Baixa"),
@@ -1349,13 +1404,22 @@ function scoreSongForStrategy(songInsight, estrategia) {
     p.desafio * s.desafio +
     p.renovacao * s.renovacao;
 
-  // Favoritas do Time: considere BEM MAIS membros/headers (afinidade, familiaridade e compatibilidade)
+  // Afinidade humana do dia: quem escolhe + quem ministra
+  // Vale para TODAS as estratégias.
+  const afinidadeDoDia =
+    0.5 * clamp01(m.headerAffinity || 0) +
+    0.5 * clamp01(m.ministerAffinity || 0);
+
+  score += 0.18 * afinidadeDoDia;
+
+  // Favoritas do Time amplifica afinidade, familiaridade e compatibilidade.
   if (estrategia && estrategia.key === "favoritas") {
     const bonusTime =
-      0.55 * clamp01(m.headerAffinity || 0) +
-      0.45 * clamp01(m.teamFamiliarity || 0) +
+      0.45 * afinidadeDoDia +
+      0.35 * clamp01(m.teamFamiliarity || 0) +
       0.25 * clamp01(m.teamCompatibility || 0);
-    score = score + bonusTime;
+
+    score += bonusTime;
   }
 
   return score;
@@ -1383,6 +1447,7 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
 
   const members = Array.isArray(escala.integrantes) ? escala.integrantes : [];
   const headerIds = Array.isArray(escala.header) ? escala.header : [];
+  const ministerIds = Array.isArray(escala.minister) ? escala.minister : [];
 
   const eventosPassados = getEventosPassadosAte(serviceDate);
   const teamDifficultyProfile =
@@ -1392,6 +1457,7 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
     serviceDate,
     members,
     headerIds,
+    ministerIds,
     eventosPassados,
     teamDifficultyProfile,
   };
@@ -1418,6 +1484,7 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
     lastPlayed: new Map(),
     teamFamiliarity: new Map(),
     headerAffinity: new Map(),
+    ministerAffinity: new Map(),
     teamCompatibility: new Map(),
     teamChallenge: new Map(),
     popNivel: new Map(),
@@ -1465,15 +1532,19 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
     caches.lastPlayed.set(m.id, getUltimaDataTocadaAte(m.id, serviceDate));
     caches.teamFamiliarity.set(
       m.id,
-      calcFamiliaridadeDoTimeComMusica(m.id, members, eventosPassados)
+      calcFamiliaridadeDoTimeComMusica(m.id, members, eventosPassados),
     );
     caches.headerAffinity.set(
       m.id,
-      calcAfinidadeHeaderComMusica(m.id, headerIds, eventosPassados)
+      calcAfinidadeHeaderComMusica(m.id, headerIds, eventosPassados),
+    );
+    caches.ministerAffinity.set(
+      m.id,
+      calcAfinidadeMinisterComMusica(m.id, ministerIds, eventosPassados),
     );
     caches.teamCompatibility.set(
       m.id,
-      calcCompatibilidadeTimeMusica(m, members)
+      calcCompatibilidadeTimeMusica(m, members),
     );
     caches.teamChallenge.set(m.id, calcDesafioTecnicoDoTimeMusica(m, members));
   });
@@ -1481,11 +1552,11 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
   const preferenciaArtistas = buildPreferenciaArtistas(
     headerIds,
     members,
-    eventosPassados
+    eventosPassados,
   );
 
   const insightsBase = elegiveis.map((m) =>
-    buildSongInsightParaEscala(m, context, caches)
+    buildSongInsightParaEscala(m, context, caches),
   );
 
   // Pré-cálculo (performance): fixar exatamente os mesmos níveis usados nos badges
@@ -1523,7 +1594,7 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
     // Pequenas reduções do espaço de busca por estratégia (sem relaxar regras)
     if (estrategia.key === "facilimo") {
       pool = pool.filter(
-        (si) => si._popNivel !== "rare" && si._diffNivel !== "hard"
+        (si) => si._popNivel !== "rare" && si._diffNivel !== "hard",
       );
     } else if (estrategia.key === "mediano") {
       pool = pool.filter((si) => si._popNivel !== "rare");
@@ -1535,7 +1606,8 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
     const scoreComboBase = (a, b, c) =>
       (scoreSongForStrategy(a, estrategia) +
         scoreSongForStrategy(b, estrategia) +
-        scoreSongForStrategy(c, estrategia)) / 3;
+        scoreSongForStrategy(c, estrategia)) /
+      3;
 
     let best = null;
 
@@ -1587,7 +1659,7 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
           const baseScore = scoreComboBase(a, b, c);
           const bonusArtBase = ajustarScorePorArtistas(
             combo,
-            preferenciaArtistas
+            preferenciaArtistas,
           );
           const bonusArt =
             bonusArtBase * (estrategia.key === "favoritas" ? 3 : 1);
@@ -1619,7 +1691,8 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
     const avg = (key) =>
       (best.combo[0].insights[key] +
         best.combo[1].insights[key] +
-        best.combo[2].insights[key]) / 3;
+        best.combo[2].insights[key]) /
+      3;
 
     let seguranca = avg("seguranca");
     let familiaridade = avg("familiaridade");
@@ -1635,15 +1708,15 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
       dificuldades.reduce((a, b) => a + b, 0) / dificuldades.length;
 
     const qtdClassicas = best.combo.filter(
-      (m) => m.metrics?.popNivel === "classic"
+      (m) => m.metrics?.popNivel === "classic",
     ).length;
 
     const qtdIncomuns = best.combo.filter(
-      (m) => m.metrics?.popNivel === "rare"
+      (m) => m.metrics?.popNivel === "rare",
     ).length;
 
     const temInedita = best.combo.some(
-      (m) => (m.metrics?.timesPlayed || 0) === 0
+      (m) => (m.metrics?.timesPlayed || 0) === 0,
     );
 
     // =====================================================
@@ -1677,7 +1750,7 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
 
     // Base derivada
     let segurancaFinal = clamp01(
-      0.5 * (1 - desafio) + 0.35 * familiaridade + 0.15 * (1 - renovacaoFinal)
+      0.5 * (1 - desafio) + 0.35 * familiaridade + 0.15 * (1 - renovacaoFinal),
     );
 
     // AJUSTE A — colchão clássico + time experiente
@@ -1716,13 +1789,13 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
           segurancaFinal,
           "Muito Segura",
           "Moderada",
-          "Arriscada"
+          "Arriscada",
         ),
         familiaridade: scoreToLabel3(
           familiaridade,
           "Muito Familiar",
           "Familiar",
-          "Pouco Familiar"
+          "Pouco Familiar",
         ),
         desafio: scoreToLabel3(desafio, "Baixo", "Moderado", "Alto"),
         renovacao: scoreToLabel3(renovacaoFinal, "Alta", "Moderada", "Baixa"),
@@ -1831,26 +1904,31 @@ function analisarRepertorioDaEscala(escala, musicIds) {
     const snap = popularidadeSnapshot && popularidadeSnapshot[m.id];
     caches.popNivel.set(
       m.id,
-      snap && snap.nivel ? snap.nivel : getNivelPopularidadeMusica(m.id)
+      snap && snap.nivel ? snap.nivel : getNivelPopularidadeMusica(m.id),
     );
 
     caches.lastPlayed.set(m.id, getUltimaDataTocadaAte(m.id, serviceDate));
     caches.teamFamiliarity.set(
       m.id,
-      calcFamiliaridadeDoTimeComMusica(m.id, members, eventosPassados)
+      calcFamiliaridadeDoTimeComMusica(m.id, members, eventosPassados),
     );
     caches.headerAffinity.set(
       m.id,
-      calcAfinidadeHeaderComMusica(m.id, headerIds, eventosPassados)
+      calcAfinidadeHeaderComMusica(m.id, headerIds, eventosPassados),
     );
-    caches.teamCompatibility.set(m.id, calcCompatibilidadeTimeMusica(m, members));
+    caches.teamCompatibility.set(
+      m.id,
+      calcCompatibilidadeTimeMusica(m, members),
+    );
     caches.teamChallenge.set(m.id, calcDesafioTecnicoDoTimeMusica(m, members));
   });
 
   // Contagem de execuções por integrante (por música) — para insights verbosos no Próximo Culto.
   // Regra: conta apenas eventos passados (antes de serviceDate) e onde o integrante participou.
   const memberObjs = (members || [])
-    .map((x) => (typeof x === "object" ? x : integrantes.find((i) => i.id === x)))
+    .map((x) =>
+      typeof x === "object" ? x : integrantes.find((i) => i.id === x),
+    )
     .filter(Boolean);
   const memberIds = memberObjs.map((m) => m.id);
 
@@ -1865,7 +1943,8 @@ function analisarRepertorioDaEscala(escala, musicIds) {
       if (!hasSong || !evMembers.length) return;
 
       memberIds.forEach((mid) => {
-        if (evMembers.includes(mid)) counts.set(mid, (counts.get(mid) || 0) + 1);
+        if (evMembers.includes(mid))
+          counts.set(mid, (counts.get(mid) || 0) + 1);
       });
     });
 
@@ -1878,8 +1957,10 @@ function analisarRepertorioDaEscala(escala, musicIds) {
     const dAvg = calcDificuldadeMediaMusica(m);
     si._diffAvg = dAvg;
     si._diffNivel = dAvg != null ? valorToNivel(dAvg) : null;
-    si._popNivel = caches.popNivel.get(m.id) || getNivelPopularidadeMusica(m.id);
-    if (!Array.isArray(si.categorias)) si.categorias = parseCategoriasMusica(m.categorias);
+    si._popNivel =
+      caches.popNivel.get(m.id) || getNivelPopularidadeMusica(m.id);
+    if (!Array.isArray(si.categorias))
+      si.categorias = parseCategoriasMusica(m.categorias);
 
     // Enriquecimento: execuções por integrante (para explicações mais diretas).
     const counts = memberPlaysBySong.get(m.id);
@@ -1902,7 +1983,8 @@ function analisarRepertorioDaEscala(escala, musicIds) {
   const avg = (key) =>
     (songInsights[0].insights[key] +
       songInsights[1].insights[key] +
-      songInsights[2].insights[key]) / 3;
+      songInsights[2].insights[key]) /
+    3;
 
   let familiaridade = avg("familiaridade");
   let desafio = avg("desafio");
@@ -1913,9 +1995,15 @@ function analisarRepertorioDaEscala(escala, musicIds) {
   const dificuldadeMedia =
     dificuldades.reduce((a, b) => a + b, 0) / (dificuldades.length || 1);
 
-  const qtdClassicas = songInsights.filter((m) => m.metrics?.popNivel === "classic").length;
-  const qtdIncomuns = songInsights.filter((m) => m.metrics?.popNivel === "rare").length;
-  const temInedita = songInsights.some((m) => (m.metrics?.timesPlayed || 0) === 0);
+  const qtdClassicas = songInsights.filter(
+    (m) => m.metrics?.popNivel === "classic",
+  ).length;
+  const qtdIncomuns = songInsights.filter(
+    (m) => m.metrics?.popNivel === "rare",
+  ).length;
+  const temInedita = songInsights.some(
+    (m) => (m.metrics?.timesPlayed || 0) === 0,
+  );
 
   // RENOVAÇÃO — mesma hierarquia (1–4)
   let renovacaoFinal = clamp01(renovacao);
@@ -1926,7 +2014,7 @@ function analisarRepertorioDaEscala(escala, musicIds) {
 
   // SEGURANÇA — derivada + ajustes humanos finais
   let segurancaFinal = clamp01(
-    0.5 * (1 - desafio) + 0.35 * familiaridade + 0.15 * (1 - renovacaoFinal)
+    0.5 * (1 - desafio) + 0.35 * familiaridade + 0.15 * (1 - renovacaoFinal),
   );
 
   // Ajuste A — colchão clássico + time experiente
@@ -1944,15 +2032,30 @@ function analisarRepertorioDaEscala(escala, musicIds) {
       const nivel = valorToNivel(dificuldadeMedia);
       return nivel ? nivelLabel(nivel) : null;
     })(),
-    seguranca: scoreToLabel3(segurancaFinal, "Muito Segura", "Moderada", "Arriscada"),
-    familiaridade: scoreToLabel3(familiaridade, "Muito Familiar", "Familiar", "Pouco Familiar"),
+    seguranca: scoreToLabel3(
+      segurancaFinal,
+      "Muito Segura",
+      "Moderada",
+      "Arriscada",
+    ),
+    familiaridade: scoreToLabel3(
+      familiaridade,
+      "Muito Familiar",
+      "Familiar",
+      "Pouco Familiar",
+    ),
     desafio: scoreToLabel3(desafio, "Baixo", "Moderado", "Alto"),
     renovacao: scoreToLabel3(renovacaoFinal, "Alta", "Moderada", "Baixa"),
   };
 
   return {
     categoria,
-    insights: { seguranca: segurancaFinal, familiaridade, desafio, renovacao: renovacaoFinal },
+    insights: {
+      seguranca: segurancaFinal,
+      familiaridade,
+      desafio,
+      renovacao: renovacaoFinal,
+    },
     badges,
     songInsights,
     statsAux: {
@@ -1990,16 +2093,32 @@ function renderBadgesInsightsDoRepertorio(parentEl, repAnalysis) {
   // }
 
   badges.appendChild(
-    criarInsightVisual({ icon: "🛡️", label: "Segurança", nivelLabel: repAnalysis.badges.seguranca })
+    criarInsightVisual({
+      icon: "🛡️",
+      label: "Segurança",
+      nivelLabel: repAnalysis.badges.seguranca,
+    }),
   );
   badges.appendChild(
-    criarInsightVisual({ icon: "👥", label: "Familiaridade", nivelLabel: repAnalysis.badges.familiaridade })
+    criarInsightVisual({
+      icon: "👥",
+      label: "Familiaridade",
+      nivelLabel: repAnalysis.badges.familiaridade,
+    }),
   );
   badges.appendChild(
-    criarInsightVisual({ icon: "🔥", label: "Desafio", nivelLabel: repAnalysis.badges.desafio })
+    criarInsightVisual({
+      icon: "🔥",
+      label: "Desafio",
+      nivelLabel: repAnalysis.badges.desafio,
+    }),
   );
   badges.appendChild(
-    criarInsightVisual({ icon: "🌱", label: "Renovação", nivelLabel: repAnalysis.badges.renovacao })
+    criarInsightVisual({
+      icon: "🌱",
+      label: "Renovação",
+      nivelLabel: repAnalysis.badges.renovacao,
+    }),
   );
 
   parentEl.appendChild(badges);
@@ -2044,8 +2163,13 @@ function renderInsightsVerboseDoRepertorio(parentEl, repAnalysis) {
   const si = repAnalysis.songInsights;
   const stats = repAnalysis.statsAux || {};
 
-  const qtdIneditas = si.filter((x) => (x.metrics?.timesPlayed || 0) === 0).length;
-  const totalExec = si.reduce((acc, x) => acc + (x.metrics?.timesPlayed || 0), 0);
+  const qtdIneditas = si.filter(
+    (x) => (x.metrics?.timesPlayed || 0) === 0,
+  ).length;
+  const totalExec = si.reduce(
+    (acc, x) => acc + (x.metrics?.timesPlayed || 0),
+    0,
+  );
   const execText = si
     .map((x) => {
       const m = x.musica;
@@ -2077,42 +2201,80 @@ function renderInsightsVerboseDoRepertorio(parentEl, repAnalysis) {
   const renovSec = [];
   renovSec.push(
     p(
-      `Renovação ${repAnalysis.badges.renovacao}: este repertório mistura ${popCounts.classic} clássica(s), ${popCounts.common} comum(ns) e ${popCounts.rare} incomum(ns).`
-    )
+      `Renovação ${repAnalysis.badges.renovacao}: este repertório mistura ${popCounts.classic} clássica(s), ${popCounts.common} comum(ns) e ${popCounts.rare} incomum(ns).`,
+    ),
   );
   if (popCounts.rare >= 2) {
-    renovSec.push(p("• Há 2 ou mais músicas Incomuns — isso puxa a Renovação para cima por oxigenação do set."));
+    renovSec.push(
+      p(
+        "• Há 2 ou mais músicas Incomuns — isso puxa a Renovação para cima por oxigenação do set.",
+      ),
+    );
   } else if (popCounts.rare === 1) {
-    renovSec.push(p("• Há 1 música incomum — ajuda a oxigenar, mas ainda pode ficar 'Moderada' dependendo do resto."));
+    renovSec.push(
+      p(
+        "• Há 1 música incomum — ajuda a oxigenar, mas ainda pode ficar 'Moderada' dependendo do resto.",
+      ),
+    );
   } else {
-    renovSec.push(p("• Não há músicas incomuns — a Renovação tende a cair, porque o set fica mais previsível/recorrente."));
+    renovSec.push(
+      p(
+        "• Não há músicas incomuns — a Renovação tende a cair, porque o set fica mais previsível/recorrente.",
+      ),
+    );
   }
   if (popCounts.classic >= 1) {
-    renovSec.push(p("• Existe pelo menos 1 clássica — isso aumenta conforto, mas normalmente reduz oxigenação."));
+    renovSec.push(
+      p(
+        "• Existe pelo menos 1 clássica — isso aumenta conforto, mas normalmente reduz oxigenação.",
+      ),
+    );
   }
   if (qtdIneditas > 0) {
-    renovSec.push(p(`• Tem ${qtdIneditas} inédita(s) (nunca tocada antes) — isso adiciona novidade real.`));
+    renovSec.push(
+      p(
+        `• Tem ${qtdIneditas} inédita(s) (nunca tocada antes) — isso adiciona novidade real.`,
+      ),
+    );
   }
-  renovSec.push(p(`• Execuções no histórico (total do set): ${totalExec} (quanto maior, mais "batido" tende a ser).`));
+  renovSec.push(
+    p(
+      `• Execuções no histórico (total do set): ${totalExec} (quanto maior, mais "batido" tende a ser).`,
+    ),
+  );
 
   // Desafio
   const desSec = [];
   desSec.push(
     p(
-      `Desafio ${repAnalysis.badges.desafio}: o set tem dificuldade média ~${(stats.dificuldadeMedia || 0).toFixed(
-        2
-      )} e pico ~${(stats.dificuldadeMax || 0).toFixed(2)} (0..3).`
-    )
+      `Desafio ${repAnalysis.badges.desafio}: o set tem dificuldade média ~${(
+        stats.dificuldadeMedia || 0
+      ).toFixed(2)} e pico ~${(stats.dificuldadeMax || 0).toFixed(2)} (0..3).`,
+    ),
   );
   if ((stats.dificuldadeMax || 0) >= 2.5) {
-    desSec.push(p("• Existe pelo menos uma música com exigência alta (pico elevado), o que pressiona o time."));
+    desSec.push(
+      p(
+        "• Existe pelo menos uma música com exigência alta (pico elevado), o que pressiona o time.",
+      ),
+    );
   }
   if (challAvg >= 0.7) {
-    desSec.push(p("• O encaixe técnico do time vs. as músicas está apertado (Desafio técnico médio alto)."));
+    desSec.push(
+      p(
+        "• O encaixe técnico do time vs. as músicas está apertado (Desafio técnico médio alto).",
+      ),
+    );
   } else if (challAvg <= 0.35) {
-    desSec.push(p("• O encaixe técnico está confortável (Desafio técnico médio baixo)."));
+    desSec.push(
+      p("• O encaixe técnico está confortável (Desafio técnico médio baixo)."),
+    );
   } else {
-    desSec.push(p("• O encaixe técnico está no meio do caminho: dá pra fazer, mas exige atenção."));
+    desSec.push(
+      p(
+        "• O encaixe técnico está no meio do caminho: dá pra fazer, mas exige atenção.",
+      ),
+    );
   }
 
   // Familiaridade
@@ -2120,37 +2282,69 @@ function renderInsightsVerboseDoRepertorio(parentEl, repAnalysis) {
   famSec.push(
     p(
       `Familiaridade ${repAnalysis.badges.familiaridade}: memória coletiva do time (média) ~${famAvg.toFixed(
-        2
-      )} e afinidade dos headers ~${headerAvg.toFixed(2)} (0..1).`
-    )
+        2,
+      )} e afinidade dos headers ~${headerAvg.toFixed(2)} (0..1).`,
+    ),
   );
   if (famAvg <= 0.35) {
-    famSec.push(p("• Pouco entrosamento com o set: o time já tocou pouco essas músicas (ou com essa configuração)."));
+    famSec.push(
+      p(
+        "• Pouco entrosamento com o set: o time já tocou pouco essas músicas (ou com essa configuração).",
+      ),
+    );
   } else if (famAvg >= 0.7) {
-    famSec.push(p("• Set bem conhecido: o time tem memória coletiva forte (tende a fluir melhor)."));
+    famSec.push(
+      p(
+        "• Set bem conhecido: o time tem memória coletiva forte (tende a fluir melhor).",
+      ),
+    );
   } else {
-    famSec.push(p("• Set razoavelmente conhecido: existe base, mas ainda há pontos que podem surpreender."));
+    famSec.push(
+      p(
+        "• Set razoavelmente conhecido: existe base, mas ainda há pontos que podem surpreender.",
+      ),
+    );
   }
   if (compAvg <= 0.5) {
-    famSec.push(p("• Compatibilidade geral time×músicas não está ideal (níveis/instrumentos podem estar no limite)."));
+    famSec.push(
+      p(
+        "• Compatibilidade geral time×músicas não está ideal (níveis/instrumentos podem estar no limite).",
+      ),
+    );
   }
 
   // Segurança
   const segSec = [];
   segSec.push(
     p(
-      `Segurança ${repAnalysis.badges.seguranca}: é derivada de Familiaridade + Desafio + Renovação (risco operacional do culto).`
-    )
+      `Segurança ${repAnalysis.badges.seguranca}: é derivada de Familiaridade + Desafio + Renovação (risco operacional do culto).`,
+    ),
   );
   if (repAnalysis.badges.seguranca === "Muito Segura") {
-    segSec.push(p("• O conjunto indica baixa chance de 'surpresa' no ao vivo: ou é conhecido, ou tecnicamente confortável, ou ambos."));
+    segSec.push(
+      p(
+        "• O conjunto indica baixa chance de 'surpresa' no ao vivo: ou é conhecido, ou tecnicamente confortável, ou ambos.",
+      ),
+    );
   } else if (repAnalysis.badges.seguranca === "Arriscada") {
-    segSec.push(p("• Risco operacional alto: normalmente vem de Desafio alto somado a Familiaridade baixa (pouco colchão)."));
+    segSec.push(
+      p(
+        "• Risco operacional alto: normalmente vem de Desafio alto somado a Familiaridade baixa (pouco colchão).",
+      ),
+    );
   } else {
-    segSec.push(p("• Risco moderado: dá pra executar bem, mas vale ensaio focado nos pontos críticos."));
+    segSec.push(
+      p(
+        "• Risco moderado: dá pra executar bem, mas vale ensaio focado nos pontos críticos.",
+      ),
+    );
   }
   if (qtdIneditas > 0) {
-    segSec.push(p("• Há inédita(s): isso aumenta risco de execução (mesmo quando a música é tecnicamente simples)."));
+    segSec.push(
+      p(
+        "• Há inédita(s): isso aumenta risco de execução (mesmo quando a música é tecnicamente simples).",
+      ),
+    );
   }
 
   // bloco de execuções por música (bem detalhado)
@@ -2180,29 +2374,43 @@ function renderInsightsVerboseDoRepertorio(parentEl, repAnalysis) {
     const titulo = m?.titulo || m?.nome || "Música";
     const times = x.metrics?.timesPlayed || 0;
     const diffAvg = x.metrics?.difficultyAvg;
-    const diffNivel = x.metrics?.difficultyNivel || (diffAvg != null ? valorToNivel(diffAvg) : null);
+    const diffNivel =
+      x.metrics?.difficultyNivel ||
+      (diffAvg != null ? valorToNivel(diffAvg) : null);
 
     // Linha 1 — música
-    const linhaMusica = `• ${titulo} — tocada ${times}x` +
+    const linhaMusica =
+      `• ${titulo} — tocada ${times}x` +
       (diffNivel ? ` • dificuldade ${nivelLabel(diffNivel)}` : "") +
       (diffAvg != null ? ` (${diffAvg.toFixed(2)} / 0..3)` : "");
     evidSec.push(p(linhaMusica));
 
     // Linha 2 — integrantes (se disponível)
-    const plays = Array.isArray(x.metrics?.memberPlays) ? x.metrics.memberPlays : [];
+    const plays = Array.isArray(x.metrics?.memberPlays)
+      ? x.metrics.memberPlays
+      : [];
     if (plays.length) {
-      const nunca = plays.filter((p) => (p.count || 0) === 0).map((p) => p.nome);
+      const nunca = plays
+        .filter((p) => (p.count || 0) === 0)
+        .map((p) => p.nome);
       const mais = plays
         .slice()
         .sort((a, b) => (b.count || 0) - (a.count || 0))
         .filter((p) => (p.count || 0) > 0);
 
       if (nunca.length) {
-        evidSec.push(p(`   ↳ nunca tocou: ${nunca.slice(0, 4).join(", ")}${nunca.length > 4 ? "…" : ""}`));
+        evidSec.push(
+          p(
+            `   ↳ nunca tocou: ${nunca.slice(0, 4).join(", ")}${nunca.length > 4 ? "…" : ""}`,
+          ),
+        );
       }
 
       if (mais.length) {
-        const top = mais.slice(0, 2).map((p) => `${p.nome} (${p.count}x)`).join("; ");
+        const top = mais
+          .slice(0, 2)
+          .map((p) => `${p.nome} (${p.count}x)`)
+          .join("; ");
         evidSec.push(p(`   ↳ quem mais tocou: ${top}`));
       }
     }
@@ -2214,7 +2422,6 @@ function renderInsightsVerboseDoRepertorio(parentEl, repAnalysis) {
 
   // box.appendChild(execWrap);
 
-  
   // =============================
   // INSIGHTS PADRONIZADOS (ÚNICA FONTE)
   // =============================
@@ -2320,7 +2527,7 @@ function renderSugestoesRepertorioNoCard(parentEl, escala) {
         icon: "🛡️",
         label: "Segurança",
         nivelLabel: rep.badges.seguranca,
-      })
+      }),
     );
 
     // 👥 Familiaridade
@@ -2329,7 +2536,7 @@ function renderSugestoesRepertorioNoCard(parentEl, escala) {
         icon: "👥",
         label: "Familiaridade",
         nivelLabel: rep.badges.familiaridade,
-      })
+      }),
     );
 
     // 🔥 Desafio
@@ -2338,7 +2545,7 @@ function renderSugestoesRepertorioNoCard(parentEl, escala) {
         icon: "🔥",
         label: "Desafio",
         nivelLabel: rep.badges.desafio,
-      })
+      }),
     );
 
     // 🌱 Renovação
@@ -2347,7 +2554,7 @@ function renderSugestoesRepertorioNoCard(parentEl, escala) {
         icon: "🌱",
         label: "Renovação",
         nivelLabel: rep.badges.renovacao,
-      })
+      }),
     );
 
     topRow.appendChild(repTitle);
@@ -2708,10 +2915,9 @@ function renderEscalaAtualIntegrantes(escala) {
   // Mantém coroa nos headers.
   const statsRep = calcularEstatisticasRepertorio(escala);
   const diffsNorm = new Map(
-    Object.entries(statsRep?.dificuldadesPorInstrumento || {}).map(([inst, nivel]) => [
-      normalizarInstrumentoKey(inst),
-      nivel,
-    ])
+    Object.entries(statsRep?.dificuldadesPorInstrumento || {}).map(
+      ([inst, nivel]) => [normalizarInstrumentoKey(inst), nivel],
+    ),
   );
 
   const ids = escala.integrantes || [];
@@ -2728,7 +2934,14 @@ function renderEscalaAtualIntegrantes(escala) {
   const ministerIds = getMinisterIdsFromEscala(escala);
 
   // Helper local: cria um avatar circular com dois dots (nível do integrante e nível do repertório no instrumento)
-  function criarAvatarIntegrante({ membro, isHeader, isMinister, membroNivel, repNivel, repNivelConhecido }) {
+  function criarAvatarIntegrante({
+    membro,
+    isHeader,
+    isMinister,
+    membroNivel,
+    repNivel,
+    repNivelConhecido,
+  }) {
     const chip = document.createElement("div");
     chip.title = membro.nome || "Integrante";
     // 8 por linha
@@ -2750,7 +2963,6 @@ function renderEscalaAtualIntegrantes(escala) {
     avatarWrap.style.margin = "0";
     avatarWrap.style.background = "transparent";
     avatarWrap.style.boxShadow = "none";
-    
 
     if (isHeader) avatarWrap.classList.add("has-crown");
     if (isMinister) avatarWrap.classList.add("has-mic");
@@ -2775,7 +2987,7 @@ function renderEscalaAtualIntegrantes(escala) {
       dot.style.width = "9px";
       dot.style.height = "9px";
       dot.style.borderRadius = "999px";
-      
+
       if (pos === "bl") {
         dot.style.left = "2px";
         dot.style.bottom = "2px";
@@ -2814,12 +3026,19 @@ function renderEscalaAtualIntegrantes(escala) {
 
     if (!membro) return;
 
-    const instRaw = extrairFuncaoPrincipal(membro) || getInstrumentoDoIntegrante(membro) || "";
+    const instRaw =
+      extrairFuncaoPrincipal(membro) ||
+      getInstrumentoDoIntegrante(membro) ||
+      "";
     const instKey = normalizarInstrumentoKey(instRaw);
 
     const membroNivel = getNivelDoIntegrante(membro, instKey);
     const repNivel = instKey ? diffsNorm.get(instKey) : null;
-    const repNivelConhecido = !!(escala.musicas && escala.musicas.length && repNivel);
+    const repNivelConhecido = !!(
+      escala.musicas &&
+      escala.musicas.length &&
+      repNivel
+    );
 
     const isHeader = headerIds.includes(membro.id);
     const isMinister = ministerIds.includes(membro.id);
@@ -3033,19 +3252,25 @@ function renderEscalasFuturas(lista) {
     // Dificuldades do repertório por instrumento (normalizadas) — para exibir junto aos integrantes.
     const statsRep = calcularEstatisticasRepertorio(escala);
     const diffsNorm = new Map(
-      Object.entries(statsRep?.dificuldadesPorInstrumento || {}).map(([inst, nivel]) => [
-        normalizarInstrumentoKey(inst),
-        nivel,
-      ])
+      Object.entries(statsRep?.dificuldadesPorInstrumento || {}).map(
+        ([inst, nivel]) => [normalizarInstrumentoKey(inst), nivel],
+      ),
     );
 
     const ids = Array.isArray(escala.integrantes) ? escala.integrantes : [];
 
     // 👑 quem escolhe repertório nesta escala
     const headerIds = getHeaderIdsFromEscala(escala);
-  const ministerIds = getMinisterIdsFromEscala(escala);
+    const ministerIds = getMinisterIdsFromEscala(escala);
 
-    function criarAvatarIntegranteFuturo({ membro, isHeader, isMinister, membroNivel, repNivel, repNivelConhecido }) {
+    function criarAvatarIntegranteFuturo({
+      membro,
+      isHeader,
+      isMinister,
+      membroNivel,
+      repNivel,
+      repNivelConhecido,
+    }) {
       const chip = document.createElement("div");
       chip.title = membro.nome || "Integrante";
       chip.style.flex = "0 0 calc(12.5% - 7px)";
@@ -3053,8 +3278,8 @@ function renderEscalasFuturas(lista) {
       chip.style.justifyContent = "center";
 
       const avatarWrap = document.createElement("div");
-    avatarWrap.style.position = "relative";
-    avatarWrap.style.overflow = "hidden";
+      avatarWrap.style.position = "relative";
+      avatarWrap.style.overflow = "hidden";
       avatarWrap.className = "escala-integrante-avatar-wrap";
       avatarWrap.style.width = "100%";
       avatarWrap.style.height = "100%";
@@ -3065,10 +3290,9 @@ function renderEscalasFuturas(lista) {
       avatarWrap.style.margin = "0";
       avatarWrap.style.background = "transparent";
       avatarWrap.style.boxShadow = "none";
-      
 
       if (isHeader) avatarWrap.classList.add("has-crown");
-    if (isMinister) avatarWrap.classList.add("has-mic");
+      if (isMinister) avatarWrap.classList.add("has-mic");
 
       const avatar = document.createElement("img");
       avatar.className = "escala-integrante-avatar";
@@ -3090,7 +3314,7 @@ function renderEscalasFuturas(lista) {
         dot.style.width = "9px";
         dot.style.height = "9px";
         dot.style.borderRadius = "999px";
-        
+
         if (pos === "bl") {
           dot.style.left = "2px";
           dot.style.bottom = "2px";
@@ -3109,7 +3333,9 @@ function renderEscalasFuturas(lista) {
       // Canto inferior esquerdo: nível do integrante
       avatarWrap.appendChild(makeDot(membroNivel, "bl"));
       // Canto inferior direito: dificuldade do repertório no instrumento (ou cinza se não houver repertório)
-      avatarWrap.appendChild(makeDot(repNivelConhecido ? repNivel : null, "br"));
+      avatarWrap.appendChild(
+        makeDot(repNivelConhecido ? repNivel : null, "br"),
+      );
 
       chip.appendChild(avatarWrap);
       return chip;
@@ -3121,24 +3347,31 @@ function renderEscalasFuturas(lista) {
         null;
       if (!membro) return;
 
-      const instRaw = extrairFuncaoPrincipal(membro) || getInstrumentoDoIntegrante(membro) || "";
+      const instRaw =
+        extrairFuncaoPrincipal(membro) ||
+        getInstrumentoDoIntegrante(membro) ||
+        "";
       const instKey = normalizarInstrumentoKey(instRaw);
       const membroNivel = getNivelDoIntegrante(membro, instKey);
       const repNivel = instKey ? diffsNorm.get(instKey) : null;
 
-      const repNivelConhecido = !!(escala.musicas && escala.musicas.length && repNivel);
+      const repNivelConhecido = !!(
+        escala.musicas &&
+        escala.musicas.length &&
+        repNivel
+      );
       const isHeader = headerIds.includes(membro.id);
-    const isMinister = ministerIds.includes(membro.id);
+      const isMinister = ministerIds.includes(membro.id);
 
       intContainer.appendChild(
         criarAvatarIntegranteFuturo({
           membro,
           isHeader,
-      isMinister,
+          isMinister,
           membroNivel: membroNivel || null,
           repNivel: repNivel || null,
           repNivelConhecido,
-        })
+        }),
       );
     });
 
@@ -3321,17 +3554,23 @@ function copiarEscala(escala) {
     texto += `\n📊 *INSIGHTS DO REPERTÓRIO*\n`;
 
     texto += `🛡️ Segurança: ${Math.round(repAnalysis.insights.seguranca * 100)}% — ${repAnalysis.badges.seguranca}\n`;
-    if (s.dificuldadeMax > 2.2) texto += `→ Músicas mais Complexas que necessitam de atenção!\n`;
+    if (s.dificuldadeMax > 2.2)
+      texto += `→ Músicas mais Complexas que necessitam de atenção!\n`;
     else if (s.qtdClassicas >= 2 || s.dificuldadeMax <= 1.8)
       texto += `→ Músicas Clássicas e/ou Fáceis nos trazem mais Segurança.\n`;
     else texto += `→ Músicas bem equilibradas entre desafio e segurança.\n`;
 
     texto += `\n✨ Familiaridade: ${Math.round(repAnalysis.insights.familiaridade * 100)}% — ${repAnalysis.badges.familiaridade}\n`;
-    if (s.temInedita) texto += `→ O repertório contém música(s) Nova(s) para o time.\n`;
-    if (s.qtdIncomuns === 1) texto += `→ O repertório contém uma música Incomum para o time.\n`;
-    if (s.qtdClassicas === 1) texto += `→ O repertório contém uma música Clássica para o time.\n`;
-    if (s.qtdIncomuns >= 2) texto += `→ O repertório é majoritariamente composto por músicas Incomuns.\n`;
-    if (s.qtdClassicas >= 2) texto += `→ O repertório é majoritariamente composto por músicas Clássicas.\n`;
+    if (s.temInedita)
+      texto += `→ O repertório contém música(s) Nova(s) para o time.\n`;
+    if (s.qtdIncomuns === 1)
+      texto += `→ O repertório contém uma música Incomum para o time.\n`;
+    if (s.qtdClassicas === 1)
+      texto += `→ O repertório contém uma música Clássica para o time.\n`;
+    if (s.qtdIncomuns >= 2)
+      texto += `→ O repertório é majoritariamente composto por músicas Incomuns.\n`;
+    if (s.qtdClassicas >= 2)
+      texto += `→ O repertório é majoritariamente composto por músicas Clássicas.\n`;
     if (!s.temInedita && s.qtdIncomuns === 0 && s.qtdClassicas === 0)
       texto += `→ O repertório contém somente músicas que são Comuns para o time.\n`;
 
@@ -3343,10 +3582,14 @@ function copiarEscala(escala) {
     else texto += `→ O repertório apresenta um desafio técnico Moderado.\n`;
 
     texto += `\n🌱 Renovação: ${Math.round(repAnalysis.insights.renovacao * 100)}% — ${repAnalysis.badges.renovacao}\n`;
-    if (s.temInedita) texto += `→ O repertório busca explorar novas possibilidades.\n`;
-    else if (s.qtdIncomuns >= 1) texto += `→ O repertório busca resgatar músicas pouco tocadas.\n`;
-    else if (s.qtdClassicas >= 1) texto += `→ O repertório busca a continuidade e familiaridade.\n`;
-    else texto += `→ O repertório busca um meio termo entre Conhecidas e Desconhecidas.\n`;
+    if (s.temInedita)
+      texto += `→ O repertório busca explorar novas possibilidades.\n`;
+    else if (s.qtdIncomuns >= 1)
+      texto += `→ O repertório busca resgatar músicas pouco tocadas.\n`;
+    else if (s.qtdClassicas >= 1)
+      texto += `→ O repertório busca a continuidade e familiaridade.\n`;
+    else
+      texto += `→ O repertório busca um meio termo entre Conhecidas e Desconhecidas.\n`;
   }
 
   texto += `\n🎧 *MÚSICAS*\n`;
@@ -3359,20 +3602,27 @@ function copiarEscala(escala) {
       : "";
 
     const diff =
-      si._diffNivel === "easy" ? "🟢 Fácil" :
-      si._diffNivel === "medium" ? "🟡 Médio" :
-      si._diffNivel === "hard" ? "🔴 Difícil" : "";
+      si._diffNivel === "easy"
+        ? "🟢 Fácil"
+        : si._diffNivel === "medium"
+          ? "🟡 Médio"
+          : si._diffNivel === "hard"
+            ? "🔴 Difícil"
+            : "";
 
     const pop =
-      si._popNivel === "classic" ? "🏆 Clássica" :
-      si._popNivel === "rare" ? "🕵️ Incomum" : "🎧 Comum";
+      si._popNivel === "classic"
+        ? "🏆 Clássica"
+        : si._popNivel === "rare"
+          ? "🕵️ Incomum"
+          : "🎧 Comum";
 
     const play =
       (si.metrics?.timesPlayed || 0) === 0
         ? "✨ Nova"
         : (si.metrics?.timesPlayed || 0) <= 2
-        ? "🕰️ Pouco tocada"
-        : "🔁 Muito tocada";
+          ? "🕰️ Pouco tocada"
+          : "🔁 Muito tocada";
 
     texto += `\n${idx + 1}. *${m.titulo.toUpperCase()}* — ${m.artista}\n`;
     texto += `${diff} | ${pop} | ${play}\n`;
@@ -3388,9 +3638,14 @@ function copiarEscala(escala) {
         window.html2canvas;
 
       if (canWriteImage) {
-        const el = document.querySelector('#view-escala');
-        const canvas = await window.html2canvas(el, { backgroundColor: null, scale: 2 });
-        const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+        const el = document.querySelector("#view-escala");
+        const canvas = await window.html2canvas(el, {
+          backgroundColor: null,
+          scale: 2,
+        });
+        const blob = await new Promise((resolve) =>
+          canvas.toBlob(resolve, "image/png"),
+        );
         const item = new ClipboardItem({
           "text/plain": new Blob([texto], { type: "text/plain" }),
           "image/png": blob,
@@ -3408,7 +3663,9 @@ function copiarEscala(escala) {
         await navigator.clipboard.writeText(texto);
         alert("Escala copiada para a área de transferência!");
       } catch (e2) {
-        alert("Não foi possível copiar a escala. Seu navegador pode bloquear a área de transferência.");
+        alert(
+          "Não foi possível copiar a escala. Seu navegador pode bloquear a área de transferência.",
+        );
       }
     }
   })();
@@ -3598,8 +3855,8 @@ function renderRepertorio() {
         musica._status === "recent"
           ? "RECENTE"
           : musica._status === "future"
-          ? "FUTURA"
-          : "BANIDA";
+            ? "FUTURA"
+            : "BANIDA";
 
       card.appendChild(ribbon);
     }
@@ -3775,7 +4032,7 @@ function getProximaDataEscalada(idMusica) {
         h.dataObj instanceof Date &&
         !isNaN(h.dataObj) &&
         h.dataObj > hoje &&
-        h.musicas.includes(idMusica)
+        h.musicas.includes(idMusica),
     )
     .sort((a, b) => a.dataObj - b.dataObj);
 
@@ -3795,7 +4052,7 @@ function getUltimaDataTocada(idMusica) {
         h.dataObj instanceof Date &&
         !isNaN(h.dataObj) &&
         h.dataObj < hoje &&
-        h.musicas.includes(idMusica)
+        h.musicas.includes(idMusica),
     )
     .sort((a, b) => b.dataObj - a.dataObj);
 
@@ -3806,7 +4063,7 @@ function criarCardMusicaRepertorio(
   musica,
   status,
   ultimaExecucao,
-  proximaExecucao
+  proximaExecucao,
 ) {
   const card = document.createElement("div");
   card.className = "song-card";
@@ -3834,10 +4091,10 @@ function criarCardMusicaRepertorio(
     status === "available"
       ? "Disponível"
       : status === "recent"
-      ? "Recente"
-      : status === "future"
-      ? "Futura"
-      : "Banida";
+        ? "Recente"
+        : status === "future"
+          ? "Futura"
+          : "Banida";
 
   ribbon.classList.add(`song-ribbon-${status}`);
   if (activeCategories.length > 0) ribbon.classList.add("song-ribbon-filtered");
@@ -3872,11 +4129,11 @@ function criarCardMusicaRepertorio(
   const cats = Array.isArray(musica.categorias)
     ? musica.categorias
     : typeof musica.categorias === "string"
-    ? musica.categorias
-        .split(";")
-        .map((s) => s.trim())
-        .filter(Boolean)
-    : [];
+      ? musica.categorias
+          .split(";")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
 
   cats.forEach((c) => {
     const tag = document.createElement("span");
@@ -3912,7 +4169,7 @@ function criarCardMusicaRepertorio(
     card.addEventListener("click", () => {
       window.open(
         `https://www.youtube.com/watch?v=${musica.referLink}`,
-        "_blank"
+        "_blank",
       );
     });
   }
@@ -4012,7 +4269,6 @@ function getHeaderIdsFromEscala(escala) {
   return one != null ? [one] : [];
 }
 
-
 function getMinisterIdsFromEscala(escala) {
   // campo canônico: "minister" (array de ids)
   // mantém fallback básico para variações, sem quebrar dados antigos
@@ -4054,7 +4310,6 @@ function getMinisterIdsFromEscala(escala) {
   const one = normalizeId(raw);
   return one == null ? [] : [one];
 }
-
 
 function formatFunctions(functions) {
   if (!functions) return "";
