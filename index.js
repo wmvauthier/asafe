@@ -855,6 +855,69 @@ function calcPerfilDificuldadeDoTime(members, eventosPassados) {
   return soma / count; // 1..3
 }
 
+function calcAfinidadeHumanaDoDia(metrics) {
+  const m = metrics || {};
+
+  const header = clamp01(m.headerAffinity || 0);
+  const minister = clamp01(m.ministerAffinity || 0);
+  const familiaridadeTime = clamp01(m.teamFamiliarity || 0);
+  const compatibilidadeTime = clamp01(m.teamCompatibility || 0);
+
+  return clamp01(
+    0.42 * header +
+      0.34 * minister +
+      0.16 * familiaridadeTime +
+      0.08 * compatibilidadeTime
+  );
+}
+
+function calcPenalidadeGenericaSemContexto(metrics) {
+  const m = metrics || {};
+  const popularGlobalmente = (m.timesPlayed || 0) >= 3 || m.popNivel === "classic";
+
+  if (!popularGlobalmente) return 0;
+
+  const afinidadeHumana = calcAfinidadeHumanaDoDia(m);
+  const familiaridadeTime = clamp01(m.teamFamiliarity || 0);
+
+  if (afinidadeHumana >= 0.55 || familiaridadeTime >= 0.35) return 0;
+
+  return clamp01((0.35 - afinidadeHumana) * 0.35);
+}
+
+function scoreSongForStrategy(songInsight, estrategia) {
+  const p = estrategia.pesos;
+  const s = songInsight.insights;
+  const m = songInsight.metrics || {};
+
+  let score =
+    p.seguranca * s.seguranca +
+    p.familiaridade * s.familiaridade +
+    p.desafio * s.desafio +
+    p.renovacao * s.renovacao;
+
+  const afinidadeHumana = calcAfinidadeHumanaDoDia(m);
+  const penalidadeGenerica = calcPenalidadeGenericaSemContexto(m);
+
+  score += 0.72 * afinidadeHumana;
+  score -= penalidadeGenerica;
+
+  if (estrategia && estrategia.key === "favoritas") {
+    const bonusTime =
+      0.5 * afinidadeHumana +
+      0.3 * clamp01(m.teamFamiliarity || 0) +
+      0.2 * clamp01(m.teamCompatibility || 0);
+
+    score += bonusTime;
+  }
+
+  if (estrategia && estrategia.key === "incomum") {
+    score += 0.18 * afinidadeHumana;
+  }
+
+  return score;
+}
+
 // Familiaridade do time com a música: quantas vezes membros atuais tocaram (normalizado)
 function calcFamiliaridadeDoTimeComMusica(idMusica, members, eventosPassados) {
   const memberIds = (members || [])
@@ -1404,22 +1467,37 @@ function scoreSongForStrategy(songInsight, estrategia) {
     p.desafio * s.desafio +
     p.renovacao * s.renovacao;
 
-  // Afinidade humana do dia: quem escolhe + quem ministra
-  // Vale para TODAS as estratégias.
-  const afinidadeDoDia =
-    0.5 * clamp01(m.headerAffinity || 0) +
-    0.5 * clamp01(m.ministerAffinity || 0);
+  const afinidadeHumana =
+    calcAfinidadeHumanaDoDia(m);
 
-  score += 0.18 * afinidadeDoDia;
+  const penalidadeGenerica =
+    calcPenalidadeGenericaSemContexto(m);
 
-  // Favoritas do Time amplifica afinidade, familiaridade e compatibilidade.
-  if (estrategia && estrategia.key === "favoritas") {
+  // CONTEXTO HUMANO DO DIA
+  score += 0.42 * afinidadeHumana;
+
+  // EVITA MÚSICA GENÉRICA SEM RELAÇÃO COM A ESCALA
+  score -= penalidadeGenerica;
+
+  // FAVORITAS: TIME IMPORTA MUITO
+  if (
+    estrategia &&
+    estrategia.key === "favoritas"
+  ) {
     const bonusTime =
-      0.45 * afinidadeDoDia +
-      0.35 * clamp01(m.teamFamiliarity || 0) +
-      0.25 * clamp01(m.teamCompatibility || 0);
+      0.5 * afinidadeHumana +
+      0.3 * clamp01(m.teamFamiliarity || 0) +
+      0.2 * clamp01(m.teamCompatibility || 0);
 
     score += bonusTime;
+  }
+
+  // INCOMUM: CONTEXTO HUMANO MAIS SUAVE
+  if (
+    estrategia &&
+    estrategia.key === "incomum"
+  ) {
+    score += 0.18 * afinidadeHumana;
   }
 
   return score;
@@ -1585,7 +1663,7 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
       .map((si) => ({ si, score: scoreSongForStrategy(si, estrategia) }))
       .sort((a, b) => b.score - a.score);
 
-    const TOP_K = Math.min(40, scored.length);
+    const TOP_K = Math.min(80, scored.length);
     if (TOP_K < SUGGESTION_SIZE) return null;
 
     // Pool base (já ordenado por score)
