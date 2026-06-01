@@ -92,7 +92,7 @@ function setView(view, opts = {}) {
   });
 
   const meta = {
-    hoje: ["Agora na fila", "Hoje"],
+    hoje: ["Agora na fila", "Próximo culto"],
     cultos: ["Agenda viva", "Cultos"],
     repertorio: ["Biblioteca e montagem", "Repertorio"],
     wrapped: ["Wrapped administrativo", "Wrapped"],
@@ -132,7 +132,7 @@ function renderCultos() {
   const all = getFutureCultos();
   const futureAfterNext = all.slice(1);
   if (!futureAfterNext.length) {
-    root.append(emptyState("Nao ha cultos futuros depois do proximo culto."));
+    root.append(emptyState("Nao ha cultos futuros depois do próximo culto."));
     return;
   }
 
@@ -148,18 +148,23 @@ function renderCultos() {
     const summary = document.createElement("summary");
     summary.innerHTML = `
       <div class="service-summary">
-        <div class="service-topline">
-          <div>
-            <p class="section-kicker">${hasSet ? "Repertorio definido" : "Culto em aberto"}</p>
-            <h3 class="service-date">${escapeHTML(formatDateLong(culto.dataObj))}</h3>
+        <div class="service-summary-main">
+          <div class="service-topline">
+            <div>
+              <p class="section-kicker">${hasSet ? "Repertorio definido" : "Culto em aberto"}</p>
+              <h3 class="service-date">${escapeHTML(formatDateLong(culto.dataObj))}</h3>
+            </div>
+            <div class="service-summary-aside"></div>
           </div>
-          ${!hasSet ? '<span class="mini-chip">Sem repertorio</span>' : ""}
         </div>
       </div>
     `;
-    const summaryBody = summary.querySelector(".service-summary");
-    summaryBody.append(renderMemberMiniatures(culto), renderSongMiniatures(culto));
-    if (analysis) summaryBody.append(renderMetricStrip(analysis, "mini"));
+    const summaryMain = summary.querySelector(".service-summary-main");
+    const summaryAside = summary.querySelector(".service-summary-aside");
+    summaryMain.append(renderSongMiniatures(culto), renderMemberMiniatures(culto));
+    summaryAside.append(renderRoleMiniatures(culto));
+    if (analysis) summaryAside.append(renderMetricStrip(analysis, "mini"));
+    if (!hasSet) summaryAside.append(div("mini-chip", "Sem repertorio"));
     card.append(summary);
 
     const body = document.createElement("div");
@@ -240,13 +245,14 @@ function renderTitulos() {
 function renderWrappedControls() {
   const controls = document.createElement("div");
   controls.className = "controls-panel";
+  const period = getWrappedPeriod();
   const rerender = () => {
     renderWrapped();
     renderTitulos();
   };
   controls.innerHTML = `
-    <input class="input" data-filter="start" type="date" value="${escapeAttr(state.wrappedStart)}" />
-    <input class="input" data-filter="end" type="date" value="${escapeAttr(state.wrappedEnd)}" />
+    <input class="input" data-filter="start" type="date" value="${escapeAttr(period.start)}" />
+    <input class="input" data-filter="end" type="date" value="${escapeAttr(period.end)}" />
     <select class="select" data-filter="member">
       <option value="all">Todos os integrantes</option>
       ${integrantes
@@ -291,20 +297,18 @@ function renderCultHero(culto, analysis) {
   hero.className = "spotify-hero";
 
   const firstSong = (culto.musicas || []).map(getSong).filter(Boolean)[0];
-  const title = firstSong ? firstSong.titulo : "Culto aberto";
   hero.innerHTML = `
     <div class="hero-content">
       <div class="cover-card">
         ${firstSong ? `<img src="${songThumb(firstSong)}" alt="" />` : ""}
         <div class="cover-overlay">
-          <p class="section-kicker">Proximo culto</p>
+          <p class="section-kicker">Próximo culto</p>
           <strong>${escapeHTML(shortDate(culto.dataObj))}</strong>
         </div>
       </div>
       <div class="hero-meta">
         <p class="section-kicker">Playlist do dia</p>
         <h3>${escapeHTML(formatDateLong(culto.dataObj))}</h3>
-        <p class="hero-subtitle">${escapeHTML(title)}${analysis.category ? ` puxa o clima para ${escapeHTML(analysis.category)}.` : "."} ${analysis.summary}</p>
         <div class="hero-actions">
           <button class="pill-button" data-action="copy">Copiar escala</button>
         </div>
@@ -337,7 +341,7 @@ function renderSetBlock(culto, analysis, opts = {}) {
 function renderAnalysisBlock(analysis) {
   const panel = document.createElement("section");
   panel.className = "panel";
-  panel.append(sectionHeader("Analises do dia", "Sempre abertas", analysis.category || "Sem categoria dominante"));
+  panel.append(sectionHeader("Analises do dia"));
   panel.append(renderMetricStrip(analysis));
   panel.append(renderHumanReading(analysis));
   return panel;
@@ -452,9 +456,36 @@ function renderMemberMiniatures(culto) {
   return row;
 }
 
+function renderRoleMiniatures(culto) {
+  const row = document.createElement("div");
+  row.className = "role-mini-row";
+  const headers = getHeaderIds(culto);
+  const ministers = getMinisterIds(culto);
+  const roleIds = Array.from(new Set(headers.concat(ministers)));
+
+  roleIds.forEach((id) => {
+    const member = getMember(id);
+    if (!member) return;
+    const isHeader = headers.includes(id);
+    const isMinister = ministers.includes(id);
+    const roles = [isHeader ? "Header" : "", isMinister ? "Ministrante" : ""].filter(Boolean).join(" e ");
+    const thumb = document.createElement("div");
+    thumb.className = "role-mini";
+    thumb.title = `${roles}: ${member.nome}`;
+    thumb.innerHTML = `
+      <img src="${memberImg(member)}" alt="${escapeAttr(member.nome)}" onerror="this.src='integrantes/default.jpeg'" />
+      ${isHeader ? '<span class="crown">👑</span>' : ""}
+      ${isMinister ? '<span class="mic">🎤</span>' : ""}
+    `;
+    row.append(thumb);
+  });
+
+  return row;
+}
+
 function renderSongMiniatures(culto) {
   const row = document.createElement("div");
-  row.className = "mini-thumb-row";
+  row.className = "mini-thumb-row song-miniatures";
   (culto.musicas || []).slice(0, 6).forEach((id) => {
     const song = getSong(id);
     if (!song) return;
@@ -540,6 +571,7 @@ function renderBuilder() {
 
   const left = document.createElement("div");
   left.append(sectionHeader("Montar repertorio", "Rascunho salvo no navegador", "Clique nas musicas da biblioteca para testar"));
+  if (selected) left.append(renderBuilderSuggestionCarousel(selected));
 
   const select = document.createElement("select");
   select.className = "select";
@@ -580,15 +612,66 @@ function renderBuilder() {
   left.append(actions);
 
   const right = document.createElement("div");
-  if (analysis && ids.length >= 3) {
+  if (analysis && ids.length) {
     left.insertBefore(renderMetricStrip(analysis), left.querySelector(".tracklist"));
     right.append(renderHumanReading(analysis));
   } else {
-    right.append(emptyState("Selecione pelo menos 3 musicas para liberar a leitura do rascunho."));
+    right.append(emptyState("Selecione uma musica para liberar a leitura do rascunho."));
   }
 
   panel.append(left, right);
   return panel;
+}
+
+function renderBuilderSuggestionCarousel(culto) {
+  const suggestions = generateSuggestedPlaylists(culto);
+  const wrap = document.createElement("div");
+  wrap.className = "suggestion-carousel";
+
+  if (!suggestions.length) {
+    wrap.append(div("builder-empty", "Sem sugestoes automaticas para este culto."));
+    return wrap;
+  }
+
+  let index = 0;
+  const viewport = document.createElement("div");
+  viewport.className = "suggestion-viewport";
+  const prev = button("‹", "ghost-button icon-button", () => {
+    index = (index - 1 + suggestions.length) % suggestions.length;
+    paint();
+  });
+  const next = button("›", "ghost-button icon-button", () => {
+    index = (index + 1) % suggestions.length;
+    paint();
+  });
+  prev.setAttribute("aria-label", "Sugestao anterior");
+  next.setAttribute("aria-label", "Proxima sugestao");
+
+  const paint = () => {
+    viewport.innerHTML = "";
+    const suggestion = suggestions[index];
+    const card = document.createElement("article");
+    card.className = "suggestion-card";
+    card.innerHTML = `
+      <div>
+        <p class="mini-kicker">${index + 1}/${suggestions.length} · ${escapeHTML(suggestion.category || "Mista")}</p>
+        <h4>${escapeHTML(suggestion.title)}</h4>
+      </div>
+    `;
+    card.append(renderSongMiniatures({ musicas: suggestion.songIds }));
+    card.append(renderMetricStrip(suggestion.analysis, "mini"));
+    card.append(button("Usar", "pill-button", () => {
+      setDraft(cultKey(culto), suggestion.songIds);
+      renderRepertorio();
+      toast("Sugestao aplicada ao rascunho.");
+    }));
+    viewport.append(card);
+  };
+
+  paint();
+  wrap.append(prev, viewport, next);
+
+  return wrap;
 }
 
 function renderLibraryControls() {
@@ -682,7 +765,7 @@ function renderLibraryTrackList(songs) {
     const actionArea = document.createElement("div");
     actionArea.className = "inline-actions";
     if (status.status !== "available") actionArea.append(renderStatusPill(status));
-    actionArea.append(libraryActionButton(isSelected ? "-" : "+", isSelected ? "ghost-button icon-button" : "pill-button icon-button", () => {
+    actionArea.append(libraryActionButton(isSelected ? "-" : "+", isSelected ? "danger-button icon-button" : "pill-button icon-button", () => {
       if (isSelected) removeFromDraft(song.id);
       else addSongFromLibrary(song);
     }));
@@ -716,11 +799,11 @@ function renderSongDetails(song, status) {
   grid.className = "detail-grid";
   grid.append(
     detailItem("Execucoes", `${getTotalExecucoes(song.id)}x`),
-    detailItem("Ultima vez", last ? shortDate(last) : "Nunca"),
+    detailItem("Ultima vez", last ? formatDateCompact(last) : "Nunca"),
     detailItem("Artista", `${getArtistExecucoes(song.artista)}x`),
     detailItem("Categoria", `${getCategoryExecucoes(song)}x`),
     detailItem("Status", status.label),
-    detailItem("Agenda", next ? shortDate(next) : "Livre"),
+    detailItem("Agenda", next ? formatDateCompact(next) : "Livre"),
   );
 
   const levels = document.createElement("div");
@@ -772,13 +855,13 @@ function renderTrackList(ids, opts = {}) {
     actionArea.className = "inline-actions";
 
     if (opts.action === "remove") {
-      actionArea.append(button("-", "ghost-button icon-button", () => removeFromDraft(song.id)));
+      actionArea.append(button("-", "danger-button icon-button", () => removeFromDraft(song.id)));
     } else if (opts.action === "add") {
       const selectedCulto = getCultByKey(state.builderCult);
       const selectedIds = selectedCulto ? getDraft(cultKey(selectedCulto), selectedCulto) : [];
       const isSelected = selectedIds.includes(song.id);
       if (status.status !== "available") actionArea.append(renderStatusPill(status));
-      actionArea.append(button(isSelected ? "-" : "+", isSelected ? "ghost-button icon-button" : "pill-button icon-button", () => {
+      actionArea.append(button(isSelected ? "-" : "+", isSelected ? "danger-button icon-button" : "pill-button icon-button", () => {
         if (isSelected) removeFromDraft(song.id);
         else addSongFromLibrary(song);
       }));
@@ -811,7 +894,13 @@ function addSongFromLibrary(song) {
   }
 
   const status = getSongStatus(song.id, culto);
-  setDraft(key, [...draft, song.id]);
+  const nextDraft = [...draft, song.id];
+  if (hasDisjointCategoryTriple(nextDraft)) {
+    toast("Regra de categoria: em qualquer trio, pelo menos 2 musicas precisam coincidir em categoria.");
+    return;
+  }
+
+  setDraft(key, nextDraft);
   if (status.status !== "available") {
     toast(`Adicionada com alerta: ${song.titulo} esta ${status.label.toLowerCase()}.`);
   } else {
@@ -899,11 +988,6 @@ function analyzeSet(culto, ids) {
   if (blocked.length) {
     blocked.forEach(({ song, status }) => addNote(`Alerta forte: ${song.titulo} esta ${status.label.toLowerCase()} e deve ser usada conscientemente.`));
   }
-  if (category && category.name) {
-    addNote(`Categoria dominante: ${category.name} (${category.percent}% do repertorio).`);
-  } else {
-    addNote("Nao ha categoria dominante clara; o set esta bem misto.");
-  }
   if (diffMax >= 2.5) addNote("Existe pelo menos uma musica tecnicamente dificil no set.");
   if (newSongs.length) addNote(`${newSongs.length} musica(s) nova(s) para o time.`);
   if (rareSongs.length) addNote(`${rareSongs.length} musica(s) incomum(ns), bom para oxigenar o repertorio.`);
@@ -919,13 +1003,14 @@ function analyzeSet(culto, ids) {
   if (renewal >= 0.62 && safety < 0.52) {
     addNote("O set tem cheiro de renovacao, mas precisa de combinados claros antes de chegar no culto.");
   }
-  if (category && category.strength === "strong" && songs.length >= 3) {
-    addNote(`O clima esta bem concentrado em ${category.name}; bom para unidade, mas cuidado para nao ficar repetitivo.`);
-  }
   memberSongStats
-    .flatMap((s) => s.topPlayers.map((p) => ({ text: `${p.nome} ja tocou "${s.song.titulo}" ${p.count}x.`, memberIds: [p.id] })))
+    .filter((s) => s.topPlayers.length)
     .slice(0, 4)
-    .forEach((note) => notes.push(note));
+    .forEach((stat) => {
+      const names = stat.topPlayers.map((p) => `${p.nome} (${p.count}x)`).join(", ");
+      const verb = stat.topPlayers.length === 1 ? "ja tocou" : "ja tocaram";
+      addNote(`${names} ${verb} "${stat.song.titulo}".`, stat.topPlayers.map((p) => p.id));
+    });
   memberSongStats
     .filter((s) => s.never.length)
     .slice(0, 3)
@@ -1018,7 +1103,7 @@ function cooccurrenceNotes(songs, events) {
 function generateSuggestedPlaylists(culto) {
   const strategies = [
     { key: "favoritas", title: "Favoritas do Time", weights: { fam: 1.2, safe: 0.9, renew: 0.1, challenge: -0.2, pop: 0.8 } },
-    { key: "facil", title: "Facilimo", weights: { fam: 0.9, safe: 1.25, renew: 0.1, challenge: -0.8, pop: 0.4 } },
+    { key: "facil", title: "Facil", weights: { fam: 0.9, safe: 1.25, renew: 0.1, challenge: -0.8, pop: 0.4 } },
     { key: "mediano", title: "Mediano", weights: { fam: 0.7, safe: 0.8, renew: 0.45, challenge: 0.05, pop: 0.3 } },
     { key: "desafiador", title: "Desafiador", weights: { fam: 0.2, safe: 0.15, renew: 0.5, challenge: 1.1, pop: -0.1 } },
     { key: "renovacao", title: "Renovacao", weights: { fam: 0.15, safe: 0.25, renew: 1.25, challenge: 0.25, pop: -0.4 } },
@@ -1057,11 +1142,14 @@ function buildSuggestion(culto, strategy) {
   const chosen = (groupOptions[0] ? groupOptions[0].items.map((x) => x.song).slice(0, 3) : null) || candidates.slice(0, 3).map((x) => x.song);
   if (chosen.length < 3) return null;
 
-  const analysis = analyzeSet({ ...culto, musicas: chosen.map((s) => s.id) }, chosen.map((s) => s.id));
+  const chosenIds = chosen.map((s) => s.id);
+  if (hasDisjointCategoryTriple(chosenIds)) return null;
+
+  const analysis = analyzeSet({ ...culto, musicas: chosenIds }, chosenIds);
   return {
     title: strategy.title,
     category: analysis.category,
-    songIds: chosen.map((s) => s.id),
+    songIds: chosenIds,
     analysis,
   };
 }
@@ -1092,6 +1180,7 @@ function isSuggestionEligible(song, date) {
 
 function getFilteredSongs() {
   const q = normalizeText(state.librarySearch);
+  const selectedCategories = getCurrentDraftCategorySet();
   return musicas.filter((song) => {
     const status = getSongStatus(song.id).status;
     if (state.libraryStatus !== "all" && status !== state.libraryStatus) return false;
@@ -1101,16 +1190,59 @@ function getFilteredSongs() {
       if (!hay.includes(q)) return false;
     }
     return true;
-  }).sort(compareLibrarySongs);
+  }).sort((a, b) => compareLibrarySongs(a, b, selectedCategories));
 }
 
-function compareLibrarySongs(a, b) {
+function compareLibrarySongs(a, b, selectedCategories = new Set()) {
+  const aShared = sharedCategoryCount(a, selectedCategories);
+  const bShared = sharedCategoryCount(b, selectedCategories);
   return (
+    Number(bShared > 0) - Number(aShared > 0) ||
+    bShared - aShared ||
     getTotalExecucoes(a.id) - getTotalExecucoes(b.id) ||
     getArtistExecucoes(a.artista) - getArtistExecucoes(b.artista) ||
     getCategoryExecucoes(a) - getCategoryExecucoes(b) ||
     a.titulo.localeCompare(b.titulo)
   );
+}
+
+function getCurrentDraftCategorySet() {
+  const culto = getCultByKey(state.builderCult);
+  if (!culto) return new Set();
+  const ids = getDraft(cultKey(culto), culto);
+  const cats = ids
+    .map(getSong)
+    .filter(Boolean)
+    .flatMap((song) => song.categorias);
+  return new Set(cats);
+}
+
+function sharedCategoryCount(song, categories) {
+  if (!categories || !categories.size) return 0;
+  return song.categorias.filter((cat) => categories.has(cat)).length;
+}
+
+function hasDisjointCategoryTriple(ids) {
+  const songs = ids.map(getSong).filter(Boolean);
+  if (songs.length < 3) return false;
+
+  for (let i = 0; i < songs.length; i++) {
+    for (let j = i + 1; j < songs.length; j++) {
+      for (let k = j + 1; k < songs.length; k++) {
+        const trio = [songs[i], songs[j], songs[k]];
+        const hasSharedPair =
+          songsShareCategory(trio[0], trio[1]) ||
+          songsShareCategory(trio[0], trio[2]) ||
+          songsShareCategory(trio[1], trio[2]);
+        if (!hasSharedPair) return true;
+      }
+    }
+  }
+  return false;
+}
+
+function songsShareCategory(a, b) {
+  return a.categorias.some((cat) => b.categorias.includes(cat));
 }
 
 function computeWrapped(events) {
@@ -1177,20 +1309,24 @@ function computeWrapped(events) {
 }
 
 function getWrappedEvents(ignoreMemberFilter = false) {
+  const period = getWrappedPeriod();
   let events = historico.filter((ev) => ev.dataObj && ev.dataObj < today() && Array.isArray(ev.musicas) && ev.musicas.length);
-  if (state.wrappedStart) {
-    const start = new Date(`${state.wrappedStart}T00:00:00`);
-    events = events.filter((ev) => ev.dataObj >= start);
-  }
-  if (state.wrappedEnd) {
-    const end = new Date(`${state.wrappedEnd}T23:59:59`);
-    events = events.filter((ev) => ev.dataObj <= end);
-  }
+  const start = new Date(`${period.start}T00:00:00`);
+  const end = new Date(`${period.end}T23:59:59`);
+  events = events.filter((ev) => ev.dataObj >= start && ev.dataObj <= end);
   if (!ignoreMemberFilter && state.wrappedMember !== "all") {
     const memberId = Number(state.wrappedMember);
     events = events.filter((ev) => (ev.integrantes || []).includes(memberId) || (ev.header || []).includes(memberId));
   }
   return events;
+}
+
+function getWrappedPeriod() {
+  const year = today().getFullYear();
+  return {
+    start: state.wrappedStart || `${year}-01-01`,
+    end: state.wrappedEnd || `${year}-12-31`,
+  };
 }
 
 function normalizeSongs(raw) {
@@ -1412,19 +1548,22 @@ function getMinisterIds(culto) {
 function copyScale(culto) {
   const songs = (culto.musicas || []).map(getSong).filter(Boolean);
   const analysis = analyzeSet(culto, culto.musicas || []);
+  const copyDate = formatDateCompact((culto && culto.dataObj) || parseDate(culto && culto.data));
   const text = [
-    `ESCALA - ${culto.data || ""}`,
+    `🎼 ESCALA - ${copyDate}`,
     "",
-    `Integrantes: ${formatMembersLine(culto.integrantes || [])}`,
+    `👑 Headers: ${formatMembersLine(culto.header || [], "Sem header")}`,
+    `🎤 Ministrantes: ${formatMembersLine(culto.minister || [], "Sem ministrante")}`,
+    `👥 Integrantes: ${formatMembersLine(culto.integrantes || [])}`,
     "",
-    "Analises:",
-    `Seguranca: ${Math.round(analysis.safety * 100)}% - ${analysis.safetyText}`,
-    `Familiaridade: ${Math.round(analysis.familiarity * 100)}% - ${analysis.familiarityText}`,
-    `Desafio: ${Math.round(analysis.challenge * 100)}% - ${analysis.challengeText}`,
-    `Renovacao: ${Math.round(analysis.renewal * 100)}% - ${analysis.renewalText}`,
+    "📊 Analises:",
+    `🛡️ Seguranca: ${Math.round(analysis.safety * 100)}% - ${analysis.safetyText}`,
+    `✨ Familiaridade: ${Math.round(analysis.familiarity * 100)}% - ${analysis.familiarityText}`,
+    `🔥 Desafio: ${Math.round(analysis.challenge * 100)}% - ${analysis.challengeText}`,
+    `🌱 Renovacao: ${Math.round(analysis.renewal * 100)}% - ${analysis.renewalText}`,
     "",
-    "Musicas:",
-    ...songs.map((song, idx) => `${idx + 1}. ${song.titulo} - ${song.artista}${song.referLink ? ` https://www.youtube.com/watch?v=${song.referLink}` : ""}`),
+    "🎵 Musicas:",
+    ...songs.map((song, idx) => `${idx + 1}. ${song.titulo} - ${song.artista}${song.referLink ? `\n   ▶️ https://www.youtube.com/watch?v=${song.referLink}` : ""}`),
   ].join("\n");
 
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1446,9 +1585,19 @@ function computeTitleGallery(events) {
       metric: (s) => s.headerCount,
     },
     {
+      name: "Voz da Vez",
+      desc: "Quem mais apareceu como ministrante.",
+      metric: (s) => s.ministerCount,
+    },
+    {
       name: "Figurinha Carimbada",
       desc: "Presenca constante quando a agenda chamou.",
       metric: (s) => s.cultCount,
+    },
+    {
+      name: "Maratonista do Repertorio",
+      desc: "Mais musicas tocadas no periodo.",
+      metric: (s) => s.songHits,
     },
     {
       name: "Camaleao da Banda",
@@ -1471,6 +1620,11 @@ function computeTitleGallery(events) {
       metric: (s) => s.hardHits,
     },
     {
+      name: "Meio de Campo",
+      desc: "Mais apareceu em musicas de dificuldade media.",
+      metric: (s) => s.mediumHits,
+    },
+    {
       name: "Paz no Monitor",
       desc: "Pegou mais musicas tecnicamente tranquilas.",
       metric: (s) => s.easyHits,
@@ -1481,9 +1635,89 @@ function computeTitleGallery(events) {
       metric: (s) => s.chosenArtists.size,
     },
     {
+      name: "Explorador de Artistas",
+      desc: "Tocou musicas de mais artistas diferentes.",
+      metric: (s) => s.artistsPlayed.size,
+    },
+    {
       name: "Replay ON",
       desc: "Mais reencontrou as mesmas musicas no caminho.",
       metric: (s) => s.repeatHits,
+    },
+    {
+      name: "Bau de Cancoes",
+      desc: "Passou por mais musicas diferentes.",
+      metric: (s) => s.uniqueSongs.size,
+    },
+    {
+      name: "Curador de Setlist",
+      desc: "Escolheu mais musicas diferentes como header.",
+      metric: (s) => s.chosenSongs.size,
+    },
+    {
+      name: "Categoria Favorita",
+      desc: "Mais concentrou execucoes em uma categoria.",
+      metric: (s) => maxMapValue(s.categoryCounts),
+    },
+    {
+      name: "Versatil de Categorias",
+      desc: "Mais circulou por categorias diferentes.",
+      metric: (s) => s.categoryCounts.size,
+    },
+    {
+      name: "Header Mao Pesada",
+      desc: "Mais musicas tocadas em cultos em que liderou escolhas.",
+      metric: (s) => s.headerSongHits,
+    },
+    {
+      name: "Ministrante Ativo",
+      desc: "Mais musicas tocadas em cultos que ministrou.",
+      metric: (s) => s.ministerSongHits,
+    },
+    {
+      name: "Casca Grossa",
+      desc: "Somou mais musicas medias e dificeis.",
+      metric: (s) => s.mediumHits + s.hardHits,
+    },
+    {
+      name: "Repertorio Seguro",
+      desc: "Mais apareceu em musicas classicas e faceis.",
+      metric: (s) => s.classicHits + s.easyHits,
+    },
+    {
+      name: "Oxigenador",
+      desc: "Mais ajudou a trazer raridades e variedade.",
+      metric: (s) => s.rareHits + s.uniqueSongs.size,
+    },
+    {
+      name: "Ponte do Time",
+      desc: "Misturou presenca com parcerias diferentes.",
+      metric: (s) => s.cultCount + s.partners.size,
+    },
+    {
+      name: "Setlist Sem Freio",
+      desc: "Somou headers e musicas escolhidas.",
+      metric: (s) => s.headerCount + s.chosenSongs.size,
+    },
+    {
+      name: "Todo Terreno",
+      desc: "Misturou volume, parcerias e categorias.",
+      metric: (s) => s.songHits + s.partners.size + s.categoryCounts.size,
+    },
+    {
+      name: "Memoria da Banda",
+      desc: "Mais apareceu em repeticoes e classicos.",
+      metric: (s) => s.repeatHits + s.classicHits,
+    },
+    {
+      name: "Modo Descoberta",
+      desc: "Mais apareceu em musicas raras e artistas diferentes.",
+      metric: (s) => s.rareHits + s.artistsPlayed.size,
+    },
+    {
+      name: "Base Solida",
+      desc: "Mais apareceu em repertorios tecnicamente seguros.",
+      metric: (s) => s.easyHits + s.mediumHits,
     },
   ];
 
@@ -1499,8 +1733,17 @@ function buildMemberTitleStats(events) {
       member,
       cultCount: 0,
       headerCount: 0,
+      ministerCount: 0,
+      songHits: 0,
+      headerSongHits: 0,
+      ministerSongHits: 0,
+      mediumHits: 0,
       partners: new Set(),
       chosenArtists: new Set(),
+      chosenSongs: new Set(),
+      uniqueSongs: new Set(),
+      artistsPlayed: new Set(),
+      categoryCounts: new Map(),
       songCounts: new Map(),
       classicHits: 0,
       rareHits: 0,
@@ -1513,12 +1756,22 @@ function buildMemberTitleStats(events) {
   events.forEach((ev) => {
     const songs = (ev.musicas || []).map(getSong).filter(Boolean);
     const members = ev.integrantes || [];
+    const headers = ev.header || [];
+    const ministers = ev.minister || [];
     members.forEach((id) => {
       const st = stats.get(id);
       if (!st) return;
       st.cultCount++;
+      if (headers.includes(id)) st.headerCount++;
+      if (ministers.includes(id)) st.ministerCount++;
       members.filter((otherId) => otherId !== id).forEach((otherId) => st.partners.add(otherId));
       songs.forEach((song) => {
+        st.songHits++;
+        st.uniqueSongs.add(song.id);
+        st.artistsPlayed.add(song.artista || "Artista");
+        if (headers.includes(id)) st.headerSongHits++;
+        if (ministers.includes(id)) st.ministerSongHits++;
+        song.categorias.forEach((cat) => st.categoryCounts.set(cat, (st.categoryCounts.get(cat) || 0) + 1));
         const previous = st.songCounts.get(song.id) || 0;
         st.songCounts.set(song.id, previous + 1);
         if (previous > 0) st.repeatHits++;
@@ -1527,14 +1780,15 @@ function buildMemberTitleStats(events) {
         if (pop === "rare") st.rareHits++;
         const diff = songDifficultyValue(song);
         if (diff >= 2.5) st.hardHits++;
+        if (diff > 1.35 && diff < 2.5) st.mediumHits++;
         if (diff > 0 && diff <= 1.35) st.easyHits++;
       });
     });
 
-    (ev.header || []).forEach((id) => {
+    headers.forEach((id) => {
       const st = stats.get(id);
       if (!st) return;
-      st.headerCount++;
+      songs.forEach((song) => st.chosenSongs.add(song.id));
       songs.forEach((song) => st.chosenArtists.add(song.artista || "Artista"));
     });
   });
@@ -1554,9 +1808,10 @@ function renderTitleCard(title) {
   const leader = title.ranking[0];
   const selectedId = state.wrappedMember === "all" ? null : Number(state.wrappedMember);
   const selected = selectedId ? title.ranking.find((item) => item.id === selectedId) : null;
-  const lines = selectedId
-    ? [leader].concat(selected && selected.rank !== 1 ? [selected] : [])
-    : title.ranking.slice(0, 3);
+  const topThree = title.ranking.slice(0, 3);
+  const lines = selected && !topThree.some((item) => item.id === selected.id)
+    ? topThree.concat(selected)
+    : topThree;
 
   const card = document.createElement("article");
   card.className = "title-page-card";
@@ -1572,7 +1827,7 @@ function renderTitleCard(title) {
         ${lines
           .map(
             (line) => `
-              <div>
+              <div class="${line.rank <= 3 ? `rank-${line.rank}` : ""}">
                 <strong>#${line.rank} - ${escapeHTML(line.name)}</strong>
                 <span>${line.value}x</span>
               </div>
@@ -1627,12 +1882,13 @@ function rankCard(title, rows, type) {
     list.className = "rank-list";
     rest.forEach((row, idx) => {
       const rank = idx + 4;
+      const subtitle = typeLabel(type, row);
       const li = document.createElement("li");
       li.innerHTML = `
         <span class="rank-num rank-${rank}">#${rank}</span>
         <span>
           <span class="rank-name">${escapeHTML(row.name)}</span>
-          <span class="rank-sub">${escapeHTML(typeLabel(type, row))}</span>
+          ${subtitle ? `<span class="rank-sub">${escapeHTML(subtitle)}</span>` : ""}
         </span>
         <span class="rank-value">${row.value}x</span>
       `;
@@ -1682,10 +1938,13 @@ function rankImageHTML(type, row) {
 }
 
 function typeLabel(type, row) {
-  if (type === "musica") return "musica";
-  if (type === "artist") return "artista";
+  if (type === "musica") {
+    const song = getSong(Number(row.key));
+    return (song && song.artista) || "";
+  }
+  if (type === "artist") return "";
   if (type === "member") return "integrante";
-  if (type === "pair") return "parceria";
+  if (type === "pair") return "";
   return row.name;
 }
 
@@ -1744,7 +2003,7 @@ function sectionHeader(title, kicker, subtitle = "") {
   header.className = "section-header";
   header.innerHTML = `
     <div>
-      <p class="section-kicker">${escapeHTML(kicker || "")}</p>
+      ${kicker ? `<p class="section-kicker">${escapeHTML(kicker)}</p>` : ""}
       <h3 class="section-title">${escapeHTML(title)}</h3>
       ${subtitle ? `<p class="section-subtitle">${escapeHTML(subtitle)}</p>` : ""}
     </div>
@@ -1803,23 +2062,32 @@ function songLabel(id) {
   return song ? song.titulo : `Musica ${id}`;
 }
 
-function formatMembersLine(ids) {
+function formatMembersLine(ids, fallback = "Sem integrantes") {
   return (ids || []).map((id) => {
     const member = getMember(id);
     return member && member.nome;
-  }).filter(Boolean).join(", ") || "Sem integrantes";
+  }).filter(Boolean).join(", ") || fallback;
 }
 
 function formatDateLong(date) {
   if (!(date instanceof Date) || isNaN(date)) return "Data indefinida";
-  const days = ["Domingo", "Segunda", "Terca", "Quarta", "Quinta", "Sexta", "Sabado"];
   const months = ["janeiro", "fevereiro", "marco", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
-  return `${days[date.getDay()]}, ${date.getDate()} de ${months[date.getMonth()]}`;
+  return `${date.getDate()} de ${months[date.getMonth()]}`;
 }
 
 function shortDate(date) {
   if (!(date instanceof Date) || isNaN(date)) return "--";
-  return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}`;
+  return `${String(date.getDate()).padStart(2, "0")}/${monthShort(date)}`;
+}
+
+function formatDateCompact(date) {
+  if (!(date instanceof Date) || isNaN(date)) return "--";
+  return `${String(date.getDate()).padStart(2, "0")}/${monthShort(date)}/${date.getFullYear()}`;
+}
+
+function monthShort(date) {
+  const months = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+  return months[date.getMonth()] || "--";
 }
 
 function parseDate(str) {
@@ -1859,6 +2127,10 @@ function countBy(values) {
     acc[value] = (acc[value] || 0) + 1;
     return acc;
   }, {});
+}
+
+function maxMapValue(map) {
+  return map && map.size ? Math.max(...Array.from(map.values())) : 0;
 }
 
 function clamp01(value) {

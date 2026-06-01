@@ -1511,5 +1511,13 @@
     "musicas": [50,38,67],
     "faltas": [],
     "minister": [9]
+  },
+  {
+    "data": "05/07/2026",
+    "integrantes": [9,14,13,12,3,17,11],
+    "header": [],
+    "musicas": [],
+    "faltas": [],
+    "minister": []
   }
 ]
