@@ -112,7 +112,8 @@ Categoria:
 */
 function validarComboPorRepertorio(combo, estrategiaKey) {
   // combo: Array<songInsight>
-  if (!Array.isArray(combo) || combo.length !== 3) return false;
+  if (!Array.isArray(combo) || combo.length < 3 || combo.length > 4)
+    return false;
 
   let hard = 0;
   let medium = 0;
@@ -122,7 +123,7 @@ function validarComboPorRepertorio(combo, estrategiaKey) {
   let common = 0;
   let classic = 0;
 
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < combo.length; i++) {
     const si = combo[i];
     if (!si) return false;
 
@@ -644,7 +645,32 @@ function calcularIntensidadeCategorias(escala) {
 // - força mínima de categoria: "medium" (>=60% das músicas do repertório na categoria dominante)
 // =========================================================
 
-const SUGGESTION_SIZE = 3;
+const SUGGESTION_DEFAULT_SIZE = 3;
+const SUGGESTION_MAX_SIZE = 4;
+
+function getTamanhoRepertorioDaEscala(escala) {
+  const candidates = [
+    escala?.qtdMusicas,
+    escala?.quantidadeMusicas,
+    escala?.tamanhoRepertorio,
+    escala?.repertorioSize,
+    escala?.targetSongs,
+  ];
+
+  for (const raw of candidates) {
+    const n = Number(raw);
+    if (Number.isFinite(n)) {
+      return Math.max(3, Math.min(SUGGESTION_MAX_SIZE, Math.round(n)));
+    }
+  }
+
+  const musicasDaEscala = Array.isArray(escala?.musicas)
+    ? escala.musicas.length
+    : 0;
+  if (musicasDaEscala >= 4) return SUGGESTION_MAX_SIZE;
+
+  return SUGGESTION_DEFAULT_SIZE;
+}
 
 // --- normalização de instrumento (compatível com wrapped.js e dados do projeto) ---
 function normalizarInstrumentoKey(raw) {
@@ -659,6 +685,13 @@ function normalizarInstrumentoKey(raw) {
 
 function getInstrumentoDoIntegrante(member) {
   if (!member) return null;
+  if (Array.isArray(member.function) && member.function.length) {
+    const obj = member.function[0];
+    if (obj && typeof obj === "object") {
+      const firstKey = Object.keys(obj)[0];
+      if (firstKey) return normalizarInstrumentoKey(firstKey);
+    }
+  }
   const raw =
     member.instrumento ||
     (Array.isArray(member.instrumentos) ? member.instrumentos[0] : null);
@@ -863,12 +896,24 @@ function calcAfinidadeHumanaDoDia(metrics) {
   const familiaridadeTime = clamp01(m.teamFamiliarity || 0);
   const compatibilidadeTime = clamp01(m.teamCompatibility || 0);
 
-  return clamp01(
-    0.42 * header +
-      0.34 * minister +
-      0.16 * familiaridadeTime +
-      0.08 * compatibilidadeTime
-  );
+  const signals = [
+    { value: familiaridadeTime, weight: 0.18 },
+    { value: compatibilidadeTime, weight: 0.1 },
+  ];
+
+  if ((m.headerContextCount || 0) > 0) {
+    signals.push({ value: header, weight: 0.42 });
+  }
+
+  if ((m.ministerContextCount || 0) > 0) {
+    signals.push({ value: minister, weight: 0.3 });
+  }
+
+  const totalWeight = signals.reduce((acc, x) => acc + x.weight, 0) || 1;
+  const score =
+    signals.reduce((acc, x) => acc + x.value * x.weight, 0) / totalWeight;
+
+  return clamp01(score);
 }
 
 function calcPenalidadeGenericaSemContexto(metrics) {
@@ -883,39 +928,6 @@ function calcPenalidadeGenericaSemContexto(metrics) {
   if (afinidadeHumana >= 0.55 || familiaridadeTime >= 0.35) return 0;
 
   return clamp01((0.35 - afinidadeHumana) * 0.35);
-}
-
-function scoreSongForStrategy(songInsight, estrategia) {
-  const p = estrategia.pesos;
-  const s = songInsight.insights;
-  const m = songInsight.metrics || {};
-
-  let score =
-    p.seguranca * s.seguranca +
-    p.familiaridade * s.familiaridade +
-    p.desafio * s.desafio +
-    p.renovacao * s.renovacao;
-
-  const afinidadeHumana = calcAfinidadeHumanaDoDia(m);
-  const penalidadeGenerica = calcPenalidadeGenericaSemContexto(m);
-
-  score += 0.72 * afinidadeHumana;
-  score -= penalidadeGenerica;
-
-  if (estrategia && estrategia.key === "favoritas") {
-    const bonusTime =
-      0.5 * afinidadeHumana +
-      0.3 * clamp01(m.teamFamiliarity || 0) +
-      0.2 * clamp01(m.teamCompatibility || 0);
-
-    score += bonusTime;
-  }
-
-  if (estrategia && estrategia.key === "incomum") {
-    score += 0.18 * afinidadeHumana;
-  }
-
-  return score;
 }
 
 // Familiaridade do time com a música: quantas vezes membros atuais tocaram (normalizado)
@@ -992,25 +1004,42 @@ function calcFamiliaridadeDoTimeComMusica(idMusica, members, eventosPassados) {
   return clamp01(familiaridade);
 }
 
-// Afinidade com header(s): quantas vezes um header já escolheu a música (0..1)
-function calcAfinidadeHeaderComMusica(idMusica, headerIds, eventosPassados) {
-  const headers = (headerIds || []).filter(Boolean);
-  if (!headers.length) return 0;
+function calcAfinidadePorPapelComMusica(
+  idMusica,
+  pessoaIds,
+  campo,
+  eventosPassados,
+) {
+  const ids = (pessoaIds || []).filter(Boolean);
+  if (!ids.length) return { score: 0, totalEventos: 0, hits: 0 };
 
-  let totalHeaderEventos = 0;
+  let totalEventos = 0;
   let hits = 0;
 
   (eventosPassados || []).forEach((ev) => {
-    const evHeaders = Array.isArray(ev.header) ? ev.header : [];
-    const intersect = evHeaders.some((hid) => headers.includes(hid));
+    const evPessoas = Array.isArray(ev[campo]) ? ev[campo] : [];
+    const intersect = evPessoas.some((pid) => ids.includes(pid));
     if (!intersect) return;
 
-    totalHeaderEventos += 1;
+    totalEventos += 1;
     if (Array.isArray(ev.musicas) && ev.musicas.includes(idMusica)) hits += 1;
   });
 
-  if (!totalHeaderEventos) return 0;
-  return hits / totalHeaderEventos;
+  return {
+    score: totalEventos ? hits / totalEventos : 0,
+    totalEventos,
+    hits,
+  };
+}
+
+// Afinidade com header(s): quantas vezes um header já escolheu a música (0..1)
+function calcAfinidadeHeaderComMusica(idMusica, headerIds, eventosPassados) {
+  return calcAfinidadePorPapelComMusica(
+    idMusica,
+    headerIds,
+    "header",
+    eventosPassados,
+  ).score;
 }
 
 function calcAfinidadeMinisterComMusica(
@@ -1018,28 +1047,23 @@ function calcAfinidadeMinisterComMusica(
   ministerIds,
   eventosPassados,
 ) {
-  const ministers = (ministerIds || []).filter(Boolean);
-  if (!ministers.length) return 0;
-
-  let totalMinisterEventos = 0;
-  let hits = 0;
-
-  (eventosPassados || []).forEach((ev) => {
-    const evMinisters = Array.isArray(ev.minister) ? ev.minister : [];
-    const intersect = evMinisters.some((mid) => ministers.includes(mid));
-    if (!intersect) return;
-
-    totalMinisterEventos += 1;
-    if (Array.isArray(ev.musicas) && ev.musicas.includes(idMusica)) hits += 1;
-  });
-
-  if (!totalMinisterEventos) return 0;
-  return hits / totalMinisterEventos;
+  return calcAfinidadePorPapelComMusica(
+    idMusica,
+    ministerIds,
+    "minister",
+    eventosPassados,
+  ).score;
 }
 
-// Preferência do time/header por artista (para desempate)
-function buildPreferenciaArtistas(headerIds, members, eventosPassados) {
+// Preferência do time/header/minister por artista (para desempate)
+function buildPreferenciaArtistas(
+  headerIds,
+  ministerIds,
+  members,
+  eventosPassados,
+) {
   const headers = new Set((headerIds || []).filter(Boolean));
+  const ministers = new Set((ministerIds || []).filter(Boolean));
   const memberSet = new Set(
     (members || [])
       .map((x) => (typeof x === "object" ? x.id : x))
@@ -1052,10 +1076,12 @@ function buildPreferenciaArtistas(headerIds, members, eventosPassados) {
   (eventosPassados || []).forEach((ev) => {
     const evMembers = Array.isArray(ev.integrantes) ? ev.integrantes : [];
     const evHeaders = Array.isArray(ev.header) ? ev.header : [];
+    const evMinisters = Array.isArray(ev.minister) ? ev.minister : [];
 
     const relToMembers = evMembers.some((mid) => memberSet.has(mid));
     const relToHeaders = evHeaders.some((hid) => headers.has(hid));
-    if (!relToMembers && !relToHeaders) return;
+    const relToMinisters = evMinisters.some((mid) => ministers.has(mid));
+    if (!relToMembers && !relToHeaders && !relToMinisters) return;
 
     const ids = Array.isArray(ev.musicas) ? ev.musicas : [];
     ids.forEach((id) => {
@@ -1219,6 +1245,9 @@ function buildSongInsightParaEscala(musica, context, caches) {
 
   const headerAffinity = caches.headerAffinity.get(musica.id) || 0;
   const ministerAffinity = caches.ministerAffinity?.get(musica.id) || 0;
+  const headerContextCount = caches.headerContextCount?.get(musica.id) || 0;
+  const ministerContextCount =
+    caches.ministerContextCount?.get(musica.id) || 0;
   const teamFamiliarity = caches.teamFamiliarity.get(musica.id) || 0;
   const teamCompatibility = caches.teamCompatibility.get(musica.id) || 0.6;
 
@@ -1311,6 +1340,8 @@ function buildSongInsightParaEscala(musica, context, caches) {
       lastPlayed,
       headerAffinity,
       ministerAffinity,
+      headerContextCount,
+      ministerContextCount,
       teamFamiliarity: familiaridade,
       teamCompatibility,
       teamChallenge,
@@ -1374,24 +1405,22 @@ function calcCategoriaDominanteCombo(insightsCombo) {
 }
 
 function calcCategoriaDominanteComboStrong100(combo) {
-  // Retorna {categoria, percentual:100, intensidade:"strong"} se existir uma categoria comum às 3 músicas.
-  if (!Array.isArray(combo) || combo.length !== 3)
+  // Retorna {categoria, percentual:100, intensidade:"strong"} se existir uma categoria comum a todas as músicas.
+  if (!Array.isArray(combo) || combo.length < 3 || combo.length > 4)
     return { categoria: null, percentual: 0, intensidade: "weak" };
 
-  const a = combo[0]?.categorias || [];
-  const b = combo[1]?.categorias || [];
-  const c = combo[2]?.categorias || [];
+  const listas = combo.map((si) => si?.categorias || []);
 
-  if (!a.length || !b.length || !c.length)
+  if (listas.some((cats) => !cats.length))
     return { categoria: null, percentual: 0, intensidade: "weak" };
 
-  const setB = new Set(b);
-  const setC = new Set(c);
+  const [base, ...rest] = listas;
+  const sets = rest.map((cats) => new Set(cats));
 
-  for (let i = 0; i < a.length; i++) {
-    const cat = a[i];
+  for (let i = 0; i < base.length; i++) {
+    const cat = base[i];
     if (!cat) continue;
-    if (setB.has(cat) && setC.has(cat)) {
+    if (sets.every((set) => set.has(cat))) {
       return { categoria: cat, percentual: 100, intensidade: "strong" };
     }
   }
@@ -1516,16 +1545,37 @@ function gerarCombinacoesTop(scored, k) {
   return combos;
 }
 
+function visitarCombinacoes(pool, tamanho, visitor) {
+  const combo = [];
+
+  function walk(startIndex) {
+    if (combo.length === tamanho) {
+      visitor(combo.slice());
+      return;
+    }
+
+    const faltam = tamanho - combo.length;
+    for (let i = startIndex; i <= pool.length - faltam; i++) {
+      combo.push(pool[i]);
+      walk(i + 1);
+      combo.pop();
+    }
+  }
+
+  walk(0);
+}
+
 function gerarSugestoesRepertoriosParaEscala(escala) {
   // Snapshot de popularidade (mesma fonte da UI)
   const popularidadeSnapshot = classificarNiveisDePopularidade(musicas);
 
   const serviceDate = escala.dataObj || parseDate(escala.data);
   if (!(serviceDate instanceof Date) || isNaN(serviceDate)) return [];
+  const suggestionSize = getTamanhoRepertorioDaEscala(escala);
 
   const members = Array.isArray(escala.integrantes) ? escala.integrantes : [];
-  const headerIds = Array.isArray(escala.header) ? escala.header : [];
-  const ministerIds = Array.isArray(escala.minister) ? escala.minister : [];
+  const headerIds = getHeaderIdsFromEscala(escala);
+  const ministerIds = getMinisterIdsFromEscala(escala);
 
   const eventosPassados = getEventosPassadosAte(serviceDate);
   const teamDifficultyProfile =
@@ -1563,6 +1613,8 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
     teamFamiliarity: new Map(),
     headerAffinity: new Map(),
     ministerAffinity: new Map(),
+    headerContextCount: new Map(),
+    ministerContextCount: new Map(),
     teamCompatibility: new Map(),
     teamChallenge: new Map(),
     popNivel: new Map(),
@@ -1612,14 +1664,23 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
       m.id,
       calcFamiliaridadeDoTimeComMusica(m.id, members, eventosPassados),
     );
-    caches.headerAffinity.set(
+    const headerAffinity = calcAfinidadePorPapelComMusica(
       m.id,
-      calcAfinidadeHeaderComMusica(m.id, headerIds, eventosPassados),
+      headerIds,
+      "header",
+      eventosPassados,
     );
-    caches.ministerAffinity.set(
+    caches.headerAffinity.set(m.id, headerAffinity.score);
+    caches.headerContextCount.set(m.id, headerAffinity.totalEventos);
+
+    const ministerAffinity = calcAfinidadePorPapelComMusica(
       m.id,
-      calcAfinidadeMinisterComMusica(m.id, ministerIds, eventosPassados),
+      ministerIds,
+      "minister",
+      eventosPassados,
     );
+    caches.ministerAffinity.set(m.id, ministerAffinity.score);
+    caches.ministerContextCount.set(m.id, ministerAffinity.totalEventos);
     caches.teamCompatibility.set(
       m.id,
       calcCompatibilidadeTimeMusica(m, members),
@@ -1629,6 +1690,7 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
 
   const preferenciaArtistas = buildPreferenciaArtistas(
     headerIds,
+    ministerIds,
     members,
     eventosPassados,
   );
@@ -1663,8 +1725,8 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
       .map((si) => ({ si, score: scoreSongForStrategy(si, estrategia) }))
       .sort((a, b) => b.score - a.score);
 
-    const TOP_K = Math.min(80, scored.length);
-    if (TOP_K < SUGGESTION_SIZE) return null;
+    const TOP_K = Math.min(suggestionSize === 4 ? 52 : 80, scored.length);
+    if (TOP_K < suggestionSize) return null;
 
     // Pool base (já ordenado por score)
     let pool = scored.slice(0, TOP_K).map((x) => x.si);
@@ -1678,85 +1740,73 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
       pool = pool.filter((si) => si._popNivel !== "rare");
     }
 
-    if (pool.length < SUGGESTION_SIZE) return null;
+    if (pool.length < suggestionSize) return null;
 
-    // Helper: score médio do combo (3 músicas)
-    const scoreComboBase = (a, b, c) =>
-      (scoreSongForStrategy(a, estrategia) +
-        scoreSongForStrategy(b, estrategia) +
-        scoreSongForStrategy(c, estrategia)) /
-      3;
+    // Helper: score médio do combo
+    const scoreComboBase = (combo) =>
+      combo.reduce((acc, si) => acc + scoreSongForStrategy(si, estrategia), 0) /
+      combo.length;
 
     let best = null;
 
-    // Iteração direta (evita alocar array gigante de combos)
-    for (let i = 0; i < pool.length - 2; i++) {
-      const a = pool[i];
-      for (let j = i + 1; j < pool.length - 1; j++) {
-        const b = pool[j];
-        for (let k = j + 1; k < pool.length; k++) {
-          const c = pool[k];
+    // Iteração direta sem alocar uma lista gigante de combos.
+    visitarCombinacoes(pool, suggestionSize, (combo) => {
+      // Regra absoluta: nunca sugerir repertório com 2 músicas inéditas (0 execuções)
+      const qtdIneditas = combo.reduce((acc, si) => {
+        const id = si && si.musica ? si.musica.id : null;
+        if (!id) return acc;
+        const tp =
+          si.metrics && typeof si.metrics.timesPlayed === "number"
+            ? si.metrics.timesPlayed
+            : caches.timesPlayed.get(id) || 0;
+        return acc + (tp === 0 ? 1 : 0);
+      }, 0);
+      if (qtdIneditas >= 2) return;
 
-          const combo = [a, b, c];
+      // Patch variedade: evitar repertórios idênticos
+      const idsKey = combo
+        .map((x) => (x && x.musica ? x.musica.id : null))
+        .filter(Boolean)
+        .sort()
+        .join("|");
+      if (priorComboKeys.has(idsKey)) return;
 
-          // Regra absoluta: nunca sugerir repertório com 2 músicas inéditas (0 execuções)
-          const qtdIneditas = combo.reduce((acc, si) => {
-            const id = si && si.musica ? si.musica.id : null;
-            if (!id) return acc;
-            const tp =
-              si.metrics && typeof si.metrics.timesPlayed === "number"
-                ? si.metrics.timesPlayed
-                : caches.timesPlayed.get(id) || 0;
-            return acc + (tp === 0 ? 1 : 0);
-          }, 0);
-          if (qtdIneditas >= 2) continue;
+      // Regras globais + por repertório
+      if (!validarComboPorRepertorio(combo, estrategia.key)) return;
 
-          // Patch variedade: evitar repertórios idênticos
-          const idsKey = combo
-            .map((x) => (x && x.musica ? x.musica.id : null))
-            .filter(Boolean)
-            .sort()
-            .join("|");
-          if (priorComboKeys.has(idsKey)) continue;
+      // Categoria: exigir strong 100% (uma categoria presente em todas as músicas)
+      const cat = calcCategoriaDominanteComboStrong100(combo);
+      if (
+        !(
+          cat &&
+          cat.intensidade === "strong" &&
+          cat.percentual === 100 &&
+          cat.categoria
+        )
+      )
+        return;
 
-          // Regras globais + por repertório
-          if (!validarComboPorRepertorio(combo, estrategia.key)) continue;
+      const baseScore = scoreComboBase(combo);
+      const bonusArtBase = ajustarScorePorArtistas(
+        combo,
+        preferenciaArtistas,
+      );
+      const bonusArt =
+        bonusArtBase * (estrategia.key === "favoritas" ? 3 : 1);
 
-          // Categoria: exigir strong 100% (uma categoria presente nas 3 músicas)
-          const cat = calcCategoriaDominanteComboStrong100(combo);
-          if (
-            !(
-              cat &&
-              cat.intensidade === "strong" &&
-              cat.percentual === 100 &&
-              cat.categoria
-            )
-          )
-            continue;
+      // Penalidade leve por música já usada em repertório anterior (não é proibição)
+      const reuseCount = combo.reduce((acc, si) => {
+        const id = si && si.musica ? si.musica.id : null;
+        return acc + (id && usedIds.has(id) ? 1 : 0);
+      }, 0);
+      const reusePenalty = 0.06 * reuseCount;
 
-          const baseScore = scoreComboBase(a, b, c);
-          const bonusArtBase = ajustarScorePorArtistas(
-            combo,
-            preferenciaArtistas,
-          );
-          const bonusArt =
-            bonusArtBase * (estrategia.key === "favoritas" ? 3 : 1);
+      const finalScore = baseScore + bonusArt - reusePenalty;
 
-          // Penalidade leve por música já usada em repertório anterior (não é proibição)
-          const reuseCount = combo.reduce((acc, si) => {
-            const id = si && si.musica ? si.musica.id : null;
-            return acc + (id && usedIds.has(id) ? 1 : 0);
-          }, 0);
-          const reusePenalty = 0.06 * reuseCount;
-
-          const finalScore = baseScore + bonusArt - reusePenalty;
-
-          if (!best || finalScore > best.finalScore) {
-            best = { combo, cat, finalScore };
-          }
-        }
+      if (!best || finalScore > best.finalScore) {
+        best = { combo, cat, finalScore };
       }
-    }
+    });
 
     if (!best) return null;
 
@@ -1767,10 +1817,8 @@ function gerarSugestoesRepertoriosParaEscala(escala) {
 
     // Média simples dos scores das músicas
     const avg = (key) =>
-      (best.combo[0].insights[key] +
-        best.combo[1].insights[key] +
-        best.combo[2].insights[key]) /
-      3;
+      best.combo.reduce((acc, si) => acc + si.insights[key], 0) /
+      best.combo.length;
 
     let seguranca = avg("seguranca");
     let familiaridade = avg("familiaridade");
@@ -1916,7 +1964,8 @@ function analisarRepertorioDaEscala(escala, musicIds) {
 
   const popularidadeSnapshot = classificarNiveisDePopularidade(musicas);
   const members = Array.isArray(escala.integrantes) ? escala.integrantes : [];
-  const headerIds = Array.isArray(escala.header) ? escala.header : [];
+  const headerIds = getHeaderIdsFromEscala(escala);
+  const ministerIds = getMinisterIdsFromEscala(escala);
   const eventosPassados = getEventosPassadosAte(serviceDate);
   const teamDifficultyProfile =
     calcPerfilDificuldadeDoTime(members, eventosPassados) || 2;
@@ -1925,6 +1974,7 @@ function analisarRepertorioDaEscala(escala, musicIds) {
     serviceDate,
     members,
     headerIds,
+    ministerIds,
     eventosPassados,
     teamDifficultyProfile,
   };
@@ -1940,6 +1990,9 @@ function analisarRepertorioDaEscala(escala, musicIds) {
     lastPlayed: new Map(),
     teamFamiliarity: new Map(),
     headerAffinity: new Map(),
+    ministerAffinity: new Map(),
+    headerContextCount: new Map(),
+    ministerContextCount: new Map(),
     teamCompatibility: new Map(),
     teamChallenge: new Map(),
     popNivel: new Map(),
@@ -1990,10 +2043,24 @@ function analisarRepertorioDaEscala(escala, musicIds) {
       m.id,
       calcFamiliaridadeDoTimeComMusica(m.id, members, eventosPassados),
     );
-    caches.headerAffinity.set(
+    const headerAffinity = calcAfinidadePorPapelComMusica(
       m.id,
-      calcAfinidadeHeaderComMusica(m.id, headerIds, eventosPassados),
+      headerIds,
+      "header",
+      eventosPassados,
     );
+    caches.headerAffinity.set(m.id, headerAffinity.score);
+    caches.headerContextCount.set(m.id, headerAffinity.totalEventos);
+
+    const ministerAffinity = calcAfinidadePorPapelComMusica(
+      m.id,
+      ministerIds,
+      "minister",
+      eventosPassados,
+    );
+    caches.ministerAffinity.set(m.id, ministerAffinity.score);
+    caches.ministerContextCount.set(m.id, ministerAffinity.totalEventos);
+
     caches.teamCompatibility.set(
       m.id,
       calcCompatibilidadeTimeMusica(m, members),
@@ -2059,10 +2126,8 @@ function analisarRepertorioDaEscala(escala, musicIds) {
 
   // Média simples dos scores das músicas
   const avg = (key) =>
-    (songInsights[0].insights[key] +
-      songInsights[1].insights[key] +
-      songInsights[2].insights[key]) /
-    3;
+    songInsights.reduce((acc, si) => acc + si.insights[key], 0) /
+    songInsights.length;
 
   let familiaridade = avg("familiaridade");
   let desafio = avg("desafio");

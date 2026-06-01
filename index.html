@@ -3,142 +3,89 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Projeto Asafe - Wrapped</title>
+  <title>Projeto Asafe</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="index.css" />
 </head>
 
 <body>
-
-  <div id="rotate-lock" class="rotate-warning">
-    <div class="rotate-box">
-      🔄<br>
-      Rotacione seu dispositivo para o modo paisagem (Landscape)
-    </div>
-  </div>
-
-  <div class="app">
-    <header class="app-header">
-      <div class="app-title-group">
-        <h1 class="app-title">Projeto Asafe</h1>
-        <span class="app-subtitle">Painel estilo Spotify Wrapped</span>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegacao principal">
+      <div class="brand-block">
+        <div class="brand-mark">A</div>
+        <div>
+          <p class="brand-kicker">Projeto Asafe</p>
+          <h1>Music Admin</h1>
+        </div>
       </div>
-    </header>
 
-    <!-- Navegação -->
-    <nav class="tabs">
-      <button class="tab-button active" data-view="escala">
-        Próximo culto
+      <nav class="side-nav">
+        <button class="nav-item active" data-view="hoje">
+          <span>📅</span>
+          <span>Hoje</span>
+        </button>
+        <button class="nav-item" data-view="cultos">
+          <span>📆</span>
+          <span>Cultos</span>
+        </button>
+        <button class="nav-item" data-view="repertorio">
+          <span>🎵</span>
+          <span>Repertorio</span>
+        </button>
+        <button class="nav-item" data-view="wrapped">
+          <span>🏆</span>
+          <span>Wrapped</span>
+        </button>
+        <button class="nav-item" data-view="titulos">
+          <span>🎖️</span>
+          <span>Títulos</span>
+        </button>
+      </nav>
+    </aside>
+
+    <main class="main-stage">
+      <header class="topbar">
+        <div>
+          <p id="viewKicker" class="page-kicker">Agora na fila</p>
+          <h2 id="viewTitle">Hoje</h2>
+        </div>
+        <div class="topbar-actions">
+          <button id="quickBuilderBtn" class="pill-button" type="button">Montar repertorio</button>
+        </div>
+      </header>
+
+      <section id="view-hoje" class="view active" aria-labelledby="viewTitle"></section>
+      <section id="view-cultos" class="view" aria-labelledby="viewTitle"></section>
+      <section id="view-repertorio" class="view" aria-labelledby="viewTitle"></section>
+      <section id="view-wrapped" class="view" aria-labelledby="viewTitle"></section>
+      <section id="view-titulos" class="view" aria-labelledby="viewTitle"></section>
+    </main>
+
+    <nav class="mobile-nav" aria-label="Navegacao mobile">
+      <button class="nav-item active" data-view="hoje">
+        <span>📅</span>
+        <span>Hoje</span>
       </button>
-      <button class="tab-button" data-view="escalas-futuras">
-        Escalas futuras
+      <button class="nav-item" data-view="cultos">
+        <span>📆</span>
+        <span>Cultos</span>
       </button>
-      <button class="tab-button" data-view="repertorio">
-        Repertório
+      <button class="nav-item" data-view="repertorio">
+        <span>🎵</span>
+        <span>Repertorio</span>
+      </button>
+      <button class="nav-item" data-view="wrapped">
+        <span>🏆</span>
+        <span>Wrapped</span>
+      </button>
+      <button class="nav-item" data-view="titulos">
+        <span>🎖️</span>
+        <span>Títulos</span>
       </button>
     </nav>
-
-    <main class="views">
-      <!-- =======================================================
-             PRÓXIMO CULTO (col-4 com card + integrantes)
-             ======================================================= -->
-      <section id="view-escala" class="view-panel active">
-        <div class="escala-main-row">
-
-          <!-- LINHA SUPERIOR: PRÓXIMO CULTO + INTEGRANTES LADO A LADO -->
-          <div class="escala-top-row">
-            <!-- -------- CARD PRINCIPAL -------- -->
-            <section class="card escala-atual-card">
-              <header class="card-header card-header--escala-atual">
-                <div class="card-header-left">
-                  <h2 class="card-title">📅 Próximo culto</h2>
-                  <p id="escalaAtualData" class="card-subtitle">
-                    Carregando...
-                  </p>
-                </div>
-
-                <div class="card-header-right" id="escalaAtualBadges">
-                  <!-- badges (categoria + dificuldade geral) vão aqui -->
-                </div>
-              </header>
-
-              <div id="escalaAtualResumo" class="escala-resumo"></div>
-            </section>
-
-            <!-- -------- INTEGRANTES -------- -->
-            <section class="card integrantes-card">
-              <header class="card-header">
-                <h3 class="card-title">🎤 Integrantes da escala</h3>
-              </header>
-              <div id="escalaAtualIntegrantes" class="integrantes-grid"></div><br>
-              <header class="card-header">
-                <h3 class="card-title">🎵 Repertório do dia</h3>
-              </header>
-              <div id="escalaAtualMusicas" class="musicas-list"></div>
-            </section>
-          </div>
-          
-        </div>
-      </section>
-
-
-      <!-- =======================================================
-             ESCALAS FUTURAS
-             ======================================================= -->
-      <section id="view-escalas-futuras" class="view-panel">
-        <section class="card">
-          <header class="card-header">
-            <h2 class="card-title">📆 Escalas futuras</h2>
-          </header>
-
-          <div id="escalasFuturasContainer" class="escalas-futuras-list"></div>
-        </section>
-      </section>
-
-      <!-- =======================================================
-             REPERTÓRIO
-             ======================================================= -->
-      <section id="view-repertorio" class="view-panel">
-        <section class="card">
-          <header class="card-header card-header--repertorio">
-            <div>
-              <h2 class="card-title">📚 Repertório</h2>
-              <p class="card-subtitle">
-                Visualize o status de cada música e filtre por categorias
-              </p>
-            </div>
-
-            <!-- Legendas -->
-            <div class="legend">
-              <span class="legend-item legend-disponivel">
-                Disponíveis (<span id="legendDisponivelCount">0</span>)
-              </span>
-              <span class="legend-item legend-recente">
-                Recentes (<span id="legendRecenteCount">0</span>)
-              </span>
-              <span class="legend-item legend-futura">
-                Futuras (<span id="legendFuturaCount">0</span>)
-              </span>
-              <span class="legend-item legend-banida">
-                Banidas (<span id="legendBanidaCount">0</span>)
-              </span>
-            </div>
-          </header>
-
-          <!-- Filtro de categorias -->
-          <div class="categorias-filter">
-            <div id="categoriasContainer" class="categorias-buttons"></div>
-          </div>
-
-          <!-- Grid de músicas -->
-          <div id="repertorioGrid" class="repertorio-grid"></div>
-        </section>
-      </section>
-
-    </main>
   </div>
 
-  <script src="index.js"></script>
+  <script src="app.js"></script>
 </body>
 
 </html>
