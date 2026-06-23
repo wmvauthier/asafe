@@ -1498,7 +1498,7 @@
   },
   {
     "data": "21/06/2026",
-    "integrantes": [9,15,13,12,3,16,18],
+    "integrantes": [9,15,13,12,3,17,18],
     "header": [18],
     "musicas": [1,15,8],
     "faltas": [],
@@ -1506,18 +1506,44 @@
   },
   {
     "data": "28/06/2026",
-    "integrantes": [9,14,13,12,3,17,11],
-    "header": [11],
+    "integrantes": [9,14,13,12,3,16,11],
+    "header": [9],
     "musicas": [50,38,67],
     "faltas": [],
     "minister": [9]
   },
+
   {
     "data": "05/07/2026",
-    "integrantes": [9,14,13,12,3,17,11],
-    "header": [],
+    "integrantes": [14,8,13,6,3,1,11],
+    "header": [3],
     "musicas": [],
     "faltas": [],
-    "minister": []
+    "minister": [14]
+  },
+  {
+    "data": "12/07/2026",
+    "integrantes": [4,14,13,6,3,1,11,18],
+    "header": [13],
+    "musicas": [],
+    "faltas": [],
+    "minister": [4]
+  },
+  {
+    "data": "19/07/2026",
+    "integrantes": [9,5,13,6,3,16,18],
+    "header": [6],
+    "musicas": [],
+    "faltas": [],
+    "minister": [5]
+  },
+  {
+    "data": "26/07/2026",
+    "integrantes": [9,8,13,12,3,1,11],
+    "header": [12],
+    "musicas": [],
+    "faltas": [],
+    "minister": [8]
   }
+
 ]
