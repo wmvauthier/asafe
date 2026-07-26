@@ -783,7 +783,7 @@ function renderSongDetails(song, status) {
   body.className = "song-detail-body";
 
   const last = getLastPlayedBefore(song.id, today());
-  const next = getNextScheduledAfter(song.id, today());
+  const next = getNextScheduledOnOrAfter(song.id, today());
   const difficulty = Object.entries(song.level || {}).filter(([, level]) => level);
 
   const categories = document.createElement("div");
@@ -1173,7 +1173,7 @@ function isSuggestionEligible(song, date) {
   if (song.banned || song.ban) return false;
   const last = getLastPlayedBefore(song.id, date);
   if (last && daysBetween(last, date) <= COOLDOWN_DAYS) return false;
-  const next = getNextScheduledAfter(song.id, today());
+  const next = getNextScheduledOnOrAfter(song.id, today());
   if (next && (!date || next.getTime() !== date.getTime())) return false;
   return true;
 }
@@ -1406,7 +1406,7 @@ function getSongStatus(id, contextCulto = null) {
   if (!song) return { status: "available", label: "Disponivel" };
   if (song.banned || song.ban) return { status: "banned", label: "Banida" };
   const contextDate = contextCulto && contextCulto.dataObj ? contextCulto.dataObj : null;
-  const next = getNextScheduledAfter(id, today());
+  const next = getNextScheduledOnOrAfter(id, today());
   if (next && !(contextDate && sameDay(next, contextDate))) return { status: "future", label: "Agendada" };
   const refDate = contextDate || today();
   const last = getLastPlayedBefore(id, refDate);
@@ -1449,6 +1449,13 @@ function getLastPlayedBefore(id, date) {
 function getNextScheduledAfter(id, date) {
   const matches = historico
     .filter((ev) => ev.dataObj && date && ev.dataObj > date && (ev.musicas || []).includes(id))
+    .sort((a, b) => a.dataObj - b.dataObj);
+  return (matches[0] && matches[0].dataObj) || null;
+}
+
+function getNextScheduledOnOrAfter(id, date) {
+  const matches = historico
+    .filter((ev) => ev.dataObj && date && ev.dataObj >= date && (ev.musicas || []).includes(id))
     .sort((a, b) => a.dataObj - b.dataObj);
   return (matches[0] && matches[0].dataObj) || null;
 }
