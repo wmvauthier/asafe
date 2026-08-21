@@ -1580,8 +1580,8 @@
   {
     "data": "30/08/2026",
     "integrantes": [4,14,13,6,3,17,11],
-    "header": [4,13],
-    "musicas": [],
+    "header": [13],
+    "musicas": [47,10,30],
     "faltas": [],
     "minister": [4]
   }
