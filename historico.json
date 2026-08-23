@@ -1584,6 +1584,37 @@
     "musicas": [47,10,30],
     "faltas": [],
     "minister": [4]
+  },
+  {
+    "data": "06/09/2026",
+    "integrantes": [9,8,13,12,3,16,18],
+    "header": [16],
+    "musicas": [],
+    "faltas": [],
+    "minister": [9]
+  },
+  {
+    "data": "13/09/2026",
+    "integrantes": [4,14,13,12,3,1,11],
+    "header": [14],
+    "musicas": [],
+    "faltas": [],
+    "minister": [14]
+  },
+  {
+    "data": "20/09/2026",
+    "integrantes": [7,5,13,6,3,1,18],
+    "header": [7],
+    "musicas": [],
+    "faltas": [],
+    "minister": [7]
+  },
+  {
+    "data": "27/09/2026",
+    "integrantes": [9,15,13,6,3,1,11],
+    "header": [6],
+    "musicas": [],
+    "faltas": [],
+    "minister": [9]
   }
-
 ]
