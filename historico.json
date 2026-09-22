@@ -1627,7 +1627,7 @@
   },
   {
     "data": "11/10/2026",
-    "integrantes": [7,14,8,13,6,3,1,18],
+    "integrantes": [7,14,8,13,6,3,1],
     "header": [7],
     "musicas": [],
     "faltas": [],
@@ -1643,7 +1643,7 @@
   },
   {
     "data": "25/10/2026",
-    "integrantes": [14,8,13,12,3,1,18],
+    "integrantes": [14,8,13,12,3,1],
     "header": [12],
     "musicas": [],
     "faltas": [],
