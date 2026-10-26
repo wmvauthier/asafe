@@ -1661,7 +1661,7 @@
     "data": "08/11/2026",
     "integrantes": [9,8,13,12,3,1],
     "header": [3],
-    "musicas": [],
+    "musicas": [18,78,50],
     "faltas": [],
     "minister": [9]
   },
@@ -1669,7 +1669,7 @@
     "data": "15/11/2026",
     "integrantes": [14,5,9,13,12,3,16,18],
     "header": [9],
-    "musicas": [],
+    "musicas": [75,32,14],
     "faltas": [],
     "minister": [9]
   },
