@@ -1675,11 +1675,11 @@
   },
   {
     "data": "22/11/2026",
-    "integrantes": [7,8,9,13,12,2,1],
+    "integrantes": [8,14,13,12,2,1],
     "header": [2],
     "musicas": [55,27,65],
     "faltas": [],
-    "minister": [9]
+    "minister": [2]
   },
   {
     "data": "29/11/2026",
