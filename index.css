@@ -536,7 +536,6 @@ img {
 
 .song-status,
 .mini-chip,
-.analysis-chip,
 .category-chip {
   display: inline-flex;
   align-items: center;
@@ -556,30 +555,22 @@ img {
   padding: 1px 9px;
 }
 
-.analysis-chip {
-  padding: 9px 10px;
-}
-
-.song-status.available,
-.analysis-chip.good {
+.song-status.available {
   border-color: rgba(30, 215, 96, 0.45);
   color: #c7f9d7;
 }
 
-.song-status.recent,
-.analysis-chip.warn {
+.song-status.recent {
   border-color: rgba(246, 195, 67, 0.5);
   color: #ffe9a7;
 }
 
-.song-status.future,
-.analysis-chip.info {
+.song-status.future {
   border-color: rgba(57, 196, 216, 0.5);
   color: #c6f4fb;
 }
 
-.song-status.banned,
-.analysis-chip.danger {
+.song-status.banned {
   border-color: rgba(239, 68, 68, 0.55);
   color: #ffd0d0;
 }
@@ -637,7 +628,6 @@ img {
   border-color: rgba(239, 68, 68, 0.56);
 }
 
-.analysis-card,
 .stat-card {
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
@@ -645,7 +635,6 @@ img {
   background: rgba(255, 255, 255, 0.04);
 }
 
-.analysis-card h4,
 .stat-card h4 {
   display: flex;
   align-items: center;
@@ -657,34 +646,11 @@ img {
   font-weight: 950;
 }
 
-.analysis-card p,
 .stat-card p {
   margin: 0;
   color: var(--muted);
   font-size: 0.84rem;
   line-height: 1.45;
-}
-
-.meter {
-  height: 7px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: #303030;
-}
-
-.meter span {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: var(--green);
-}
-
-.meter.warn span {
-  background: var(--gold);
-}
-
-.meter.danger span {
-  background: var(--red);
 }
 
 .insight-list {

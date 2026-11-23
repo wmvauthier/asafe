@@ -1,4 +1,8 @@
--- POSSIBILIDADES DE INCLUSÃO
+# Curadoria musical
+
+Anotações preservadas do antigo `musicas_banidas.json`. Este documento registra decisões e possibilidades; não é carregado pela aplicação e não bloqueia músicas automaticamente. Os votos e nomes abaixo foram mantidos como registrados.
+
+## POSSIBILIDADES DE INCLUSÃO
 - Quem dizes que sou - Hilsong (4 a 10) https://www.youtube.com/watch?v=UOyy3dGbwj0
 - Diante da Cruz - Aline Barros (4 a 10) https://www.youtube.com/watch?v=tpWdNte_m_w
 - Digno é o Senhor - Aline Barros (4 a 9) https://www.youtube.com/watch?v=ptqPgzAbpGc
@@ -6,7 +10,7 @@
 - Medley Atos 2 - Atos 2 (4 a 8) https://www.youtube.com/watch?v=T-wK0x1BsHI
 - Me ama na versão de Lucas
 
--- MÚSICAS BANIDAS EM DEFINITIVO
+## MÚSICAS BANIDAS EM DEFINITIVO
 - Jesus, meu Primeiro Amor – 5 a 3
 - Rude Cruz – 5 a 3
 - Ouvir o teu Falar – 4 a 2
@@ -22,7 +26,7 @@
 - Ruja o Leão – 1 a 7
 - Vem me buscar – 0 a 7
 
--- DESCARTADAS POR MAIORIDADE (9+ VOTOS)
+## DESCARTADAS POR MAIORIDADE (9+ VOTOS)
 
 - Deixa o teu Rio me levar (0 a 13)
 - Rendido estou (0 a 13)
@@ -37,12 +41,3 @@
 - Quem dizes que sou (4 a 10)
 - Diante da Cruz (4 a 10)
 - Digno é o Senhor (4 a 9)
-
-
-
-
-
-
-
-
-

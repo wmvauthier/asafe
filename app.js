@@ -1588,10 +1588,6 @@ function getFutureCultos() {
     .sort((a, b) => a.dataObj - b.dataObj);
 }
 
-function getOpenCultos() {
-  return getFutureCultos().filter((ev) => !Array.isArray(ev.musicas) || ev.musicas.length === 0);
-}
-
 function getBuilderCultos() {
   return getFutureCultos()
     .slice(1)
@@ -1656,13 +1652,6 @@ function getLastPlayedBefore(id, date) {
   const matches = historico
     .filter((ev) => ev.dataObj && date && ev.dataObj < date && (ev.musicas || []).includes(id))
     .sort((a, b) => b.dataObj - a.dataObj);
-  return (matches[0] && matches[0].dataObj) || null;
-}
-
-function getNextScheduledAfter(id, date) {
-  const matches = historico
-    .filter((ev) => ev.dataObj && date && ev.dataObj > date && (ev.musicas || []).includes(id))
-    .sort((a, b) => a.dataObj - b.dataObj);
   return (matches[0] && matches[0].dataObj) || null;
 }
 
@@ -1736,11 +1725,6 @@ function normalizeInstrument(raw) {
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/\s+/g, "");
-}
-
-function memberFunctions(member) {
-  const names = getMemberLevels(member).map(([inst]) => formatInstrument(inst));
-  return names.length ? names.join(", ") : "Integrante";
 }
 
 function formatInstrument(inst) {
@@ -2183,32 +2167,6 @@ function detailItem(label, value) {
     <strong>${escapeHTML(value)}</strong>
   `;
   return item;
-}
-
-function analysisChips(analysis) {
-  return [
-    ["Seguranca", analysis.safety, "good"],
-    ["Familiaridade", analysis.familiarity, "info"],
-    ["Desafio", 1 - analysis.challenge, "warn"],
-    ["Renovacao", analysis.renewal, "good"],
-  ].map(([label, score, kind]) => {
-    const chip = document.createElement("span");
-    chip.className = `analysis-chip ${score < 0.45 ? "danger" : score < 0.7 ? "warn" : kind}`;
-    chip.textContent = `${label}: ${Math.round(score * 100)}%`;
-    return chip;
-  });
-}
-
-function analysisCard(icon, title, score, text) {
-  const card = document.createElement("article");
-  const cls = score < 0.45 ? "danger" : score < 0.7 ? "warn" : "";
-  card.className = "analysis-card";
-  card.innerHTML = `
-    <h4><span>${icon} ${escapeHTML(title)}</span><span>${Math.round(score * 100)}%</span></h4>
-    <div class="meter ${cls}"><span style="width:${Math.round(score * 100)}%"></span></div>
-    <p>${escapeHTML(text)}</p>
-  `;
-  return card;
 }
 
 function sectionPanel(title, kicker, content) {
