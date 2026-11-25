@@ -4,6 +4,7 @@ const STORAGE = {
   librarySearch: "asafe:v2:library-search",
   libraryCategory: "asafe:v2:library-category",
   libraryStatus: "asafe:v2:library-status",
+  libraryIntensity: "asafe:v2:library-intensity",
   builderCult: "asafe:v2:builder-cult",
   builderDrafts: "asafe:v2:builder-drafts",
   wrappedStart: "asafe:v2:wrapped-start",
@@ -22,6 +23,7 @@ const state = {
   librarySearch: localStorage.getItem(STORAGE.librarySearch) || "",
   libraryCategory: localStorage.getItem(STORAGE.libraryCategory) || "all",
   libraryStatus: localStorage.getItem(STORAGE.libraryStatus) || "all",
+  libraryIntensity: localStorage.getItem(STORAGE.libraryIntensity) || "all",
   builderCult: localStorage.getItem(STORAGE.builderCult) || "",
   builderDrafts: readJSON(STORAGE.builderDrafts, {}),
   wrappedStart: localStorage.getItem(STORAGE.wrappedStart) || "",
@@ -29,14 +31,16 @@ const state = {
   wrappedMember: localStorage.getItem(STORAGE.wrappedMember) || "all",
 };
 
+const ui = { building: false, builderTab: "selected", bandTab: "wrapped", filtersOpen: false, detailSong: null, detailCult: null };
+
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
   try {
     const [membersData, songsData, historyData] = await Promise.all([
-      fetch("integrantes/integrantes.json").then((r) => r.json()),
-      fetch("musicas.json").then((r) => r.json()),
-      fetch("historico.json").then((r) => r.json()),
+      loadDataFile("integrantes/integrantes.json"),
+      loadDataFile("musicas.json"),
+      loadDataFile("historico.json"),
     ]);
 
     integrantes = Array.isArray(membersData) ? membersData : [];
@@ -50,155 +54,128 @@ async function init() {
   } catch (err) {
     console.error(err);
     document.querySelector(".main-stage").innerHTML =
-      '<div class="empty-state">Nao foi possivel carregar os dados da aplicacao.</div>';
+      '<div class="empty-state" role="alert">Não foi possível carregar as músicas e escalas. Verifique sua conexão e tente novamente.</div>';
+    document.querySelector(".main-stage").append(button("Tentar novamente", "pill-button", () => window.location.reload()));
   }
+}
+
+async function loadDataFile(path) {
+  const response = await fetch(path);
+  if (!response.ok) throw new Error(`Falha ao carregar ${path}: ${response.status}`);
+  const data = await response.json();
+  if (!Array.isArray(data)) throw new Error(`Formato inválido em ${path}`);
+  return data;
 }
 
 function bindShell() {
   document.querySelectorAll(".nav-item[data-view]").forEach((btn) => {
-    btn.addEventListener("click", () => setView(btn.dataset.view));
+    btn.addEventListener("click", () => { ui.building = false; setView(btn.dataset.view); });
   });
-
-  const quickBuilderBtn = document.getElementById("quickBuilderBtn");
-  if (quickBuilderBtn) quickBuilderBtn.addEventListener("click", () => {
-    const cultos = getBuilderCultos();
-    if (cultos[0]) {
-      openBuilder(cultos[0]);
-      setView("repertorio");
-    } else {
-      toast("Nenhum culto futuro encontrado.");
-    }
+  document.querySelectorAll("[data-band-tab]").forEach((btn) => {
+    btn.addEventListener("click", () => { ui.bandTab = btn.dataset.bandTab; renderBandTabs(); });
   });
+  const dialog = document.getElementById("songDialog");
+  dialog.addEventListener("close", () => { ui.detailSong = null; ui.detailCult = null; document.body.classList.remove("detail-open"); });
+  document.getElementById("closeSongDetail").addEventListener("click", () => dialog.close());
+  if (window.visualViewport) {
+    const syncKeyboard = () => {
+      const editing = document.activeElement?.matches("input, textarea, select");
+      const reduced = window.visualViewport.height < window.innerHeight - 140;
+      document.body.classList.toggle("keyboard-open", Boolean(editing && reduced));
+    };
+    window.visualViewport.addEventListener("resize", syncKeyboard);
+    document.addEventListener("focusin", syncKeyboard);
+    document.addEventListener("focusout", () => document.body.classList.remove("keyboard-open"));
+  }
 }
 
 function renderApp() {
   setView(state.activeView, { silent: true });
   renderHoje();
   renderCultos();
-  renderRepertorio();
+  if (state.activeView !== "repertorio") renderRepertorio();
   renderWrapped();
   renderTitulos();
+  renderBandTabs();
 }
 
 function setView(view, opts = {}) {
+  if (view === "wrapped" || view === "titulos") { ui.bandTab = view; view = "banda"; }
+  if (!["hoje", "cultos", "repertorio", "banda"].includes(view)) view = "hoje";
   state.activeView = view;
   localStorage.setItem(STORAGE.activeView, view);
-
   document.querySelectorAll(".view").forEach((panel) => {
     panel.classList.toggle("active", panel.id === `view-${view}`);
   });
   document.querySelectorAll(".nav-item[data-view]").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.view === view);
+    const active = btn.dataset.view === view;
+    btn.classList.toggle("active", active);
+    if (active) btn.setAttribute("aria-current", "page");
+    else btn.removeAttribute("aria-current");
   });
-
   const meta = {
-    hoje: ["Agora na fila", "Próximo culto"],
-    cultos: ["Agenda viva", "Cultos"],
-    repertorio: ["Biblioteca e montagem", "Repertorio"],
-    wrapped: ["Wrapped administrativo", "Wrapped"],
-    titulos: ["Galeria da banda", "Títulos"],
-  }[view] || ["Projeto Asafe", "Music Admin"];
-
+    hoje: ["Sua próxima escala", "Próximo culto"],
+    cultos: ["Planeje com antecedência", "Agenda"],
+    repertorio: [ui.building ? "Escolha com contexto" : "Encontre sua próxima música", ui.building ? "Montar repertório" : "Músicas"],
+    banda: ["Nossa história em música", "Banda"],
+  }[view];
   document.getElementById("viewKicker").textContent = meta[0];
   document.getElementById("viewTitle").textContent = meta[1];
-  const quickBuilderBtn = document.getElementById("quickBuilderBtn");
-  if (quickBuilderBtn) quickBuilderBtn.parentElement.hidden = view === "hoje";
-
-  if (!opts.silent) window.scrollTo({ top: 0, behavior: "smooth" });
+  document.body.classList.toggle("is-building", ui.building && view === "repertorio");
+  if (view === "repertorio") renderRepertorio();
+  if (view === "banda") renderBandTabs();
+  if (!opts.silent) window.scrollTo({ top: 0, behavior: "instant" });
 }
 
 function renderHoje() {
   const root = document.getElementById("view-hoje");
-  root.innerHTML = "";
-
+  root.replaceChildren();
   const next = getNextCulto();
-  if (!next) {
-    root.append(emptyState("Nenhum culto futuro encontrado."));
-    return;
-  }
-
+  if (!next) { root.append(emptyState("Nenhum culto futuro cadastrado.")); return; }
   const analysis = analyzeSet(next, next.musicas || []);
-  root.append(
-    renderCultHero(next, analysis),
-    sectionPanel("Integrantes da escala", "Line-up", renderMembers(next)),
-    renderMainCultLayout(next, analysis, { showCopy: true }),
-  );
+  root.append(renderCultHero(next, analysis), renderSetBlock(next, analysis));
+  const actions = div("service-actions");
+  actions.append(button(next.musicas.length ? "Preparar outro rascunho" : "Montar repertório", "pill-button", () => openBuilder(next)));
+  if (next.musicas.length) actions.append(button("Copiar escala", "ghost-button", () => copyScale(next)));
+  root.append(actions, sectionPanel("Quem vai tocar", "Equipe", renderMembers(next)), renderAnalysisBlock(analysis));
 }
 
 function renderCultos() {
   const root = document.getElementById("view-cultos");
-  root.innerHTML = "";
-
-  const all = getFutureCultos();
-  const futureAfterNext = all.slice(1);
-  if (!futureAfterNext.length) {
-    root.append(emptyState("Nao ha cultos futuros depois do próximo culto."));
-    return;
-  }
-
-  const list = document.createElement("div");
-  list.className = "service-list";
-
-  futureAfterNext.forEach((culto) => {
-    const hasSet = Array.isArray(culto.musicas) && culto.musicas.length > 0;
-    const analysis = hasSet ? analyzeSet(culto, culto.musicas) : null;
-    const card = document.createElement("details");
-    card.className = "service-accordion";
-
+  root.replaceChildren();
+  const cultos = getFutureCultos();
+  if (!cultos.length) { root.append(emptyState("Nenhum culto futuro cadastrado.")); return; }
+  const list = div("agenda-list");
+  cultos.forEach((culto, index) => {
+    const card = document.createElement("details"); card.className = "agenda-card";
     const summary = document.createElement("summary");
-    summary.innerHTML = `
-      <div class="service-summary">
-        <div class="service-summary-main">
-          <div class="service-topline">
-            <div>
-              <p class="section-kicker">${hasSet ? "Repertorio definido" : "Culto em aberto"}</p>
-              <h3 class="service-date">${escapeHTML(formatDateLong(culto.dataObj))}</h3>
-            </div>
-            <div class="service-summary-aside"></div>
-          </div>
-        </div>
-      </div>
-    `;
-    const summaryMain = summary.querySelector(".service-summary-main");
-    const summaryAside = summary.querySelector(".service-summary-aside");
-    summaryMain.append(renderSongMiniatures(culto), renderMemberMiniatures(culto));
-    summaryAside.append(renderRoleMiniatures(culto));
-    if (analysis) summaryAside.append(renderMetricStrip(analysis, "mini"));
-    if (!hasSet) summaryAside.append(div("mini-chip", "Sem repertorio"));
-    card.append(summary);
-
-    const body = document.createElement("div");
-    body.className = "service-accordion-body";
-    body.append(renderMembers(culto));
-
-    if (hasSet) {
-      body.append(renderSetBlock(culto, analysis), renderAnalysisBlock(analysis));
-    } else {
-      const suggestions = generateSuggestedPlaylists(culto);
-      body.append(renderSuggestionCompare(culto, suggestions));
-    }
-
-    card.append(body);
-    list.append(card);
+    summary.innerHTML = `<span class="agenda-date-row"><span><span class="section-kicker">${index === 0 ? "Próximo culto" : "Na agenda"}</span><strong>${escapeHTML(formatDateLong(culto.dataObj))}</strong></span><span class="agenda-chevron" aria-hidden="true"></span></span>`;
+    const preview = renderAgendaPreview(culto);
+    preview.querySelector('.agenda-cover').append(summary.firstElementChild);
+    summary.append(preview);
+    const content = div("agenda-content");
+    content.append(renderTrackList(culto.musicas, { culto }), button(culto.musicas.length ? "Preparar rascunho" : "Montar repertório", "pill-button", () => openBuilder(culto)), sectionHeader("Integrantes"), renderMembers(culto, { agenda: true }));
+    card.append(summary, content); list.append(card);
   });
-
   root.append(list);
 }
 
 function renderRepertorio() {
   const root = document.getElementById("view-repertorio");
-  root.innerHTML = "";
-
-  root.append(renderBuilder(), renderLibraryControls());
-
-  const filtered = getFilteredSongs();
-  const available = filtered.filter((m) => getSongStatus(m.id).status === "available");
-  const unavailable = filtered.filter((m) => getSongStatus(m.id).status !== "available");
-
-  root.append(
-    renderLibrarySection("Disponiveis", available, "available"),
-    renderLibrarySection("Indisponiveis", unavailable, "blocked"),
-  );
+  root.replaceChildren();
+  document.getElementById("builderDock").replaceChildren();
+  if (ui.building) {
+    const culto = getCultByKey(state.builderCult);
+    if (!culto || !getBuilderCultos().includes(culto)) ui.building = false;
+  }
+  document.body.classList.toggle("is-building", ui.building && state.activeView === "repertorio");
+  if (ui.building) {
+    root.append(renderBuilder());
+    if (ui.builderTab !== "add") return;
+  }
+  root.append(renderLibraryControls());
+  const results = div("library-results"); results.id = "libraryResults";
+  root.append(results); renderLibraryResults();
 }
 
 function renderWrapped() {
@@ -213,15 +190,15 @@ function renderWrapped() {
   grid.className = "wrapped-grid";
 
   grid.append(
-    statWrappedCard("Cultos no periodo", insights.totalCultos, "📅"),
-    statWrappedCard("Execucoes de musicas", insights.totalExecucoes, "🎵"),
-    statWrappedCard("Musicas diferentes", insights.uniqueSongs, "📚"),
+    statWrappedCard("Cultos no período", insights.totalCultos, "📅"),
+    statWrappedCard("Execuções de músicas", insights.totalExecucoes, "🎵"),
+    statWrappedCard("Músicas diferentes", insights.uniqueSongs, "📚"),
   );
 
   grid.append(
-    rankCard("Musicas mais tocadas", insights.topSongs, "musica"),
+    rankCard("Músicas mais tocadas", insights.topSongs, "musica"),
     rankCard("Artistas mais tocados", insights.topArtists, "artist"),
-    rankCard("Musicas mais escolhidas", insights.topChosenSongs, "musica"),
+    rankCard("Músicas mais escolhidas", insights.topChosenSongs, "musica"),
     rankCard("Artistas mais escolhidos", insights.topChosenArtists, "artist"),
     rankCard("Parcerias mais recorrentes", insights.topPairs, "pair"),
   );
@@ -239,7 +216,7 @@ function renderTitulos() {
   const grid = document.createElement("div");
   grid.className = "titles-grid";
   titles.forEach((title) => grid.append(renderTitleCard(title)));
-  root.append(grid);
+  root.append(titles.length ? grid : emptyState("Nenhum título no período selecionado."));
 }
 
 function renderWrappedControls() {
@@ -265,6 +242,11 @@ function renderWrappedControls() {
     <button class="ghost-button" data-filter="clear" type="button">Limpar filtros</button>
   `;
 
+  [["start", "De"], ["end", "Até"], ["member", "Integrante"]].forEach(([key, text]) => {
+    const input = controls.querySelector(`[data-filter="${key}"]`);
+    const label = document.createElement("label"); label.textContent = text;
+    input.before(label); label.append(input);
+  });
   controls.querySelector('[data-filter="start"]').addEventListener("change", (ev) => {
     state.wrappedStart = ev.target.value;
     localStorage.setItem(STORAGE.wrappedStart, state.wrappedStart);
@@ -293,74 +275,35 @@ function renderWrappedControls() {
 }
 
 function renderCultHero(culto, analysis) {
-  const hero = document.createElement("section");
-  hero.className = "spotify-hero";
-
-  const firstSong = (culto.musicas || []).map(getSong).filter(Boolean)[0];
-  hero.innerHTML = `
-    <div class="hero-content">
-      <div class="cover-card">
-        ${firstSong ? `<img src="${songThumb(firstSong)}" alt="" />` : ""}
-        <div class="cover-overlay">
-          <p class="section-kicker">Próximo culto</p>
-          <strong>${escapeHTML(shortDate(culto.dataObj))}</strong>
-        </div>
-      </div>
-      <div class="hero-meta">
-        <p class="section-kicker">Playlist do dia</p>
-        <h3>${escapeHTML(formatDateLong(culto.dataObj))}</h3>
-        <div class="hero-actions">
-          <button class="pill-button" data-action="copy">Copiar escala</button>
-        </div>
-      </div>
-    </div>
-  `;
-
-  hero.querySelector('[data-action="copy"]').addEventListener("click", () => copyScale(culto));
-
+  const hero = div("cult-heading");
+  hero.innerHTML = `<p class="cult-date">${escapeHTML(formatDateLong(culto.dataObj))}</p>
+    <p class="muted-line">${analysis.songCount ? `${analysis.songCount} músicas no repertório` : "Repertório a definir"} · ${(culto.integrantes || []).length} integrantes</p>`;
   return hero;
 }
 
-function renderMainCultLayout(culto, analysis, opts = {}) {
-  const layout = document.createElement("div");
-  layout.className = "layout-grid";
-  layout.append(renderSetBlock(culto, analysis, opts), renderAnalysisBlock(analysis));
-  return layout;
-}
-
-function renderSetBlock(culto, analysis, opts = {}) {
+function renderSetBlock(culto, analysis) {
   const panel = document.createElement("section");
   panel.className = "panel";
   panel.append(
-    sectionHeader("Repertorio do dia", "Tracklist", `${analysis.songCount} musica(s) selecionada(s)`),
-    renderTrackList(culto.musicas || [], { culto, action: "open", showStatus: opts.showStatus === true }),
+    sectionHeader("Repertório do dia", "Músicas na ordem", `${analysis.songCount} músicas selecionadas`),
+    renderTrackList(culto.musicas || [], { culto }),
   );
   return panel;
 }
 
 function renderAnalysisBlock(analysis) {
-  const panel = document.createElement("section");
-  panel.className = "panel";
-  panel.append(sectionHeader("Analises do dia"));
-  panel.append(renderMetricStrip(analysis));
-  panel.append(renderHumanReading(analysis));
+  const panel = document.createElement("details"); panel.className = "analysis-disclosure";
+  const summary = document.createElement("summary"); summary.innerHTML = `<strong>Leitura do repertório</strong><span>${analysis.songCount ? "Familiaridade, segurança e desafio da equipe" : "Adicione músicas para ver a análise"}</span>`;
+  panel.append(summary);
+  if (analysis.songCount) panel.append(renderMetricStrip(analysis), renderHumanReading(analysis));
   return panel;
 }
 
-function renderMetricStrip(analysis, mode = "full") {
+function renderMetricStrip(analysis) {
   const strip = document.createElement("div");
-  strip.className = mode === "mini" ? "mini-metric-row" : "metric-strip";
+  strip.className = "metric-strip";
   getMetricItems(analysis).forEach((item) => {
     const tone = metricTone(item.toneScore == null ? item.score : item.toneScore);
-    if (mode === "mini") {
-      const pill = document.createElement("span");
-      pill.className = `mini-metric ${tone}`;
-      pill.title = `${item.label}: ${Math.round(item.score * 100)}%`;
-      pill.textContent = item.icon;
-      strip.append(pill);
-      return;
-    }
-
     const pill = document.createElement("div");
     pill.className = `metric-pill ${tone}`;
     pill.innerHTML = `
@@ -374,7 +317,7 @@ function renderMetricStrip(analysis, mode = "full") {
 
 function renderHumanReading(analysis) {
   const wrap = document.createElement("div");
-  wrap.append(sectionHeader("Leitura humana", "Detalhes", "Sinais especificos deste culto"));
+  wrap.append(sectionHeader("Sobre este repertório", "Detalhes", "Sinais específicos deste culto"));
 
   const list = document.createElement("div");
   list.className = "insight-list";
@@ -481,10 +424,10 @@ function renderInsightAvatars(memberIds) {
 
 function getMetricItems(analysis) {
   return [
-    { icon: "🛡️", label: "Seguranca", score: analysis.safety },
+    { icon: "🛡️", label: "Segurança", score: analysis.safety },
     { icon: "✨", label: "Familiaridade", score: analysis.familiarity },
     { icon: "🔥", label: "Desafio", score: analysis.challenge, toneScore: 1 - analysis.challenge },
-    { icon: "🌱", label: "Renovacao", score: analysis.renewal },
+    { icon: "🌱", label: "Renovação", score: analysis.renewal },
   ];
 }
 
@@ -494,13 +437,14 @@ function metricTone(score) {
   return "danger";
 }
 
-function renderMembers(culto) {
+function renderMembers(culto, opts = {}) {
   const strip = document.createElement("div");
-  strip.className = "member-grid";
+  strip.className = opts.agenda ? "member-grid agenda-member-grid" : "member-grid";
   const headerIds = getHeaderIds(culto);
   const ministerIds = getMinisterIds(culto);
 
-  (culto.integrantes || []).forEach((id) => {
+  const memberIds = opts.agenda ? getAgendaMembers(culto).map(member => member.id) : (culto.integrantes || []);
+  memberIds.forEach((id) => {
     const member = getMember(id);
     if (!member) return;
     const pill = document.createElement("div");
@@ -508,10 +452,12 @@ function renderMembers(culto) {
     pill.innerHTML = `
       <div class="member-avatar-wrap">
         <img class="member-avatar" src="${memberImg(member)}" alt="${escapeAttr(member.nome)}" onerror="this.src='integrantes/default.jpeg'" />
-        ${headerIds.includes(member.id) ? '<span class="member-badge">👑</span>' : ""}
-        ${ministerIds.includes(member.id) ? '<span class="member-badge mic">🎤</span>' : ""}
       </div>
     `;
+    const identity = div("member-identity");
+    const roles = [headerIds.includes(id) ? "Header" : "", ministerIds.includes(id) ? "Ministrante" : ""].filter(Boolean);
+    identity.innerHTML = `<strong>${escapeHTML(member.nome)}</strong><span>${escapeHTML(roles.join(" · ") || "Integrante")}</span>`;
+    pill.append(identity);
     strip.append(pill);
   });
 
@@ -519,67 +465,12 @@ function renderMembers(culto) {
   return strip;
 }
 
-function renderMemberMiniatures(culto) {
-  const row = document.createElement("div");
-  row.className = "mini-thumb-row";
-  (culto.integrantes || []).slice(0, 12).forEach((id) => {
-    const member = getMember(id);
-    if (!member) return;
-    const thumb = document.createElement("div");
-    thumb.className = "mini-thumb round";
-    thumb.innerHTML = `<img src="${memberImg(member)}" alt="${escapeAttr(member.nome)}" onerror="this.src='integrantes/default.jpeg'" />`;
-    row.append(thumb);
-  });
-  return row;
-}
-
-function renderRoleMiniatures(culto) {
-  const row = document.createElement("div");
-  row.className = "role-mini-row";
-  const headers = getHeaderIds(culto);
-  const ministers = getMinisterIds(culto);
-  const roleIds = Array.from(new Set(headers.concat(ministers)));
-
-  roleIds.forEach((id) => {
-    const member = getMember(id);
-    if (!member) return;
-    const isHeader = headers.includes(id);
-    const isMinister = ministers.includes(id);
-    const roles = [isHeader ? "Header" : "", isMinister ? "Ministrante" : ""].filter(Boolean).join(" e ");
-    const thumb = document.createElement("div");
-    thumb.className = "role-mini";
-    thumb.title = `${roles}: ${member.nome}`;
-    thumb.innerHTML = `
-      <img src="${memberImg(member)}" alt="${escapeAttr(member.nome)}" onerror="this.src='integrantes/default.jpeg'" />
-      ${isHeader ? '<span class="crown">👑</span>' : ""}
-      ${isMinister ? '<span class="mic">🎤</span>' : ""}
-    `;
-    row.append(thumb);
-  });
-
-  return row;
-}
-
-function renderSongMiniatures(culto) {
-  const row = document.createElement("div");
-  row.className = "mini-thumb-row song-miniatures";
-  (culto.musicas || []).slice(0, 6).forEach((id) => {
-    const song = getSong(id);
-    if (!song) return;
-    const thumb = document.createElement("div");
-    thumb.className = "mini-thumb";
-    thumb.innerHTML = `<img src="${songThumb(song)}" alt="${escapeAttr(song.titulo)}" onerror="this.src='artistas/default.jpg'" />`;
-    row.append(thumb);
-  });
-  return row;
-}
-
 function renderSuggestionCompare(culto, suggestions) {
   const wrap = document.createElement("div");
-  wrap.append(sectionHeader("Playlists sugeridas", "Comparacao", "Use como ponto de partida"));
+  wrap.append(sectionHeader("Sugestões de repertório", "Ponto de partida", "Escolha um trio e ajuste na revisão. A sugestão substitui as músicas do rascunho."));
 
   if (!suggestions.length) {
-    wrap.append(emptyState("Sem sugestoes disponiveis com as regras atuais."));
+    wrap.append(emptyState("Sem sugestões disponíveis com as regras atuais."));
     return wrap;
   }
 
@@ -599,8 +490,7 @@ function renderSuggestionCompare(culto, suggestions) {
     card.append(button("Usar como rascunho", "pill-button", () => {
       setDraft(cultKey(culto), suggestion.songIds);
       openBuilder(culto);
-      setView("repertorio");
-      toast("Playlist enviada para o construtor.");
+      toast("Sugestão aplicada ao rascunho.");
     }));
     grid.append(card);
   });
@@ -613,10 +503,10 @@ function renderComparisonBars(analysis) {
   const box = document.createElement("div");
   box.className = "comparison-bars";
   [
-    ["Seguranca", analysis.safety, analysis.safety],
+    ["Segurança", analysis.safety, analysis.safety],
     ["Familiaridade", analysis.familiarity, analysis.familiarity],
     ["Desafio", analysis.challenge, 1 - analysis.challenge],
-    ["Renovacao", analysis.renewal, analysis.renewal],
+    ["Renovação", analysis.renewal, analysis.renewal],
   ].forEach(([label, score, toneScore]) => {
     const row = document.createElement("div");
     row.className = "bar-row";
@@ -633,326 +523,141 @@ function renderComparisonBars(analysis) {
 }
 
 function renderBuilder() {
-  const cultos = getBuilderCultos();
-  if (!state.builderCult && cultos[0]) state.builderCult = cultKey(cultos[0]);
-  if (state.builderCult && !cultos.some((culto) => cultKey(culto) === state.builderCult)) {
-    state.builderCult = cultos[0] ? cultKey(cultos[0]) : "";
-    localStorage.setItem(STORAGE.builderCult, state.builderCult);
-  }
-  const selected = cultos.find((culto) => cultKey(culto) === state.builderCult) || cultos[0] || null;
-  const ids = selected ? getDraft(cultKey(selected), selected) : [];
-  const analysis = selected ? analyzeSet({ ...selected, musicas: ids }, ids) : null;
-
-  const panel = document.createElement("section");
-  panel.className = "builder-panel";
-
-  const left = document.createElement("div");
-  left.append(sectionHeader("Montar repertorio", "Rascunho salvo no navegador", "Clique nas musicas da biblioteca para testar"));
-  if (selected) left.append(renderBuilderSuggestionCarousel(selected));
-
-  const select = document.createElement("select");
-  select.className = "select";
-  select.innerHTML = cultos
-    .map(
-      (culto) =>
-        `<option value="${escapeAttr(cultKey(culto))}" ${cultKey(culto) === state.builderCult ? "selected" : ""}>${escapeHTML(formatDateLong(culto.dataObj))}</option>`,
-    )
-    .join("");
-  select.addEventListener("change", () => {
-    state.builderCult = select.value;
-    localStorage.setItem(STORAGE.builderCult, state.builderCult);
-    renderRepertorio();
+  const culto = getCultByKey(state.builderCult);
+  const ids = getDraft(cultKey(culto), culto);
+  const panel = div("builder-workspace");
+  const header = div("builder-context");
+  header.append(button("Concluir e sair", "ghost-button", () => { ui.building = false; setView("repertorio"); }));
+  const context = div("builder-context-copy");
+  context.innerHTML = `<strong>${escapeHTML(formatDateLong(culto.dataObj))}</strong><span>Rascunho salvo neste navegador</span>`;
+  header.append(context); panel.append(header);
+  const tabs = div("segmented-control"); tabs.setAttribute("aria-label", "Etapas da montagem");
+  [["selected", "Selecionadas"], ["add", "Adicionar"], ["suggestions", "Sugestões"]].forEach(([key, label]) => {
+    const btn = button(label, ui.builderTab === key ? "segment active" : "segment", () => { ui.builderTab = key; renderRepertorio(); });
+    btn.setAttribute("aria-pressed", String(ui.builderTab === key)); tabs.append(btn);
   });
-  left.append(select);
-
-  if (!selected) {
-    left.append(emptyState("Nenhum culto futuro para montar repertorio."));
-  } else if (!ids.length) {
-    left.append(div("builder-empty", "Nenhuma musica no rascunho. Selecione musicas abaixo para montar e analisar em tempo real."));
-  } else {
-    left.append(renderTrackList(ids, { culto: selected, action: "remove", builder: true }));
+  panel.append(tabs);
+  const feedback = div("builder-feedback"); feedback.id = "builderFeedback"; feedback.setAttribute("role", "status"); panel.append(feedback);
+  if (ui.builderTab === "selected") {
+    panel.append(sectionHeader("Seu repertório", "Revisão", "A ordem abaixo será usada ao copiar o rascunho."));
+    if (ids.length) {
+      panel.append(renderTrackList(ids, { culto, action: "remove", builder: true }));
+      const actions = div("service-actions");
+      actions.append(button("Copiar rascunho", "pill-button", () => copyScale({ ...culto, musicas: ids })), button("Limpar rascunho", "ghost-button", () => {
+        setDraft(cultKey(culto), []); renderRepertorio(); toast("Rascunho limpo.");
+      }));
+      panel.append(actions, renderAnalysisBlock(analyzeSet(culto, ids)));
+    } else {
+      panel.append(emptyState("Seu repertório começa com uma música."), button("Escolher músicas", "pill-button", () => { ui.builderTab = "add"; renderRepertorio(); }));
+    }
+  } else if (ui.builderTab === "suggestions") {
+    panel.append(renderSuggestionCompare(culto, generateSuggestedPlaylists(culto)));
   }
-
-  const actions = document.createElement("div");
-  actions.className = "inline-actions";
-  actions.append(
-    button("Limpar rascunho", "danger-button", () => {
-      if (!selected) return;
-      setDraft(cultKey(selected), []);
-      renderRepertorio();
-    }),
-    button("Copiar rascunho", "ghost-button", () => {
-      if (!selected) return;
-      copyScale({ ...selected, musicas: ids });
-    }),
-  );
-  left.append(actions);
-
-  const right = document.createElement("div");
-  if (analysis && ids.length) {
-    left.insertBefore(renderMetricStrip(analysis), left.querySelector(".tracklist"));
-    right.append(renderHumanReading(analysis));
-  } else {
-    right.append(emptyState("Selecione uma musica para liberar a leitura do rascunho."));
-  }
-
-  panel.append(left, right);
+  const dock = document.getElementById("builderDock");
+  const count = div("dock-count"); count.innerHTML = `<strong>${ids.length} música${ids.length === 1 ? "" : "s"}</strong><span>no rascunho</span>`;
+  dock.append(count, button(ui.builderTab === "selected" ? "Adicionar músicas" : "Revisar repertório", "pill-button", () => {
+    ui.builderTab = ui.builderTab === "selected" ? "add" : "selected"; renderRepertorio(); window.scrollTo({ top: 0, behavior: "instant" });
+  }));
   return panel;
 }
 
-function renderBuilderSuggestionCarousel(culto) {
-  const suggestions = generateSuggestedPlaylists(culto);
-  const wrap = document.createElement("div");
-  wrap.className = "suggestion-carousel";
-
-  if (!suggestions.length) {
-    wrap.append(div("builder-empty", "Sem sugestoes automaticas para este culto."));
-    return wrap;
-  }
-
-  let index = 0;
-  const viewport = document.createElement("div");
-  viewport.className = "suggestion-viewport";
-  const prev = button("‹", "ghost-button icon-button", () => {
-    index = (index - 1 + suggestions.length) % suggestions.length;
-    paint();
-  });
-  const next = button("›", "ghost-button icon-button", () => {
-    index = (index + 1) % suggestions.length;
-    paint();
-  });
-  prev.setAttribute("aria-label", "Sugestao anterior");
-  next.setAttribute("aria-label", "Proxima sugestao");
-
-  const paint = () => {
-    viewport.innerHTML = "";
-    const suggestion = suggestions[index];
-    const card = document.createElement("article");
-    card.className = "suggestion-card";
-    card.innerHTML = `
-      <div>
-        <p class="mini-kicker">${index + 1}/${suggestions.length} · ${escapeHTML(suggestion.category || "Mista")}</p>
-        <h4>${escapeHTML(suggestion.title)}</h4>
-      </div>
-    `;
-    card.append(renderSongMiniatures({ musicas: suggestion.songIds }));
-    card.append(renderMetricStrip(suggestion.analysis, "mini"));
-    card.append(button("Usar", "pill-button", () => {
-      setDraft(cultKey(culto), suggestion.songIds);
-      renderRepertorio();
-      toast("Sugestao aplicada ao rascunho.");
-    }));
-    viewport.append(card);
-  };
-
-  paint();
-  wrap.append(prev, viewport, next);
-
-  return wrap;
-}
-
 function renderLibraryControls() {
-  const controls = document.createElement("section");
-  controls.className = "controls-panel";
-  controls.innerHTML = `
-    <input id="librarySearch" class="input" type="search" placeholder="Buscar musica ou artista" value="${escapeAttr(state.librarySearch)}" />
-    <select id="libraryCategory" class="select">
-      <option value="all">Todas as categorias</option>
-      ${categorias.map((cat) => `<option value="${escapeAttr(cat)}" ${cat === state.libraryCategory ? "selected" : ""}>${escapeHTML(cat)}</option>`).join("")}
-    </select>
-    <select id="libraryStatus" class="select">
-      <option value="all">Todos os status</option>
-      <option value="available" ${state.libraryStatus === "available" ? "selected" : ""}>Disponiveis</option>
-      <option value="recent" ${state.libraryStatus === "recent" ? "selected" : ""}>Recentes</option>
-      <option value="future" ${state.libraryStatus === "future" ? "selected" : ""}>Agendadas</option>
-      <option value="banned" ${state.libraryStatus === "banned" ? "selected" : ""}>Banidas</option>
-    </select>
-  `;
-
-  controls.querySelector("#librarySearch").addEventListener("input", (ev) => {
-    state.librarySearch = ev.target.value;
-    localStorage.setItem(STORAGE.librarySearch, state.librarySearch);
-    renderRepertorio();
+  const controls = div("music-controls");
+  controls.innerHTML = `<label class="search-label" for="librarySearch">Buscar música ou artista</label>
+    <div class="search-row"><input id="librarySearch" class="input" type="search" placeholder="Título, artista ou categoria" value="${escapeAttr(state.librarySearch)}" autocomplete="off" />
+    <button class="ghost-button" id="toggleFilters" aria-expanded="${ui.filtersOpen}" aria-controls="musicFilters">Filtros</button></div>
+    <div id="musicFilters" class="music-filters" ${ui.filtersOpen ? "" : "hidden"}>
+      <label>Categoria<select id="libraryCategory" class="select"><option value="all">Todas as categorias</option>${categorias.map(cat => `<option value="${escapeAttr(cat)}" ${cat === state.libraryCategory ? "selected" : ""}>${escapeHTML(cat)}</option>`).join("")}</select></label>
+      <label>Disponibilidade<select id="libraryStatus" class="select">${[["all", "Todas as músicas"], ["available", "Disponíveis"], ["recent", "Bloqueadas pelo intervalo"], ["future", "Agendadas"], ["banned", "Banidas"]].map(([key,label]) => `<option value="${key}" ${key === state.libraryStatus ? "selected" : ""}>${label}</option>`).join("")}</select></label>
+      <label>Intensidade<select id="libraryIntensity" class="select">${[["all", "Todas as intensidades"], ["baixa", "Baixa"], ["media", "Média"], ["alta", "Alta"], ["unset", "Não informada"]].map(([key,label]) => `<option value="${key}" ${key === state.libraryIntensity ? "selected" : ""}>${label}</option>`).join("")}</select></label>
+      <button class="ghost-button" id="clearMusicFilters">Limpar filtros</button>
+    </div>`;
+  controls.querySelector("#toggleFilters").addEventListener("click", ev => {
+    ui.filtersOpen = !ui.filtersOpen; controls.querySelector("#musicFilters").hidden = !ui.filtersOpen; ev.currentTarget.setAttribute("aria-expanded", String(ui.filtersOpen));
   });
-  controls.querySelector("#libraryCategory").addEventListener("change", (ev) => {
-    state.libraryCategory = ev.target.value;
-    localStorage.setItem(STORAGE.libraryCategory, state.libraryCategory);
-    renderRepertorio();
+  controls.querySelector("#librarySearch").addEventListener("input", ev => {
+    state.librarySearch = ev.target.value; localStorage.setItem(STORAGE.librarySearch, state.librarySearch); renderLibraryResults();
   });
-  controls.querySelector("#libraryStatus").addEventListener("change", (ev) => {
-    state.libraryStatus = ev.target.value;
-    localStorage.setItem(STORAGE.libraryStatus, state.libraryStatus);
-    renderRepertorio();
+  [["libraryCategory", STORAGE.libraryCategory], ["libraryStatus", STORAGE.libraryStatus], ["libraryIntensity", STORAGE.libraryIntensity]].forEach(([key, storage]) => {
+    controls.querySelector(`#${key}`).addEventListener("change", ev => { state[key] = ev.target.value; localStorage.setItem(storage, state[key]); renderLibraryResults(); });
   });
-
+  controls.querySelector("#clearMusicFilters").addEventListener("click", () => {
+    state.libraryCategory = state.libraryStatus = state.libraryIntensity = "all";
+    ["libraryCategory", "libraryStatus", "libraryIntensity"].forEach(key => { localStorage.setItem(STORAGE[key], "all"); controls.querySelector(`#${key}`).value = "all"; });
+    renderLibraryResults();
+  });
   return controls;
 }
 
-function renderLibrarySection(title, songs, kind) {
-  const section = document.createElement("section");
-  section.className = "library-section";
-
-  const heading = document.createElement(kind === "blocked" ? "summary" : "div");
-  heading.className = "library-heading";
-  heading.innerHTML = `
-    <h3>${escapeHTML(title)}</h3>
-    <span class="mini-chip">${songs.length} musica(s)</span>
-  `;
-
-  if (kind === "blocked") {
-    const details = document.createElement("details");
-    details.className = "library-accordion";
-    details.append(heading);
-    details.append(songs.length ? renderLibraryTrackList(songs) : emptyState(`Nenhuma musica em "${title}" para os filtros atuais.`));
-    section.append(details);
-    return section;
-  }
-
-  section.append(heading);
-  section.append(songs.length ? renderLibraryTrackList(songs) : emptyState(`Nenhuma musica em "${title}" para os filtros atuais.`));
-  return section;
-}
-
 function renderLibraryTrackList(songs) {
-  const list = document.createElement("div");
-  list.className = "tracklist library-tracklist";
-
-  songs.forEach((song, idx) => {
-    const status = getSongStatus(song.id);
-    const selectedCulto = getCultByKey(state.builderCult);
-    const selectedIds = selectedCulto ? getDraft(cultKey(selectedCulto), selectedCulto) : [];
-    const isSelected = selectedIds.includes(song.id);
-
-    const details = document.createElement("details");
-    details.className = `song-details ${status.status !== "available" ? "blocked-song" : ""}`;
-
-    const summary = document.createElement("summary");
-    const row = document.createElement("div");
-    row.className = "track-row";
-    row.innerHTML = `
-      <div class="track-index">${idx + 1}</div>
-      <div class="track-thumb"><img src="${songThumb(song)}" alt="" onerror="this.src='artistas/default.jpg'" /></div>
-      <div class="track-main">
-        <div class="track-title">${escapeHTML(song.titulo)}</div>
-        <div class="track-artist">${escapeHTML(song.artista || "Artista")}</div>
-      </div>
-      <div class="track-meta">${getTotalExecucoes(song.id)}x</div>
-    `;
-
-    const actionArea = document.createElement("div");
-    actionArea.className = "inline-actions";
-    if (status.status !== "available") actionArea.append(renderStatusPill(status));
-    actionArea.append(libraryActionButton(isSelected ? "-" : "+", isSelected ? "danger-button icon-button" : "pill-button icon-button", () => {
-      if (isSelected) removeFromDraft(song.id);
-      else addSongFromLibrary(song);
-    }));
-    row.append(actionArea);
-    summary.append(row);
-    details.append(summary, renderSongDetails(song, status));
-    list.append(details);
-  });
-
+  const list = div("song-list");
+  const culto = ui.building ? getCultByKey(state.builderCult) : null;
+  songs.forEach(song => list.append(renderSongCard(song, { culto, library: true })));
   return list;
 }
 
-function renderSongDetails(song, status) {
-  const body = document.createElement("div");
-  body.className = "song-detail-body";
-
-  const last = getLastPlayedBefore(song.id, today());
+function renderSongDetails(song) {
+  const body = div("music-detail-content");
+  const culto = ui.detailCult || null;
+  const ref = culto ? culto.dataObj : today();
+  const last = getLastPlayedBefore(song.id, ref);
   const next = getNextScheduledOnOrAfter(song.id, today());
-  const difficulty = Object.entries(song.level || {}).filter(([, level]) => level);
+  const status = getSongStatus(song.id, culto);
+  const statusIcon = { available: "check", recent: "clock", future: "calendar", banned: "ban" }[status.status];
 
-  const categories = document.createElement("div");
-  categories.className = "song-tags";
-  song.categorias.forEach((cat) => {
-    const chip = document.createElement("span");
-    chip.className = "category-chip";
-    chip.textContent = cat;
-    categories.append(chip);
+  const hero = div("song-profile-hero");
+  hero.innerHTML = `${songArtworkHTML(song, "detail-artwork")}<div class="song-profile-heading"><p>${musicIcon("artist")}<span>${escapeHTML(song.artista)}</span></p><h2 id="songDetailTitle">${escapeHTML(song.titulo)}</h2></div>`;
+  const toolbar = div("song-profile-actions");
+  toolbar.append(renderSongQualifications(song));
+  if (song.referLink) toolbar.append(musicAction("Ouvir", "play", "pill-button listen-button", () => openYoutube(song)));
+  body.append(hero, toolbar);
+
+  const availability = div(`availability-note availability-${status.status}`);
+  const statusLabel = { available: "Disponível", recent: "Bloqueada", future: "Agendada", banned: "Banida" }[status.status];
+  const release = getSongReleaseInfo(song.id, culto);
+  availability.innerHTML = `<span class="availability-symbol">${musicIcon(statusIcon)}</span><div><strong>${statusLabel}</strong>${release ? `<span>Libera em ${release.days} ${release.days === 1 ? "dia" : "dias"}</span>` : ""}</div>`;
+  body.append(availability, renderIntensityPanel(song));
+
+  const categories = detailPanel("Categorias", "tag");
+  const tags = div("song-tags");
+  song.categorias.forEach(category => tags.append(musicBadge(category, "category")));
+  categories.append(tags.children.length ? tags : div("muted-line", "Sem categorias cadastradas."));
+  body.append(categories);
+
+  const technical = detailPanel("Dificuldade por instrumento", "level2");
+  const levels = document.createElement("dl"); levels.className = "instrument-tiles";
+  const icons = { vocal: "mic", voz: "mic", guitarra: "strings", baixo: "strings", violao: "strings", bateria: "drums", teclado: "keys", sax: "music" };
+  Object.entries(song.level || {}).filter(([, level]) => level).forEach(([inst, level]) => {
+    const key = normalizeInstrument(inst);
+    const row = div(`instrument-tile instrument-${level}`);
+    row.innerHTML = `<dt>${musicIcon(icons[key] || "music")}<span>${escapeHTML(formatInstrument(key))}</span></dt><dd><span class="instrument-meter" aria-hidden="true">${[1, 2, 3].map(n => `<i class="${n <= levelValue(level) ? "filled" : ""}"></i>`).join("")}</span><span>${escapeHTML(levelLabel(level))}</span></dd>`;
+    levels.append(row);
   });
+  technical.append(levels.children.length ? levels : div("muted-line", "Dificuldades ainda não cadastradas."));
+  body.append(technical);
 
-  const grid = document.createElement("div");
-  grid.className = "detail-grid";
-  grid.append(
-    detailItem("Execucoes", `${getTotalExecucoes(song.id)}x`),
-    detailItem("Ultima vez", last ? formatDateCompact(last) : "Nunca"),
-    detailItem("Artista", `${getArtistExecucoes(song.artista)}x`),
-    detailItem("Categoria", `${getCategoryExecucoes(song)}x`),
-    detailItem("Status", status.label),
-    detailItem("Agenda", next ? formatDateCompact(next) : "Livre"),
-  );
+  const history = detailPanel("Histórico", "clock");
+  const count = div("song-play-count");
+  count.innerHTML = `${musicIcon("repeat")}<strong>${getTotalExecucoes(song.id)}</strong><span>execuções da música</span>`;
+  const timeline = document.createElement("dl"); timeline.className = "song-timeline";
+  [["Última execução", last ? formatDateCompact(last) : "Nunca tocada", "clock"], ["Próximo agendamento", next ? formatDateCompact(next) : "Não agendada", "calendar"]].forEach(([label, value, icon]) => {
+    const row = div("timeline-entry");
+    row.innerHTML = `<dt>${musicIcon(icon)}<span>${label}</span></dt><dd>${escapeHTML(value)}</dd>`;
+    timeline.append(row);
+  });
+  history.append(count, timeline);
 
-  const levels = document.createElement("div");
-  levels.className = "level-list";
-  if (difficulty.length) {
-    difficulty.forEach(([inst, level]) => {
-      const pill = document.createElement("span");
-      pill.className = `level-pill ${level}`;
-      pill.textContent = `${formatInstrument(normalizeInstrument(inst))}: ${levelLabel(level)}`;
-      levels.append(pill);
-    });
-  } else {
-    levels.append(div("muted-line", "Sem dificuldades cadastradas."));
-  }
-
-  body.append(categories, grid, levels);
-  if (song.referLink) {
-    body.append(button("Abrir no YouTube", "ghost-button", () => openYoutube(song)));
-  }
+  const stats = document.createElement("details"); stats.className = "catalog-stats";
+  stats.innerHTML = `<summary>${musicIcon("spark")}<span>No repertório da banda</span><span class="disclosure-mark" aria-hidden="true">+</span></summary><dl><div><dt>Execuções do artista</dt><dd>${getArtistExecucoes(song.artista)}</dd></div><div><dt>Execuções por categoria <small>Menor total entre as categorias desta música</small></dt><dd>${getCategoryExecucoes(song)}</dd></div></dl>`;
+  history.append(stats); body.append(history, renderSongMemberInsights(song.id));
   return body;
 }
 
 function renderTrackList(ids, opts = {}) {
-  const list = document.createElement("div");
-  list.className = "tracklist";
+  const list = div("song-list");
   const songs = ids.map(getSong).filter(Boolean);
-
-  if (!songs.length) {
-    list.append(emptyState("Nenhuma musica selecionada."));
-    return list;
-  }
-
-  songs.forEach((song, idx) => {
-    const status = getSongStatus(song.id, opts.culto || null);
-    const visualBlocked = status.status !== "available" && opts.showStatus !== false;
-    const row = document.createElement("div");
-    row.className = `track-row ${visualBlocked ? "blocked-song" : ""} ${opts.builder ? "builder-track" : ""}`;
-    row.innerHTML = `
-      <div class="track-index">${idx + 1}</div>
-      <div class="track-thumb"><img src="${songThumb(song)}" alt="" onerror="this.src='artistas/default.jpg'" /></div>
-      <div class="track-main">
-        <div class="track-title">${escapeHTML(song.titulo)}</div>
-        <div class="track-artist">${escapeHTML(song.artista || "Artista")}</div>
-      </div>
-      <div class="track-meta">${getTotalExecucoes(song.id)}x</div>
-    `;
-
-    const actionArea = document.createElement("div");
-    actionArea.className = "inline-actions";
-
-    if (opts.action === "remove") {
-      actionArea.append(button("-", "danger-button icon-button", () => removeFromDraft(song.id)));
-    } else if (opts.action === "add") {
-      const selectedCulto = getCultByKey(state.builderCult);
-      const selectedIds = selectedCulto ? getDraft(cultKey(selectedCulto), selectedCulto) : [];
-      const isSelected = selectedIds.includes(song.id);
-      if (status.status !== "available") actionArea.append(renderStatusPill(status));
-      actionArea.append(button(isSelected ? "-" : "+", isSelected ? "danger-button icon-button" : "pill-button icon-button", () => {
-        if (isSelected) removeFromDraft(song.id);
-        else addSongFromLibrary(song);
-      }));
-    } else {
-      if (status.status !== "available" && opts.showStatus !== false) actionArea.append(renderStatusPill(status));
-    }
-
-    row.append(actionArea);
-    if (opts.action === "open") {
-      row.addEventListener("click", () => openYoutube(song));
-    }
-    list.append(row);
-  });
-
+  if (!songs.length) { list.append(emptyState("A seleção de músicas ainda está em aberto.")); return list; }
+  songs.forEach((song, index) => list.append(renderSongCard(song, { ...opts, index, total: songs.length })));
   return list;
 }
 
@@ -973,7 +678,7 @@ function addSongFromLibrary(song) {
   const status = getSongStatus(song.id, culto);
   const nextDraft = [...draft, song.id];
   if (hasDisjointCategoryTriple(nextDraft)) {
-    toast("Regra de categoria: em qualquer trio, pelo menos 2 musicas precisam coincidir em categoria.");
+    showBuilderFeedback("Não foi possível adicionar: em cada trio, pelo menos duas músicas precisam compartilhar uma categoria.");
     return;
   }
 
@@ -983,7 +688,7 @@ function addSongFromLibrary(song) {
   } else {
     toast(`${song.titulo} adicionada ao rascunho.`);
   }
-  renderRepertorio();
+  refreshSelection(song.id);
 }
 
 function removeFromDraft(songId) {
@@ -994,12 +699,14 @@ function removeFromDraft(songId) {
     key,
     getDraft(key, culto).filter((id) => id !== songId),
   );
-  renderRepertorio();
+  refreshSelection(songId);
 }
 
 function openBuilder(culto) {
   state.builderCult = cultKey(culto);
   localStorage.setItem(STORAGE.builderCult, state.builderCult);
+  ui.building = true; ui.builderTab = "selected";
+  setView("repertorio");
 }
 
 function getDraft(key, culto = null) {
@@ -1114,7 +821,7 @@ function analyzeSet(culto, ids) {
   }
   if ((popCounts.classic || 0) >= 2 && safety >= 0.6) {
     addNote("O set tem colchao de musicas classicas, o que ajuda a banda a tocar com mais previsibilidade.", {
-      label: "Seguranca",
+      label: "Segurança",
       icon: "🛡️",
       tone: "good",
       songIds: classicSongs.map((song) => song.id),
@@ -1140,7 +847,7 @@ function analyzeSet(culto, ids) {
   }
   if (renewal >= 0.62 && safety < 0.52) {
     addNote("O set tem cheiro de renovacao, mas precisa de combinados claros antes de chegar no culto.", {
-      label: "Renovacao",
+      label: "Renovação",
       icon: "🌱",
       tone: "warn",
       songIds,
@@ -1273,10 +980,10 @@ function cooccurrenceNotes(songs, events) {
 function generateSuggestedPlaylists(culto) {
   const strategies = [
     { key: "favoritas", title: "Favoritas do Time", weights: { fam: 1.2, safe: 0.9, renew: 0.1, challenge: -0.2, pop: 0.8 } },
-    { key: "facil", title: "Facil", weights: { fam: 0.9, safe: 1.25, renew: 0.1, challenge: -0.8, pop: 0.4 } },
+    { key: "facil", title: "Fácil", weights: { fam: 0.9, safe: 1.25, renew: 0.1, challenge: -0.8, pop: 0.4 } },
     { key: "mediano", title: "Mediano", weights: { fam: 0.7, safe: 0.8, renew: 0.45, challenge: 0.05, pop: 0.3 } },
     { key: "desafiador", title: "Desafiador", weights: { fam: 0.2, safe: 0.15, renew: 0.5, challenge: 1.1, pop: -0.1 } },
-    { key: "renovacao", title: "Renovacao", weights: { fam: 0.15, safe: 0.25, renew: 1.25, challenge: 0.25, pop: -0.4 } },
+    { key: "renovacao", title: "Renovação", weights: { fam: 0.15, safe: 0.25, renew: 1.25, challenge: 0.25, pop: -0.4 } },
   ];
 
   const usedKeys = new Set();
@@ -1394,19 +1101,33 @@ function isSuggestionEligible(song, date) {
 function getFilteredSongs() {
   const q = normalizeText(state.librarySearch);
   const selectedCategories = getCurrentDraftCategorySet();
-  return musicas.filter((song) => {
-    const status = getSongStatus(song.id).status;
+  const filtered = musicas.filter((song) => {
+    const status = getSongStatus(song.id, ui.building ? getCultByKey(state.builderCult) : null).status;
     if (state.libraryStatus !== "all" && status !== state.libraryStatus) return false;
     if (state.libraryCategory !== "all" && !song.categorias.includes(state.libraryCategory)) return false;
+    if (state.libraryIntensity !== "all" && (song.intensidade || "unset") !== state.libraryIntensity) return false;
     if (q) {
       const hay = normalizeText(`${song.titulo} ${song.artista} ${song.categorias.join(" ")}`);
       if (!hay.includes(q)) return false;
     }
     return true;
-  }).sort((a, b) => compareLibrarySongs(a, b, selectedCategories));
+  });
+  if (ui.building) return filtered.sort((a, b) => compareBuilderSongs(a, b, selectedCategories));
+
+  // Compute each sort key once; filters retain the same cycle ordering.
+  const order = { available: 0, recent: 1, future: 2, banned: 3 };
+  const now = today();
+  return filtered.map(song => {
+    const status = getSongStatus(song.id).status;
+    const position = status === "available" ? getTotalExecucoes(song.id)
+      : status === "recent" ? getLastPlayedBefore(song.id, now).getTime()
+      : status === "future" ? getNextScheduledOnOrAfter(song.id, now).getTime() : 0;
+    return { song, group: order[status], position };
+  }).sort((a, b) => a.group - b.group || a.position - b.position || a.song.titulo.localeCompare(b.song.titulo, "pt-BR") || a.song.id - b.song.id)
+    .map(item => item.song);
 }
 
-function compareLibrarySongs(a, b, selectedCategories = new Set()) {
+function compareBuilderSongs(a, b, selectedCategories = new Set()) {
   const aShared = sharedCategoryCount(a, selectedCategories);
   const bShared = sharedCategoryCount(b, selectedCategories);
   return (
@@ -1420,6 +1141,7 @@ function compareLibrarySongs(a, b, selectedCategories = new Set()) {
 }
 
 function getCurrentDraftCategorySet() {
+  if (!ui.building) return new Set();
   const culto = getCultByKey(state.builderCult);
   if (!culto) return new Set();
   const ids = getDraft(cultKey(culto), culto);
@@ -1546,6 +1268,7 @@ function normalizeSongs(raw) {
   return raw.map((song) => ({
     ...song,
     categorias: parseCategories(song.categorias),
+    intensidade: normalizeIntensity(song.intensidade),
     _thumb: song.referLink ? `https://img.youtube.com/vi/${song.referLink}/0.jpg` : "artistas/default.jpg",
     _artistImage: `artistas/${slugify(song.artista || "")}.jpg`,
     banned: song.banned === true || song.ban === true,
@@ -1589,9 +1312,7 @@ function getFutureCultos() {
 }
 
 function getBuilderCultos() {
-  return getFutureCultos()
-    .slice(1)
-    .filter((ev) => !Array.isArray(ev.musicas) || ev.musicas.length === 0);
+  return getFutureCultos();
 }
 
 function getCultByKey(key) {
@@ -1621,6 +1342,27 @@ function getSongStatus(id, contextCulto = null) {
   const last = getLastPlayedBefore(id, refDate);
   if (last && daysBetween(last, refDate) <= COOLDOWN_DAYS) return { status: "recent", label: "Recente" };
   return { status: "available", label: "Disponivel" };
+}
+
+function getSongReleaseInfo(id, contextCulto = null) {
+  const status = getSongStatus(id, contextCulto).status;
+  if (status !== "recent" && status !== "future") return null;
+  const now = today();
+  let anchor;
+  if (status === "future") {
+    // Every known future booking extends the cycle; use the final booking.
+    const scheduled = historico.filter(ev => ev.dataObj && ev.dataObj >= now && ev.musicas.includes(id));
+    anchor = scheduled.reduce((latest, ev) => !latest || ev.dataObj > latest ? ev.dataObj : latest, null);
+  } else {
+    anchor = getLastPlayedBefore(id, contextCulto?.dataObj || now);
+  }
+  if (!anchor) return null;
+  const date = new Date(anchor);
+  // getSongStatus blocks days 0..56 inclusive: release begins on day 57.
+  date.setDate(date.getDate() + COOLDOWN_DAYS + 1);
+  const calendarDay = value => Date.UTC(value.getFullYear(), value.getMonth(), value.getDate());
+  const days = Math.max(0, Math.round((calendarDay(date) - calendarDay(now)) / 86400000));
+  return { date, days };
 }
 
 function getTotalExecucoes(id) {
@@ -1705,9 +1447,9 @@ function levelValue(level) {
 }
 
 function levelLabel(level) {
-  if (level === "easy") return "facil";
-  if (level === "medium") return "medio";
-  if (level === "hard") return "dificil";
+  if (level === "easy") return "Fácil";
+  if (level === "medium") return "Médio";
+  if (level === "hard") return "Difícil";
   return String(level || "sem nivel");
 }
 
@@ -1733,7 +1475,7 @@ function formatInstrument(inst) {
     voz: "Voz",
     guitarra: "Guitarra",
     baixo: "Baixo",
-    violao: "Violao",
+    violao: "Violão",
     bateria: "Bateria",
     teclado: "Teclado",
     sax: "Sax",
@@ -2061,45 +1803,20 @@ function rankCard(title, rows, type) {
   card.innerHTML = `<h3>${escapeHTML(title)}</h3>`;
 
   if (!rows.length) {
-    card.append(emptyState("Sem dados no periodo."));
+    card.append(emptyState("Sem dados no período."));
     return card;
   }
 
-  const podium = document.createElement("div");
-  podium.className = "podium-grid";
-  rows.slice(0, 3).forEach((row, idx) => {
-    const item = document.createElement("div");
-    item.className = `podium-card rank-${idx + 1}`;
-    item.innerHTML = `
-      ${rankImageHTML(type, row)}
-      <span class="podium-rank rank-${idx + 1}">#${idx + 1}</span>
-      <strong>${escapeHTML(row.name)}</strong>
-      <span>${row.value}x</span>
-    `;
-    podium.append(item);
+  const list = document.createElement("ol");
+  list.className = "band-ranking";
+  rows.slice(0, 10).forEach((row, idx) => {
+    const item = document.createElement("li");
+    item.innerHTML = `<span class="ranking-position">${idx + 1}</span>
+      <span class="ranking-copy"><strong>${escapeHTML(row.name)}</strong><span>${escapeHTML(typeLabel(type, row))}</span></span>
+      <span class="ranking-count">${row.value}x</span>`;
+    list.append(item);
   });
-  card.append(podium);
-
-  const rest = rows.slice(3, 10);
-  if (rest.length) {
-    const list = document.createElement("ol");
-    list.className = "rank-list";
-    rest.forEach((row, idx) => {
-      const rank = idx + 4;
-      const subtitle = typeLabel(type, row);
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <span class="rank-num rank-${rank}">#${rank}</span>
-        <span>
-          <span class="rank-name">${escapeHTML(row.name)}</span>
-          ${subtitle ? `<span class="rank-sub">${escapeHTML(subtitle)}</span>` : ""}
-        </span>
-        <span class="rank-value">${row.value}x</span>
-      `;
-      list.append(li);
-    });
-    card.append(list);
-  }
+  card.append(list);
   return card;
 }
 
@@ -2118,29 +1835,6 @@ function rankPairs(map) {
     .sort((a, b) => b.value - a.value || a.name.localeCompare(b.name));
 }
 
-function rankImageHTML(type, row) {
-  if (type === "musica") {
-    const song = getSong(Number(row.key));
-    return `<div class="rank-image"><img src="${songThumb(song)}" alt="" onerror="this.src='artistas/default.jpg'" /></div>`;
-  }
-  if (type === "artist") {
-    return `<div class="rank-image"><img src="${artistImg(row.name)}" alt="" onerror="this.src='artistas/default.jpg'" /></div>`;
-  }
-  if (type === "pair") {
-    const members = (row.members || []).map(getMember).filter(Boolean);
-    return `
-      <div class="rank-image pair-image">
-        ${members.map((member) => `<img src="${memberImg(member)}" alt="" onerror="this.src='integrantes/default.jpeg'" />`).join("")}
-      </div>
-    `;
-  }
-  if (type === "member") {
-    const member = getMember(Number(row.key));
-    return `<div class="rank-image"><img src="${member ? memberImg(member) : "integrantes/default.jpeg"}" alt="" onerror="this.src='integrantes/default.jpeg'" /></div>`;
-  }
-  return '<div class="rank-image"></div>';
-}
-
 function typeLabel(type, row) {
   if (type === "musica") {
     const song = getSong(Number(row.key));
@@ -2150,23 +1844,6 @@ function typeLabel(type, row) {
   if (type === "member") return "integrante";
   if (type === "pair") return "";
   return row.name;
-}
-
-function renderStatusPill(status) {
-  const span = document.createElement("span");
-  span.className = `song-status ${status.status}`;
-  span.textContent = status.label;
-  return span;
-}
-
-function detailItem(label, value) {
-  const item = document.createElement("div");
-  item.className = "detail-item";
-  item.innerHTML = `
-    <span>${escapeHTML(label)}</span>
-    <strong>${escapeHTML(value)}</strong>
-  `;
-  return item;
 }
 
 function sectionPanel(title, kicker, content) {
@@ -2201,12 +1878,6 @@ function button(text, className, handler) {
   return btn;
 }
 
-function libraryActionButton(text, className, handler) {
-  const btn = button(text, className, handler);
-  btn.addEventListener("click", (ev) => ev.preventDefault());
-  return btn;
-}
-
 function emptyState(text) {
   return div("empty-state", text);
 }
@@ -2231,10 +1902,6 @@ function memberImg(member) {
   return `integrantes/${String((member && member.nome) || "").toLowerCase()}.jpeg`;
 }
 
-function artistImg(name) {
-  return `artistas/${slugify(name || "")}.jpg`;
-}
-
 function songLabel(id) {
   const song = getSong(id);
   return song ? song.titulo : `Musica ${id}`;
@@ -2251,11 +1918,6 @@ function formatDateLong(date) {
   if (!(date instanceof Date) || isNaN(date)) return "Data indefinida";
   const months = ["janeiro", "fevereiro", "marco", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
   return `${date.getDate()} de ${months[date.getMonth()]}`;
-}
-
-function shortDate(date) {
-  if (!(date instanceof Date) || isNaN(date)) return "--";
-  return `${String(date.getDate()).padStart(2, "0")}/${monthShort(date)}`;
 }
 
 function formatDateCompact(date) {
@@ -2363,10 +2025,41 @@ function toast(message) {
   if (!el) {
     el = document.createElement("div");
     el.className = "toast";
+    el.setAttribute("role", "status");
     document.body.append(el);
   }
   el.textContent = message;
   el.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
+}
+
+function normalizeIntensity(value) {
+  const key = normalizeText(value || "").trim();
+  return ["baixa", "media", "alta"].includes(key) ? key : null;
+}
+
+function intensityLabel(value) {
+  return { baixa: "Baixa", media: "Média", alta: "Alta" }[normalizeIntensity(value)] || "Não informada";
+}
+
+function computeSongMemberInsights(songId) {
+  const rows = new Map(integrantes.map(member => [member.id, { member, played: 0, chosen: 0 }]));
+  const events = historico.filter(ev => ev.dataObj && ev.dataObj < today() && ev.musicas.includes(songId));
+  events.forEach(ev => {
+    new Set(ev.integrantes).forEach(id => { if (rows.has(id)) rows.get(id).played++; });
+    new Set(ev.header).forEach(id => { if (rows.has(id)) rows.get(id).chosen++; });
+  });
+  return { eventCount: events.length, members: Array.from(rows.values()) };
+}
+
+function rankSongMembers(stats, metric) {
+  const members = stats.members;
+  const byName = (a, b) => a.member.nome.localeCompare(b.member.nome, "pt-BR") || a.member.id - b.member.id;
+  const active = members.filter(row => row[metric] > 0);
+  return {
+    most: active.slice().sort((a, b) => b[metric] - a[metric] || byName(a, b)),
+    least: active.slice().sort((a, b) => a[metric] - b[metric] || byName(a, b)),
+    never: members.filter(row => row[metric] === 0).sort(byName),
+  };
 }

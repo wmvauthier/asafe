@@ -4,6 +4,7 @@
     "titulo": "A Cruz Vazia",
     "artista": "Kleber Lucas",
     "referLink": "mHu3UqXJ4tU",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição",
     "versiculos": "",
     "level": {
@@ -21,6 +22,7 @@
     "titulo": "Abraça-me",
     "artista": "David Quinlan",
     "referLink": "com5UB-SWYY",
+    "intensidade": null,
     "categorias": "Intimidade com Deus; Confiança e Esperança; Amor de Deus",
     "versiculos": "",
     "level": {
@@ -38,6 +40,7 @@
     "titulo": "Senhor e Rei",
     "artista": "Trazendo a Arca",
     "referLink": "W5BBzdzvY0w",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação; Adoração Congregacional; Glória de Deus",
     "versiculos": "",
     "level": {
@@ -55,6 +58,7 @@
     "titulo": "Além do Rio Azul",
     "artista": "Voz da Verdade",
     "referLink": "3zbXbDi6_6I",
+    "intensidade": "Baixa",
     "categorias": "Segunda Vinda",
     "versiculos": "",
     "level": {
@@ -72,6 +76,7 @@
     "titulo": "Aquieta minh'alma",
     "artista": "Ministério Zoe",
     "referLink": "ANfpF0pNob4",
+    "intensidade": null,
     "categorias": "Intimidade com Deus; Confiança e Esperança; Amor de Deus",
     "versiculos": "",
     "level": {
@@ -89,6 +94,7 @@
     "titulo": "Atos 2",
     "artista": "Gabriela Rocha",
     "referLink": "WWrU6LC_4ho",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação; Adoração Congregacional; Glória de Deus",
     "versiculos": "",
     "level": {
@@ -106,6 +112,7 @@
     "titulo": "Caminho no Deserto",
     "artista": "Bethel Music",
     "referLink": "VuApXUlveLM",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação; Confiança e Esperança; Adoração Congregacional",
     "versiculos": "",
     "level": {
@@ -123,6 +130,7 @@
     "titulo": "Canção do Apocalipse",
     "artista": "Gateway Church",
     "referLink": "5j0arvaKdqk",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação; Segunda Vinda",
     "versiculos": "",
     "level": {
@@ -140,6 +148,7 @@
     "titulo": "Colossenses e suas Linhas de Amor",
     "artista": "Fhop Music",
     "referLink": "MeX0yHMs9Nk",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição; Amor de Deus",
     "versiculos": "",
     "level": {
@@ -157,6 +166,7 @@
     "titulo": "Ele continua sendo bom",
     "artista": "Paulo César Baruk",
     "referLink": "3aYIoi1q2Do",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação; Confiança e Esperança",
     "versiculos": "",
     "level": {
@@ -174,6 +184,7 @@
     "titulo": "Ele vem",
     "artista": "Gabriel Guedes",
     "referLink": "YudXB8MZRTs",
+    "intensidade": null,
     "categorias": "Segunda Vinda",
     "versiculos": "",
     "level": {
@@ -191,6 +202,7 @@
     "titulo": "Em Espírito e em Verdade",
     "artista": "Ministério Koinonya",
     "referLink": "b8RSKRumBRs",
+    "intensidade": null,
     "categorias": "Adoração Congregacional; Engrandecimento e Exaltação",
     "versiculos": "",
     "level": {
@@ -208,6 +220,7 @@
     "titulo": "Em teus Braços",
     "artista": "Laura Souguellis",
     "referLink": "IxpWNuxGmzc",
+    "intensidade": null,
     "categorias": "Confiança e Esperança; Intimidade com Deus",
     "versiculos": "",
     "level": {
@@ -225,6 +238,7 @@
     "titulo": "Escape",
     "artista": "Renascer Praise",
     "referLink": "TpPRhSMQyvs",
+    "intensidade": null,
     "categorias": "Confiança e Esperança",
     "versiculos": "",
     "level": {
@@ -242,6 +256,7 @@
     "titulo": "Filho do Deus Vivo",
     "artista": "Nívea Soares",
     "referLink": "PdJoTcOgwUA",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição; Engrandecimento e Exaltação",
     "versiculos": "",
     "level": {
@@ -259,6 +274,7 @@
     "titulo": "Galileu",
     "artista": "Fernandinho",
     "referLink": "bcLC42v-eyE",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição; Amor de Deus",
     "versiculos": "",
     "level": {
@@ -276,6 +292,7 @@
     "titulo": "Grande é o Senhor",
     "artista": "Adhemar de Campos",
     "referLink": "icalvyOpiAU",
+    "intensidade": null,
     "categorias": "Adoração Congregacional; Engrandecimento e Exaltação",
     "versiculos": "",
     "level": {
@@ -293,6 +310,7 @@
     "titulo": "Jesus em tua Presença",
     "artista": "Asaph Borba",
     "referLink": "aMpM68cb5MY",
+    "intensidade": null,
     "categorias": "Adoração Congregacional; Morte e Ressurreição",
     "versiculos": "",
     "level": {
@@ -310,6 +328,7 @@
     "titulo": "Jesus, o Plano Perfeito",
     "artista": "Renascer Praise",
     "referLink": "OtDvlKRgJrc",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição; Amor de Deus",
     "versiculos": "",
     "level": {
@@ -327,6 +346,7 @@
     "titulo": "Lugar Secreto",
     "artista": "Gabriela Rocha",
     "referLink": "YnrN0o0lubM",
+    "intensidade": null,
     "categorias": "Intimidade com Deus; Confiança e Esperança; Glória de Deus",
     "versiculos": "",
     "level": {
@@ -344,6 +364,7 @@
     "titulo": "Maranata",
     "artista": "Alessandro Vilas Boas",
     "referLink": "iS6GXPbhCwU",
+    "intensidade": null,
     "categorias": "Segunda Vinda",
     "versiculos": "",
     "level": {
@@ -361,6 +382,7 @@
     "titulo": "Maravilhosa Graça",
     "artista": "Bethel Music",
     "referLink": "nv-T2_JPKZA",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição; Adoração Congregacional; Amor de Deus",
     "versiculos": "",
     "level": {
@@ -378,6 +400,7 @@
     "titulo": "Me atraiu",
     "artista": "Gabriela Rocha",
     "referLink": "Z6cONvRUFZQ",
+    "intensidade": null,
     "categorias": "Glória de Deus; Intimidade com Deus",
     "versiculos": "",
     "level": {
@@ -395,6 +418,7 @@
     "titulo": "Me derramar",
     "artista": "Vineyard",
     "referLink": "qsmHYPk4XGM",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação; Intimidade com Deus",
     "versiculos": "",
     "level": {
@@ -412,6 +436,7 @@
     "titulo": "Único",
     "artista": "Fhop Music",
     "referLink": "0vCmIKyJPRI",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação",
     "versiculos": "",
     "level": {
@@ -429,6 +454,7 @@
     "titulo": "Meu Maior Amor",
     "artista": "Nívea Soares",
     "referLink": "V9zmVN6KcJw",
+    "intensidade": null,
     "categorias": "Amor de Deus",
     "versiculos": "",
     "level": {
@@ -446,6 +472,7 @@
     "titulo": "Mil Graus",
     "artista": "Renascer Praise",
     "referLink": "UPygJxZll2Y",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação",
     "versiculos": "",
     "level": {
@@ -463,6 +490,7 @@
     "titulo": "Santo pra Sempre",
     "artista": "Bethel Music",
     "referLink": "ijNCc7ICCck",
+    "intensidade": null,
     "categorias": "Adoração Congregacional; Engrandecimento e Exaltação; Glória de Deus",
     "versiculos": "",
     "level": {
@@ -480,6 +508,7 @@
     "titulo": "Nada Além do Sangue",
     "artista": "Robert Lowry",
     "referLink": "csPaNdL6ndA",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição",
     "versiculos": "",
     "level": {
@@ -497,6 +526,7 @@
     "titulo": "O Escudo + Sou um Milagre",
     "artista": "Voz da Verdade",
     "referLink": "lWax47zymUE",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação; Confiança e Esperança",
     "versiculos": "",
     "level": {
@@ -514,6 +544,7 @@
     "titulo": "O que tua Glória fez comigo",
     "artista": "Fernanda Brum",
     "referLink": "0MCB1_1j2bY",
+    "intensidade": null,
     "categorias": "Glória de Deus; Confiança e Esperança",
     "versiculos": "",
     "level": {
@@ -531,6 +562,7 @@
     "titulo": "Oceanos",
     "artista": "Hillsong",
     "referLink": "2LeqOo2EV24",
+    "intensidade": null,
     "categorias": "Confiança e Esperança; Intimidade com Deus",
     "versiculos": "",
     "level": {
@@ -548,6 +580,7 @@
     "titulo": "Oh, Quão Lindo Esse Nome É",
     "artista": "Hillsong",
     "referLink": "8XUqcxgH8r4",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição; Engrandecimento e Exaltação",
     "versiculos": "",
     "level": {
@@ -565,6 +598,7 @@
     "titulo": "Ousado Amor",
     "artista": "Bethel Music",
     "referLink": "wSKKEAnLTDw",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição; Amor de Deus",
     "versiculos": "",
     "level": {
@@ -582,6 +616,7 @@
     "titulo": "Pra Sempre",
     "artista": "Gateway Church",
     "referLink": "ishM2o8LW94",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição",
     "versiculos": "",
     "level": {
@@ -599,6 +634,7 @@
     "titulo": "Pode Morar Aqui",
     "artista": "Theo Rubia",
     "referLink": "n0fDvJAyrQ8",
+    "intensidade": null,
     "categorias": "Intimidade com Deus; Segunda Vinda",
     "versiculos": "",
     "level": {
@@ -616,6 +652,7 @@
     "titulo": "Preciso de Ti",
     "artista": "Diante do Trono",
     "referLink": "ieyQpi1j78E",
+    "intensidade": null,
     "categorias": "Confiança e Esperança; Intimidade com Deus; Engrandecimento e Exaltação; Amor de Deus",
     "versiculos": "",
     "level": {
@@ -633,6 +670,7 @@
     "titulo": "Quebrantado",
     "artista": "Bethel Music",
     "referLink": "DiWAXBX2SIE",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição; Amor de Deus",
     "versiculos": "",
     "level": {
@@ -650,6 +688,7 @@
     "titulo": "Êxodo",
     "artista": "Projeto Sola",
     "referLink": "GlF6k39Bj0g",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição; Engrandecimento e Exaltação",
     "versiculos": "",
     "level": {
@@ -667,6 +706,7 @@
     "titulo": "Se eu me humilhar",
     "artista": "Discopraise",
     "referLink": "XEa2jjT9SyQ",
+    "intensidade": null,
     "categorias": "Confiança e Esperança",
     "versiculos": "",
     "level": {
@@ -684,6 +724,7 @@
     "titulo": "Teu Reino",
     "artista": "Ministério Cristo Vivo",
     "referLink": "lMhEFpHzRsY",
+    "intensidade": null,
     "categorias": "Adoração Congregacional; Engrandecimento e Exaltação",
     "versiculos": "",
     "level": {
@@ -701,6 +742,7 @@
     "titulo": "Tu És + Águas Purificadoras",
     "artista": "Fhop Music",
     "referLink": "YXnQ02HYB1w",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação",
     "versiculos": "",
     "level": {
@@ -718,6 +760,7 @@
     "titulo": "Tu És Bom",
     "artista": "Adoração & Adoradores",
     "referLink": "4gDi8FIJKHc",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação; Adoração Congregacional",
     "versiculos": "",
     "level": {
@@ -735,6 +778,7 @@
     "titulo": "Tua Graça me basta",
     "artista": "Trazendo a Arca",
     "referLink": "F9hWwTQ4MKQ",
+    "intensidade": null,
     "categorias": "Intimidade com Deus; Engrandecimento e Exaltação; Glória de Deus",
     "versiculos": "",
     "level": {
@@ -752,6 +796,7 @@
     "titulo": "Vim para Adorar-te",
     "artista": "Hillsong",
     "referLink": "-4AAHPM98Do",
+    "intensidade": null,
     "categorias": "Intimidade com Deus; Engrandecimento e Exaltação; Morte e Ressurreição",
     "versiculos": "",
     "level": {
@@ -769,6 +814,7 @@
     "titulo": "Boa Parte",
     "artista": "Fhop Music",
     "referLink": "dlGOiuxSzVw",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação",
     "versiculos": "",
     "level": {
@@ -786,6 +832,7 @@
     "titulo": "Os que confiam no Senhor",
     "artista": "Marcos Góes",
     "referLink": "5qMJJPwoJZE",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação; Adoração Congregacional; Confiança e Esperança",
     "versiculos": "",
     "level": {
@@ -803,6 +850,7 @@
     "titulo": "Até que o Senhor venha",
     "artista": "Cultura do Céu",
     "referLink": "E0F9NvrSoa0",
+    "intensidade": null,
     "categorias": "Segunda Vinda; Glória de Deus",
     "versiculos": "",
     "level": {
@@ -820,6 +868,7 @@
     "titulo": "Solta o Cabo da Nau",
     "artista": "Harpa Cristã",
     "referLink": "5Vp1NWgqZEU",
+    "intensidade": null,
     "categorias": "Confiança e Esperança",
     "versiculos": "",
     "level": {
@@ -837,6 +886,7 @@
     "titulo": "Alvo mais que a Neve",
     "artista": "Harpa Cristã",
     "referLink": "NI89N8QBOoM",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição",
     "versiculos": "",
     "level": {
@@ -854,6 +904,7 @@
     "titulo": "Redenção",
     "artista": "Fernanda Brum",
     "referLink": "_2BImNvixHw",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição",
     "versiculos": "",
     "level": {
@@ -871,6 +922,7 @@
     "titulo": "Santo Espírito",
     "artista": "Laura Souguellis",
     "referLink": "jF23NIVWapo",
+    "intensidade": null,
     "categorias": "Glória de Deus; Intimidade com Deus",
     "versiculos": "",
     "level": {
@@ -888,6 +940,7 @@
     "titulo": "Estamos de Pé",
     "artista": "Marcus Salles",
     "referLink": "4x-yrCz1D9g",
+    "intensidade": null,
     "categorias": "Confiança e Esperança; Adoração Congregacional",
     "versiculos": "",
     "level": {
@@ -905,6 +958,7 @@
     "titulo": "Redenção - Projeto Sola",
     "artista": "Projeto Sola",
     "referLink": "sX0KVSex6lI",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição; Amor de Deus",
     "versiculos": "",
     "level": {
@@ -922,6 +976,7 @@
     "titulo": "Graça",
     "artista": "Israel Salazar",
     "referLink": "_hL1pguiHX0",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição; Engrandecimento e Exaltação",
     "versiculos": "",
     "level": {
@@ -939,6 +994,7 @@
     "titulo": "No Meio dos Louvores",
     "artista": "Israel Salazar",
     "referLink": "Ts1h1EDiLpc",
+    "intensidade": null,
     "categorias": "Adoração Congregacional",
     "versiculos": "",
     "level": {
@@ -956,6 +1012,7 @@
     "titulo": "Creio que Tu és a Cura",
     "artista": "Gabriela Rocha",
     "referLink": "4X0mSNyZcxQ",
+    "intensidade": null,
     "categorias": "Confiança e Esperança",
     "versiculos": "",
     "level": {
@@ -973,6 +1030,7 @@
     "titulo": "De Graça em Graça",
     "artista": "Hillsong",
     "referLink": "SMRN-uXRQmc",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição; Amor de Deus",
     "versiculos": "",
     "level": {
@@ -990,6 +1048,7 @@
     "titulo": "Ao Único que é Digno",
     "artista": "Bené Gomes",
     "referLink": "thhBwc3qLfE",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação; Adoração Congregacional",
     "versiculos": "",
     "level": {
@@ -1007,6 +1066,7 @@
     "titulo": "O Nosso General é Cristo",
     "artista": "Kent Henry",
     "referLink": "dS35Xhf2UeI",
+    "intensidade": null,
     "categorias": "Confiança e Esperança",
     "versiculos": "",
     "level": {
@@ -1024,6 +1084,7 @@
     "titulo": "Vitorioso És",
     "artista": "Bethel Music",
     "referLink": "k7tGP-vidwc",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação; Adoração Congregacional",
     "versiculos": "",
     "level": {
@@ -1041,6 +1102,7 @@
     "titulo": "O Espírito de Deus está Aqui",
     "artista": "Bené Gomes",
     "referLink": "7ivOU0qJUbQ",
+    "intensidade": null,
     "categorias": "Glória de Deus; Intimidade com Deus; Adoração Congregacional",
     "versiculos": "",
     "level": {
@@ -1058,6 +1120,7 @@
     "titulo": "Palavras",
     "artista": "Lauriete",
     "referLink": "Hb5J1-ovVZA",
+    "intensidade": null,
     "categorias": "Confiança e Esperança; Intimidade com Deus",
     "versiculos": "",
     "level": {
@@ -1075,6 +1138,7 @@
     "titulo": "Só uma Coisa me satisfaz",
     "artista": "Ministério Zoe",
     "referLink": "AkGogdtNlkE",
+    "intensidade": null,
     "categorias": "Glória de Deus; Intimidade com Deus",
     "versiculos": "",
     "level": {
@@ -1092,15 +1156,16 @@
     "titulo": "Quão Formoso És",
     "artista": "Ministério Koinonya",
     "referLink": "TSbA1S0tSZc",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação; Glória de Deus",
     "versiculos": "",
     "level": {
-      "vocal": "medium",
-      "guitarra": "hard",
-      "baixo": "hard",
+      "vocal": "easy",
+      "guitarra": "easy",
+      "baixo": "easy",
       "violao": "",
-      "bateria": "medium",
-      "teclado": "hard",
+      "bateria": "easy",
+      "teclado": "easy",
       "sax": ""
     }
   },
@@ -1109,6 +1174,7 @@
     "titulo": "Clamo Jesus",
     "artista": "Paulo César Baruk",
     "referLink": "ye9caqETC0A",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação",
     "versiculos": "",
     "level": {
@@ -1126,6 +1192,7 @@
     "titulo": "Somente Cristo",
     "artista": "Fhop Music",
     "referLink": "7sX_vqk8VeE",
+    "intensidade": null,
     "categorias": "Amor de Deus; Morte e Ressurreição; Engrandecimento e Exaltação",
     "versiculos": "",
     "level": {
@@ -1143,6 +1210,7 @@
     "titulo": "Sublime",
     "artista": "Fhop Music",
     "referLink": "7GWZwO0MdsY",
+    "intensidade": null,
     "categorias": "Adoração Congregacional; Engrandecimento e Exaltação; Segunda Vinda",
     "versiculos": "",
     "level": {
@@ -1160,6 +1228,7 @@
     "titulo": "Gratidão",
     "artista": "Fhop Music",
     "referLink": "3SEz_SemHtk",
+    "intensidade": null,
     "categorias": "Adoração Congregacional; Engrandecimento e Exaltação; Intimidade com Deus",
     "versiculos": "",
     "level": {
@@ -1177,6 +1246,7 @@
     "titulo": "Só Tu és Santo",
     "artista": "Morada",
     "referLink": "REJGnZQIFnA",
+    "intensidade": null,
     "categorias": "Adoração Congregacional; Engrandecimento e Exaltação; Intimidade com Deus",
     "versiculos": "",
     "level": {
@@ -1194,6 +1264,7 @@
     "titulo": "Eu vou Construir",
     "artista": "Juliano Son",
     "referLink": "1htnqzaKLP8",
+    "intensidade": null,
     "categorias": "Intimidade com Deus; Engrandecimento e Exaltação; Confiança e Esperança",
     "versiculos": "",
     "level": {
@@ -1211,6 +1282,7 @@
     "titulo": "Quem é esse?",
     "artista": "Julliany Souza",
     "referLink": "j-ptPKosO9A",
+    "intensidade": null,
     "categorias": "Morte e Ressurreição; Engrandecimento e Exaltação; Amor de Deus",
     "versiculos": "",
     "level": {
@@ -1228,6 +1300,7 @@
     "titulo": "Hosana",
     "artista": "Hillsong",
     "referLink": "2UtcyWiS2aI",
+    "intensidade": null,
     "categorias": "Adoração Congregacional;Segunda Vinda",
     "versiculos": "",
     "level": {
@@ -1245,6 +1318,7 @@
     "titulo": "Louve",
     "artista": "Elevation Worship",
     "referLink": "mL3pDu4NYJw",
+    "intensidade": null,
     "categorias": "Adoração Congregacional; Engrandecimento e Exaltação; Morte e Ressurreição",
     "versiculos": "",
     "level": {
@@ -1262,6 +1336,7 @@
     "titulo": "Nada é Impossível",
     "artista": "Planetshakers",
     "referLink": "kIp7xyZYbp4",
+    "intensidade": null,
     "categorias": "Confiança e Esperança",
     "versiculos": "",
     "level": {
@@ -1279,6 +1354,7 @@
     "titulo": "Quero subir",
     "artista": "Diante do Trono",
     "referLink": "eQB1o_myIeI",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação; Intimidade com Deus",
     "versiculos": "",
     "level": {
@@ -1296,6 +1372,7 @@
     "titulo": "Rompendo em Fé",
     "artista": "CEIZS",
     "referLink": "3iwWQJk6OBw",
+    "intensidade": null,
     "categorias": "Confiança e Esperança",
     "versiculos": "",
     "level": {
@@ -1313,6 +1390,7 @@
     "titulo": "Digno é o Cordeiro",
     "artista": "Davi Silva",
     "referLink": "BfOJEuR5chE",
+    "intensidade": null,
     "categorias": "Engrandecimento e Exaltação",
     "versiculos": "",
     "level": {
@@ -1330,6 +1408,7 @@
     "titulo": "Vencendo vem Jesus",
     "artista": "Harpa Cristã",
     "referLink": "-swhFRi7czM",
+    "intensidade": null,
     "categorias": "Segunda Vinda",
     "versiculos": "",
     "level": {
@@ -1347,6 +1426,7 @@
     "titulo": "Tu és Soberano",
     "artista": "Ministério Koinonya",
     "referLink": "kUxCKk5EQFg",
+    "intensidade": null,
     "categorias": "Adoração Congregacional; Engrandecimento e Exaltação; Amor de Deus",
     "versiculos": "",
     "level": {

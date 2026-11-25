@@ -4,8 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <title>Projeto Asafe</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <link rel="stylesheet" href="index.css" />
+  <link rel="stylesheet" href="mobile-ui.css" />
 </head>
 
 <body>
@@ -26,19 +27,15 @@
         </button>
         <button class="nav-item" data-view="cultos">
           <span>📆</span>
-          <span>Cultos</span>
+          <span>Agenda</span>
         </button>
         <button class="nav-item" data-view="repertorio">
           <span>🎵</span>
-          <span>Repertorio</span>
+          <span>Músicas</span>
         </button>
-        <button class="nav-item" data-view="wrapped">
+        <button class="nav-item" data-view="banda">
           <span>🏆</span>
-          <span>Wrapped</span>
-        </button>
-        <button class="nav-item" data-view="titulos">
-          <span>🎖️</span>
-          <span>Títulos</span>
+          <span>Banda</span>
         </button>
       </nav>
     </aside>
@@ -49,16 +46,21 @@
           <p id="viewKicker" class="page-kicker">Agora na fila</p>
           <h2 id="viewTitle">Próximo culto</h2>
         </div>
-        <div class="topbar-actions">
-          <button id="quickBuilderBtn" class="pill-button" type="button">Montar repertorio</button>
-        </div>
       </header>
 
-      <section id="view-hoje" class="view active" aria-labelledby="viewTitle"></section>
+      <section id="view-hoje" class="view active" aria-labelledby="viewTitle"><p class="empty-state" role="status">Carregando músicas e escalas…</p></section>
       <section id="view-cultos" class="view" aria-labelledby="viewTitle"></section>
       <section id="view-repertorio" class="view" aria-labelledby="viewTitle"></section>
-      <section id="view-wrapped" class="view" aria-labelledby="viewTitle"></section>
-      <section id="view-titulos" class="view" aria-labelledby="viewTitle"></section>
+      <section id="view-banda" class="view" aria-labelledby="viewTitle">
+        <div class="segmented-control" aria-label="Visões da banda">
+          <button class="segment active" data-band-tab="wrapped" aria-pressed="true">Wrapped</button>
+          <button class="segment" data-band-tab="members" aria-pressed="false">Integrantes</button>
+          <button class="segment" data-band-tab="titulos" aria-pressed="false">Títulos</button>
+        </div>
+        <div id="view-wrapped"></div>
+        <div id="view-members" hidden></div>
+        <div id="view-titulos" hidden></div>
+      </section>
     </main>
 
     <nav class="mobile-nav" aria-label="Navegacao mobile">
@@ -68,24 +70,26 @@
       </button>
       <button class="nav-item" data-view="cultos">
         <span>📆</span>
-        <span>Cultos</span>
+        <span>Agenda</span>
       </button>
       <button class="nav-item" data-view="repertorio">
         <span>🎵</span>
-        <span>Repertorio</span>
+        <span>Músicas</span>
       </button>
-      <button class="nav-item" data-view="wrapped">
+      <button class="nav-item" data-view="banda">
         <span>🏆</span>
-        <span>Wrapped</span>
-      </button>
-      <button class="nav-item" data-view="titulos">
-        <span>🎖️</span>
-        <span>Títulos</span>
+        <span>Banda</span>
       </button>
     </nav>
   </div>
 
+  <div id="builderDock" class="builder-dock" aria-label="Revisão do rascunho"></div>
+  <dialog id="songDialog" class="song-dialog" aria-labelledby="songDetailTitle">
+    <header class="detail-toolbar"><button id="closeSongDetail" class="ghost-button" autofocus>Voltar à lista</button><span>Detalhes da música</span></header>
+    <div id="songDetailBody"></div>
+  </dialog>
   <script src="app.js"></script>
+  <script src="mobile-ui.js"></script>
 </body>
 
 </html>
