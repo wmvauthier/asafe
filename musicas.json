@@ -202,7 +202,7 @@
     "titulo": "Em Espírito e em Verdade",
     "artista": "Ministério Koinonya",
     "referLink": "b8RSKRumBRs",
-    "intensidade": null,
+    "intensidade": "alta",
     "categorias": "Adoração Congregacional; Engrandecimento e Exaltação",
     "versiculos": "",
     "level": {
@@ -220,7 +220,7 @@
     "titulo": "Em teus Braços",
     "artista": "Laura Souguellis",
     "referLink": "IxpWNuxGmzc",
-    "intensidade": null,
+    "intensidade": "baixa",
     "categorias": "Confiança e Esperança; Intimidade com Deus",
     "versiculos": "",
     "level": {
@@ -688,7 +688,7 @@
     "titulo": "Êxodo",
     "artista": "Projeto Sola",
     "referLink": "GlF6k39Bj0g",
-    "intensidade": null,
+    "intensidade": "alta",
     "categorias": "Morte e Ressurreição; Engrandecimento e Exaltação",
     "versiculos": "",
     "level": {
@@ -760,7 +760,7 @@
     "titulo": "Tu És Bom",
     "artista": "Adoração & Adoradores",
     "referLink": "4gDi8FIJKHc",
-    "intensidade": null,
+    "intensidade": "alta",
     "categorias": "Engrandecimento e Exaltação; Adoração Congregacional",
     "versiculos": "",
     "level": {
@@ -1318,7 +1318,7 @@
     "titulo": "Louve",
     "artista": "Elevation Worship",
     "referLink": "mL3pDu4NYJw",
-    "intensidade": null,
+    "intensidade": "alta",
     "categorias": "Adoração Congregacional; Engrandecimento e Exaltação; Morte e Ressurreição",
     "versiculos": "",
     "level": {

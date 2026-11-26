@@ -5,18 +5,43 @@ function renderBandTabs() {
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-pressed', String(active));
   });
-  ['wrapped', 'titulos', 'members'].forEach(key => {
+  ['wrapped', 'affinities', 'titulos'].forEach(key => {
     document.getElementById(`view-${key}`).hidden = key !== ui.bandTab;
   });
-  const members = document.getElementById('view-members');
-  members.replaceChildren(sectionHeader('Nossa equipe', '', 'Habilidades cadastradas; a função em cada culto pode variar.'));
-  const list = div('band-members');
-  integrantes.forEach(member => {
-    const card = div('band-member');
-    card.innerHTML = `<img src="${memberImg(member)}" alt="" onerror="this.src='integrantes/default.jpeg'" /><div><h3>${escapeHTML(member.nome)}</h3><p>${getMemberLevels(member).map(([inst, level]) => `${escapeHTML(formatInstrument(normalizeInstrument(inst)))} · ${escapeHTML(levelLabel(level))}`).join('<br>')}</p></div>`;
-    list.append(card);
+  if (ui.bandTab === 'affinities') renderBandAffinities();
+}
+
+function renderBandAffinities() {
+  const root = document.getElementById('view-affinities');
+  root.replaceChildren(sectionHeader('Afinidades por música', '', 'Veja quem tem maior conexão com cada canção.'));
+  const filter = document.createElement('select'); filter.className = 'select'; filter.setAttribute('aria-label', 'Filtrar afinidade');
+  filter.innerHTML = '<option value="all">Todas as afinidades</option><option value="very-high">Altíssima</option><option value="high">Alta</option><option value="medium">Média</option><option value="low">Baixa</option>';
+  const exportButton = button('Copiar como texto', 'ghost-button', () => {
+    const text = musicas.map(song => {
+      const stats = computeSongMemberInsights(song.id);
+      const groups = ['very-high', 'high', 'medium', 'low'].map(level => `${{ 'very-high': 'Altíssima', high: 'Alta', medium: 'Média', low: 'Baixa' }[level]}: ${stats.members.filter(row => row.affinity === level).map(row => row.member.nome).join(', ') || '—'}`).join(' | ');
+      return `${song.titulo} — ${groups}`;
+    }).join('\n');
+    navigator.clipboard?.writeText(text).then(() => toast('Afinidades copiadas.'));
   });
-  members.append(list);
+  const list = div('band-affinity-list');
+  const paint = () => { list.replaceChildren(); musicas.slice().sort((a, b) => {
+    const score = song => { const rows = computeSongMemberInsights(song.id).members; return rows.length ? avg(rows.map(row => row.score)) : -Infinity; };
+    return score(b) - score(a) || a.titulo.localeCompare(b.titulo, 'pt-BR');
+  }).forEach(song => {
+    const stats = computeSongMemberInsights(song.id);
+    if (filter.value !== 'all' && !stats.members.some(row => row.affinity === filter.value)) return;
+    const card = div('band-affinity-card');
+    card.innerHTML = `<div class="band-affinity-art">${songArtworkHTML(song, 'band-affinity-cover')}</div><div><h3>${escapeHTML(song.titulo)}</h3><p>${escapeHTML(song.artista)}</p><div class="affinity-summary">${['very-high','high','medium','low'].map(level => { const count = stats.members.filter(row => row.affinity === level).length; return count ? `<span class="affinity-count affinity-${level}">${{ 'very-high':'Altíssima', high:'Alta', medium:'Média', low:'Baixa' }[level]} · ${count}</span>` : ''; }).join('')}</div></div>`;
+    list.append(card);
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', `Ver afinidades de ${song.titulo}`);
+    card.addEventListener('click', () => openSongDetail(song));
+    card.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openSongDetail(song); } });
+  }); };
+  filter.addEventListener('change', paint); paint();
+  root.append(filter, exportButton, list);
 }
 
 function renderLibraryResults() {
@@ -24,9 +49,12 @@ function renderLibraryResults() {
   if (!root) return;
   const songs = getFilteredSongs();
   root.replaceChildren();
-  const count = div('results-count', `${songs.length} música${songs.length === 1 ? '' : 's'} encontrada${songs.length === 1 ? '' : 's'}`);
-  count.setAttribute('role', 'status');
-  root.append(count);
+  const statusCounts = div('library-status-counts');
+  [['available','Disponíveis','check'],['recent','Bloqueadas','clock'],['future','Agendadas','calendar']].forEach(([key,label,icon]) => {
+    const total = musicas.filter(song => getSongStatus(song.id).status === key).length;
+    statusCounts.append(musicBadge(`${total} ${label}`, key, label));
+  });
+  root.append(statusCounts);
   if (state.libraryCategory !== 'all' || state.libraryStatus !== 'all' || state.libraryIntensity !== 'all') {
     root.append(div('active-filter-note', `Filtros ativos: ${state.libraryCategory === 'all' ? 'todas as categorias' : state.libraryCategory} · ${state.libraryStatus === 'all' ? 'todos os status' : ({ available: 'disponíveis', recent: 'bloqueadas', future: 'agendadas', banned: 'banidas' }[state.libraryStatus])} · ${state.libraryIntensity === 'all' ? 'todas as intensidades' : intensityLabel(state.libraryIntensity)}`));
   }
@@ -52,6 +80,7 @@ function renderSongCard(song, opts = {}) {
   card.className = 'music-card';
   card.dataset.songId = song.id;
   const status = getSongStatus(song.id, opts.culto || null);
+  card.classList.add(`status-${status.status}`);
   const selectedCulto = ui.building ? getCultByKey(state.builderCult) : null;
   const selected = selectedCulto && getDraft(cultKey(selectedCulto), selectedCulto).includes(song.id);
   if (opts.library && selected) card.classList.add('is-selected');
@@ -93,8 +122,6 @@ function renderSongCard(song, opts = {}) {
     });
     actions.append(musicAction('Remover', 'minus', 'text-button danger-text', () => removeFromDraft(song.id)));
     card.append(move);
-  } else if (song.referLink) {
-    actions.append(musicAction('Ouvir', 'play', 'reference-button', () => openYoutube(song)));
   }
   if (actions.children.length) card.append(actions);
   return card;
@@ -155,7 +182,7 @@ function renderSongQualifications(song) {
     const level = difficulty <= 1.6 ? 'easy' : difficulty <= 2.2 ? 'medium' : 'hard';
     badges.append(musicBadge(levelLabel(level), level, `Dificuldade média dos instrumentos: ${levelLabel(level)}`));
   }
-  if (song.intensidade) badges.append(musicBadge(`Intensidade ${intensityLabel(song.intensidade).toLowerCase()}`, 'intensity', `Intensidade musical: ${intensityLabel(song.intensidade)}`));
+  if (song.intensidade) badges.append(musicBadge(intensityLabel(song.intensidade), 'intensity', `Intensidade musical: ${intensityLabel(song.intensidade)}`));
   const popularity = getPopularity(song.id);
   const label = popularity.count === 0 ? 'Inédita' : { classic: 'Clássica', common: 'Comum', rare: 'Rara' }[popularity.nivel];
   badges.append(musicBadge(label, 'popularity', `${label} · ${popularity.count} execuções passadas`));
@@ -256,49 +283,23 @@ function renderIntensityPanel(song) {
   return panel;
 }
 
-function renderSongMemberInsights(songId) {
-  const panel = detailPanel('Essa música e a equipe', 'people');
-  const stats = computeSongMemberInsights(songId);
-  panel.append(div('member-insights-note', `${stats.eventCount} ${stats.eventCount === 1 ? 'culto passado com esta música' : 'cultos passados com esta música'}. Escolhas atribuídas aos headers registrados.`));
+function renderSongMemberInsights(songId, culto = null) {
+  const panel = detailPanel('Afinidade', 'people');
+  const stats = computeSongMemberInsights(songId, culto);
+  panel.append(div('member-insights-note', 'Índice baseado em escolhas, participações recentes e histórico de execução.'));
   if (!stats.eventCount) {
     panel.append(div('empty-insights', 'Essa música ainda não tem execuções no histórico. Não há participações ou escolhas para comparar.'));
     return panel;
   }
   if (!stats.members.length) { panel.append(div('empty-insights', 'Nenhum integrante cadastrado.')); return panel; }
-  const tabs = div('insight-tabs'); tabs.setAttribute('aria-label', 'Comparar participações ou escolhas');
-  const content = div('member-insights-content'); content.id = `song-members-${songId}`;
-  const buttons = [];
-  const paint = metric => {
-    buttons.forEach(btn => { const active = btn.dataset.metric === metric; btn.setAttribute('aria-pressed', String(active)); btn.classList.toggle('active', active); });
-    const ranks = rankSongMembers(stats, metric);
-    content.replaceChildren();
-    const title = metric === 'played' ? 'Mais tocaram' : 'Mais escolheram';
-    if (ranks.most.length) {
-      content.append(memberInsightGroup(title, ranks.most.slice(0, 3), metric));
-      if (ranks.most[0][metric] !== ranks.least[0][metric]) {
-        content.append(memberInsightGroup(metric === 'played' ? 'Menos tocaram' : 'Menos escolheram', ranks.least.slice(0, 3), metric));
-      } else {
-        content.append(div('member-insights-note', 'Todos os integrantes com registros têm a mesma contagem.'));
-      }
-    } else {
-      content.append(div('empty-insights', metric === 'played' ? 'Sem participantes registrados nesses cultos.' : 'Sem headers registrados nesses cultos.'));
+  ['very-high', 'high', 'medium', 'low'].forEach(level => {
+    const rows = stats.members.filter(row => row.affinity === level).sort((a, b) => b.score - a.score || a.member.nome.localeCompare(b.member.nome, 'pt-BR'));
+    if (rows.length) {
+      const group = div(`affinity-group affinity-${level}`);
+      group.innerHTML = `<span class="affinity-badge">${{ 'very-high': 'Altíssima', high: 'Alta', medium: 'Média', low: 'Baixa' }[level]}</span><div class="affinity-avatars">${rows.map(({ member }) => `<img src="${escapeAttr(memberImg(member))}" alt="${escapeAttr(member.nome)}" title="${escapeAttr(member.nome)}" loading="lazy" onerror="this.onerror=null;this.src='integrantes/default.jpeg'" />`).join('')}</div>`;
+      panel.append(group);
     }
-    if (ranks.never.length) {
-      const disclosure = document.createElement('details'); disclosure.className = 'never-members';
-      const summary = document.createElement('summary');
-      summary.textContent = `${metric === 'played' ? 'Nunca tocaram' : 'Nunca escolheram'} · ${ranks.never.length}`;
-      disclosure.append(summary, memberInsightGroup('', ranks.never, metric)); content.append(disclosure);
-    }
-    const all = document.createElement('details'); all.className = 'never-members';
-    const summary = document.createElement('summary'); summary.textContent = 'Ver todos os integrantes';
-    all.append(summary, memberInsightGroup('', [...ranks.most, ...ranks.never], metric)); content.append(all);
-  };
-  [['played', 'Tocaram', 'music'], ['chosen', 'Escolheram', 'spark']].forEach(([key,label,icon]) => {
-    const btn = musicAction(label, icon, 'insight-tab', () => paint(key));
-    btn.dataset.metric = key; btn.setAttribute('aria-controls', content.id); buttons.push(btn); tabs.append(btn);
   });
-  panel.append(tabs, content, div('member-insights-note', 'Contagem por culto, com base nos registros disponíveis; ausência de registro não indica falta de interesse.'));
-  paint('played');
   return panel;
 }
 
@@ -308,16 +309,27 @@ function memberInsightGroup(title, rows, metric) {
   const list = document.createElement('ul'); list.className = 'member-insight-list';
   rows.forEach(({ member, ...counts }) => {
     const row = document.createElement('li');
-    row.innerHTML = `<img src="${escapeAttr(memberImg(member))}" alt="" loading="lazy" onerror="this.onerror=null;this.src='integrantes/default.jpeg'" /><span>${escapeHTML(member.nome)}</span><strong aria-label="${counts[metric]} ${metric === 'played' ? 'participações' : 'escolhas'}">${counts[metric]}<small>×</small></strong>`;
+    const value = metric === 'affinity' ? ({ high: 'Alta', medium: 'Média', low: 'Baixa' }[counts[metric]] || '') : `${counts[metric]}×`;
+    row.innerHTML = `<img src="${escapeAttr(memberImg(member))}" alt="" loading="lazy" onerror="this.onerror=null;this.src='integrantes/default.jpeg'" /><span>${escapeHTML(member.nome)}</span><strong aria-label="Afinidade ${escapeAttr(value)}">${value}</strong>`;
     list.append(row);
   });
   group.append(list); return group;
 }
 
+function agendaThumbnailScore(song, culto) {
+  const cutoff = new Date(today()); cutoff.setMonth(cutoff.getMonth() - 6);
+  const recent = historico.filter(ev => ev.dataObj && ev.dataObj >= cutoff && ev.dataObj < today() && (ev.musicas || []).includes(song.id)).length;
+  const stats = computeSongMemberInsights(song.id);
+  const ids = new Set(culto.integrantes || []);
+  const rows = stats.members.filter(row => ids.has(row.member.id));
+  const affinity = rows.length ? avg(rows.map(row => row.score)) : 0;
+  return recent * 3 + affinity;
+}
+
 function renderAgendaPreview(culto) {
   const preview = div('agenda-preview');
   const song = (culto.musicas || []).map(getSong).filter(Boolean)
-    .sort((a, b) => getTotalExecucoes(b.id) - getTotalExecucoes(a.id))[0];
+    .sort((a, b) => agendaThumbnailScore(b, culto) - agendaThumbnailScore(a, culto))[0];
   const cover = div('agenda-cover');
   if (song) {
     cover.innerHTML = songArtworkHTML(song, 'agenda-artwork');
@@ -360,7 +372,7 @@ function renderAgendaPreview(culto) {
     metrics.append(metric);
   });
   preview.append(cover, metrics);
-  if (!song) preview.append(div('agenda-unset', 'Repertório em aberto'));
+  if (!song) preview.append(div('agenda-unset', ''));
   if (avatars.children.length) preview.append(avatars);
   preview.append(roles);
   return preview;

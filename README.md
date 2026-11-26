@@ -39,7 +39,7 @@ Normalização -> estado em memória -> regras e estatísticas -> DOM
 | `mobile-ui.js` | Componentes de música, detalhes, resultados da busca, reordenação e navegação da banda |
 | `musicas.json` | Catálogo musical compartilhado |
 | `historico.json` | Eventos realizados e escalas futuras |
-| `integrantes/integrantes.json` | Cadastro e habilidades dos integrantes |
+| `integrantes/integrantes.json` | Cadastro e habilidades dos integrantes; `ativo: false` desativa alguém do grupo e remove sua participação dos cálculos e telas |
 | `artistas/` | Fotos dos artistas e imagem padrão |
 | `integrantes/` | Fotos dos integrantes e imagem padrão |
 | `docs/curadoria-musical.md` | Anotações humanas de curadoria, fora da execução |
@@ -56,14 +56,14 @@ As funções de renderização criam elementos com APIs do DOM e templates HTML.
 
 ### Telas e fluxos
 
-- **Próximo:** cabeçalho compacto, repertório na ordem, ações, equipe com nomes/papéis e análise recolhível. As músicas vêm antes dos integrantes.
-- **Agenda:** todos os cultos futuros, incluindo o próximo, com preview visual no card fechado: capa ampla com data sobre degradê, no mesmo estilo dos cards de música, usando a música mais executada do repertório (contagem histórica, desempate pela ordem da escala), fotos da equipe em uma faixa de até nove colunas, nomes de header/ministrante e quatro métricas apenas com ícone e porcentagem. Sem repertório, as métricas mostram travessões em vez de percentuais fictícios. Ao expandir, aparecem as músicas, a montagem do rascunho e uma grade de integrantes que aproveita a largura disponível. Papéis cadastrados fora da lista de participantes também são exibidos, sem duplicar pessoas.
+- **Próximo:** data, análise compacta em quatro indicadores, faixa visual de até oito integrantes, repertório na ordem e ações de cópia/montagem.
+- **Agenda:** cultos futuros com capa ampla, data, métricas e preview da equipe. A thumbnail combina execuções recentes e afinidade da escala. Ao expandir, aparecem apenas músicas e ações do rascunho.
 - **Músicas:** catálogo independente do montador, com busca contínua, filtros recolhíveis e disponibilidade. A busca atualiza somente os resultados para preservar foco e digitação.
-- **Banda:** reúne Wrapped, integrantes e títulos em três abas. Wrapped usa período/integrante; títulos usam o período para os rankings e o integrante para destaque individual.
+- **Banda:** reúne Wrapped, Afinidades e Títulos. Afinidades mostra todas as músicas em cards de duas colunas, ordenadas pela conexão média da equipe, com filtros por nível e exportação textual.
 
 A montagem começa em um culto e oferece **Selecionadas**, **Adicionar** e **Sugestões**. O contexto da data acompanha a rolagem, e uma barra inferior com a contagem substitui a navegação mobile. É possível adicionar, remover, reordenar, aplicar uma sugestão e copiar o rascunho. Qualquer culto futuro pode ter um rascunho, inclusive o próximo e os que já possuem músicas. Se ainda não há rascunho salvo, ele começa com as músicas cadastradas no evento; o histórico original não é alterado.
 
-Os cards de músicas separam identificação, contexto e ações, com capa ampla na proporção 16:10, título e artista sobre um degradê de contraste e número da faixa no canto da imagem. Categorias, dificuldade média, popularidade e disponibilidade usam mini badges com ícones SVG locais; até duas categorias aparecem no card, com indicação das demais. O título aceita duas linhas; detalhes apresentam capa e título integrados, botão Ouvir junto às qualificações e aviso de disponibilidade contextual. Categorias, dificuldade por instrumento (ícones e indicadores de três níveis) e histórico ficam em três painéis; as estatísticas do artista/categorias ficam recolhidas dentro do histórico. O botão **Ouvir** abre a referência do YouTube nos detalhes e no rodapé dos cards fora da montagem. A capa/título abre os detalhes; não há botão redundante para essa ação. Os ícones de ações e qualificações usam traços consistentes, sem dependências externas. Os detalhes usam um diálogo nativo em tela cheia no mobile, com retorno à lista e suporte a Escape, preservando busca e rolagem.
+Os cards de músicas separam identificação e contexto, com capa ampla na proporção 16:10 e mini badges. A capa/título abre os detalhes; o botão **Ouvir** existe somente no detalhamento. Os detalhes usam diálogo nativo em tela cheia no mobile, com disponibilidade contextual, categorias antes da intensidade, histórico e afinidade agrupada por fotos.
 
 As chaves `asafe:v2:` dos rascunhos e filtros foram mantidas. Valores antigos de tela `wrapped`/`titulos` são encaminhados para a aba correspondente em Banda.
 
@@ -106,7 +106,7 @@ As contagens dependem do preenchimento do histórico, não indicam oportunidade 
 
 ### Integrantes (`integrantes/integrantes.json`)
 
-Array de objetos com `id`, `nome`, `icon` e `function`. O campo `function` é um array de objetos que associa instrumentos a níveis técnicos; um integrante pode ter várias habilidades. Não confundir esse cadastro de capacidades com a definição do instrumento efetivamente tocado em cada evento.
+Array de objetos com `id`, `nome`, `icon`, `ativo` e `function`. `ativo: false` desativa o integrante: ele deixa de existir para afinidades, históricos, rankings, sugestões e escalas visuais, embora seus IDs permaneçam preservados no histórico. O campo `function` associa instrumentos a níveis técnicos; não confundir capacidades com o instrumento efetivamente tocado em cada evento.
 
 ### Eventos (`historico.json`)
 
@@ -147,6 +147,8 @@ Na aba **Músicas**, inclusive após aplicar busca/filtros:
 
 Empates usam título e ID. Uma música recente que também está agendada pertence ao grupo Agendadas, conforme a prioridade de status existente. A montagem de repertório mantém a ordenação contextual por afinidade de categorias.
 
+Dentro de cada grupo, a afinidade média dos integrantes desempata as músicas, da menor para a maior, para evitar que as mesmas escolhas permaneçam sempre no topo.
+
 Cards bloqueados e agendados exibem **Libera em X dias**. A regra existente bloqueia até o 56º dia inclusive, portanto a liberação é no 57º dia após a execução. Para agendadas, a espera até o culto também entra na contagem; se houver várias reservas, a data de liberação considera a última delas. O badge usa dias de calendário e informa a data completa na descrição acessível. Trata-se de uma previsão baseada no histórico e nos agendamentos cadastrados; alterações nas escalas alteram essa previsão. As regras são recalculadas ao carregar a aplicação.
 
 ## Regras de repertório
@@ -157,7 +159,8 @@ Cards bloqueados e agendados exibem **Libera em X dias**. A regra existente bloq
 - **Categorias:** em qualquer trio do rascunho, pelo menos duas músicas devem compartilhar alguma categoria. A inclusão que viola a regra é recusada.
 - **Popularidade:** ranking de execuções passadas, com desempate por título; `índice / total <= 0,15` define clássicas, até `0,6` comuns, e as demais raras. É posição relativa no catálogo, não um limiar fixo de execuções.
 - **Análises:** segurança, familiaridade, desafio e renovação combinam dificuldade, habilidades dos participantes, exposições anteriores, popularidade e disponibilidade. São indicadores heurísticos, não medições objetivas.
-- **Sugestões:** até cinco trios distintos, nas estratégias Favoritas do Time, Fácil, Mediano, Desafiador e Renovação. A seleção usa candidatos elegíveis, pesos e combinações limitadas; não busca exaustivamente todas as possibilidades.
+- **Afinidade:** escolhas têm maior peso que participações; o peso decai continuamente até zero em 18 meses. Recorrência com escolhas dentro desse ciclo pode gerar Altíssima afinidade.
+- **Sugestões:** até cinco trios distintos, nas estratégias Favoritas do Time, Fácil, Mediano, Desafiador e Renovação. A seleção considera também afinidade da escala, prioriza intensidade Alta e limita cada trio a uma música Alta.
 
 As sugestões são calculadas localmente, sem IA ou API externa. Os principais pontos de entrada são `analyzeSet()`, `generateSuggestedPlaylists()`, `getSongStatus()`, `classifyPopularity()`, `computeWrapped()` e `computeTitleGallery()`.
 

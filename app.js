@@ -135,9 +135,17 @@ function renderHoje() {
   const analysis = analyzeSet(next, next.musicas || []);
   root.append(renderCultHero(next, analysis), renderSetBlock(next, analysis));
   const actions = div("service-actions");
-  actions.append(button(next.musicas.length ? "Preparar outro rascunho" : "Montar repertório", "pill-button", () => openBuilder(next)));
-  if (next.musicas.length) actions.append(button("Copiar escala", "ghost-button", () => copyScale(next)));
-  root.append(actions, sectionPanel("Quem vai tocar", "Equipe", renderMembers(next)), renderAnalysisBlock(analysis));
+  if (next.musicas.length) actions.append(button("Copiar Escala", "pill-button", () => copyScale(next)));
+  actions.append(button("Preparar outro rascunho", "ghost-button", () => openBuilder(next)));
+  root.append(actions);
+}
+
+function renderNextTeamStrip(culto) {
+  const strip = div("next-team-strip");
+  const members = getAgendaMembers(culto);
+  strip.setAttribute("aria-label", "Integrantes escalados");
+  strip.innerHTML = members.map(member => `<img src="${escapeAttr(memberImg(member))}" alt="${escapeAttr(member.nome)}" title="${escapeAttr(member.nome)}" loading="lazy" onerror="this.onerror=null;this.src='integrantes/default.jpeg'" />`).join("");
+  return strip;
 }
 
 function renderCultos() {
@@ -154,7 +162,7 @@ function renderCultos() {
     preview.querySelector('.agenda-cover').append(summary.firstElementChild);
     summary.append(preview);
     const content = div("agenda-content");
-    content.append(renderTrackList(culto.musicas, { culto }), button(culto.musicas.length ? "Preparar rascunho" : "Montar repertório", "pill-button", () => openBuilder(culto)), sectionHeader("Integrantes"), renderMembers(culto, { agenda: true }));
+    content.append(renderTrackList(culto.musicas, { culto }), button(culto.musicas.length ? "Preparar rascunho" : "Montar repertório", "pill-button", () => openBuilder(culto)));
     card.append(summary, content); list.append(card);
   });
   root.append(list);
@@ -200,7 +208,6 @@ function renderWrapped() {
     rankCard("Artistas mais tocados", insights.topArtists, "artist"),
     rankCard("Músicas mais escolhidas", insights.topChosenSongs, "musica"),
     rankCard("Artistas mais escolhidos", insights.topChosenArtists, "artist"),
-    rankCard("Parcerias mais recorrentes", insights.topPairs, "pair"),
   );
 
   root.append(grid);
@@ -276,8 +283,10 @@ function renderWrappedControls() {
 
 function renderCultHero(culto, analysis) {
   const hero = div("cult-heading");
+  const metrics = getMetricItems(analysis).map(item => `<span class="cult-analysis-chip" title="${escapeAttr(item.label)}">${item.icon} ${Math.round(item.score * 100)}%</span>`).join('');
   hero.innerHTML = `<p class="cult-date">${escapeHTML(formatDateLong(culto.dataObj))}</p>
-    <p class="muted-line">${analysis.songCount ? `${analysis.songCount} músicas no repertório` : "Repertório a definir"} · ${(culto.integrantes || []).length} integrantes</p>`;
+    <p class="muted-line cult-analysis-line">${metrics || 'Repertório a definir'}</p>`;
+  hero.append(renderNextTeamStrip(culto));
   return hero;
 }
 
@@ -285,7 +294,7 @@ function renderSetBlock(culto, analysis) {
   const panel = document.createElement("section");
   panel.className = "panel";
   panel.append(
-    sectionHeader("Repertório do dia", "Músicas na ordem", `${analysis.songCount} músicas selecionadas`),
+    sectionHeader("Repertório do dia", "Músicas na ordem", ""),
     renderTrackList(culto.musicas || [], { culto }),
   );
   return panel;
@@ -475,7 +484,11 @@ function renderSuggestionCompare(culto, suggestions) {
   }
 
   const grid = document.createElement("div");
-  grid.className = "playlist-grid";
+  grid.className = "playlist-grid suggestion-carousel";
+  const controls = div("suggestion-carousel-controls");
+  const previous = button("‹", "carousel-button", () => grid.scrollBy({ left: -grid.clientWidth, behavior: "smooth" }));
+  const next = button("›", "carousel-button", () => grid.scrollBy({ left: grid.clientWidth, behavior: "smooth" }));
+  previous.setAttribute("aria-label", "Sugestão anterior"); next.setAttribute("aria-label", "Próxima sugestão");
   suggestions.forEach((suggestion) => {
     const card = document.createElement("article");
     card.className = "playlist-card";
@@ -495,7 +508,8 @@ function renderSuggestionCompare(culto, suggestions) {
     grid.append(card);
   });
 
-  wrap.append(grid);
+  controls.append(previous, next);
+  wrap.append(controls, grid);
   return wrap;
 }
 
@@ -602,7 +616,9 @@ function renderSongDetails(song) {
   const ref = culto ? culto.dataObj : today();
   const last = getLastPlayedBefore(song.id, ref);
   const next = getNextScheduledOnOrAfter(song.id, today());
-  const status = getSongStatus(song.id, culto);
+  const status = culto && next && sameDay(next, culto.dataObj)
+    ? { status: "future", label: "Agendada" }
+    : getSongStatus(song.id, culto);
   const statusIcon = { available: "check", recent: "clock", future: "calendar", banned: "ban" }[status.status];
 
   const hero = div("song-profile-hero");
@@ -615,14 +631,13 @@ function renderSongDetails(song) {
   const availability = div(`availability-note availability-${status.status}`);
   const statusLabel = { available: "Disponível", recent: "Bloqueada", future: "Agendada", banned: "Banida" }[status.status];
   const release = getSongReleaseInfo(song.id, culto);
-  availability.innerHTML = `<span class="availability-symbol">${musicIcon(statusIcon)}</span><div><strong>${statusLabel}</strong>${release ? `<span>Libera em ${release.days} ${release.days === 1 ? "dia" : "dias"}</span>` : ""}</div>`;
-  body.append(availability, renderIntensityPanel(song));
-
+  const scheduledDate = status.status === "future" && next ? `<span>Agendada para ${formatDateCompact(next)}</span>` : "";
+  availability.innerHTML = `<span class="availability-symbol">${musicIcon(statusIcon)}</span><div><strong>${statusLabel}</strong>${scheduledDate || (release ? `<span>Libera no dia ${formatDateCompact(release.date)}</span>` : "")}</div>`;
   const categories = detailPanel("Categorias", "tag");
   const tags = div("song-tags");
   song.categorias.forEach(category => tags.append(musicBadge(category, "category")));
   categories.append(tags.children.length ? tags : div("muted-line", "Sem categorias cadastradas."));
-  body.append(categories);
+  body.append(availability, categories, renderIntensityPanel(song));
 
   const technical = detailPanel("Dificuldade por instrumento", "level2");
   const levels = document.createElement("dl"); levels.className = "instrument-tiles";
@@ -647,9 +662,7 @@ function renderSongDetails(song) {
   });
   history.append(count, timeline);
 
-  const stats = document.createElement("details"); stats.className = "catalog-stats";
-  stats.innerHTML = `<summary>${musicIcon("spark")}<span>No repertório da banda</span><span class="disclosure-mark" aria-hidden="true">+</span></summary><dl><div><dt>Execuções do artista</dt><dd>${getArtistExecucoes(song.artista)}</dd></div><div><dt>Execuções por categoria <small>Menor total entre as categorias desta música</small></dt><dd>${getCategoryExecucoes(song)}</dd></div></dl>`;
-  history.append(stats); body.append(history, renderSongMemberInsights(song.id));
+  body.append(history, renderSongMemberInsights(song.id, culto));
   return body;
 }
 
@@ -979,11 +992,11 @@ function cooccurrenceNotes(songs, events) {
 
 function generateSuggestedPlaylists(culto) {
   const strategies = [
-    { key: "favoritas", title: "Favoritas do Time", weights: { fam: 1.2, safe: 0.9, renew: 0.1, challenge: -0.2, pop: 0.8 } },
-    { key: "facil", title: "Fácil", weights: { fam: 0.9, safe: 1.25, renew: 0.1, challenge: -0.8, pop: 0.4 } },
-    { key: "mediano", title: "Mediano", weights: { fam: 0.7, safe: 0.8, renew: 0.45, challenge: 0.05, pop: 0.3 } },
-    { key: "desafiador", title: "Desafiador", weights: { fam: 0.2, safe: 0.15, renew: 0.5, challenge: 1.1, pop: -0.1 } },
-    { key: "renovacao", title: "Renovação", weights: { fam: 0.15, safe: 0.25, renew: 1.25, challenge: 0.25, pop: -0.4 } },
+    { key: "favoritas", title: "Favoritas do Time", weights: { fam: 1.2, safe: 0.9, renew: 0.1, challenge: -0.2, pop: 0.8, affinity: 1.1 } },
+    { key: "facil", title: "Fácil", weights: { fam: 0.9, safe: 1.25, renew: 0.1, challenge: -0.8, pop: 0.4, affinity: 0.45 } },
+    { key: "mediano", title: "Mediano", weights: { fam: 0.7, safe: 0.8, renew: 0.45, challenge: 0.05, pop: 0.3, affinity: 0.65 } },
+    { key: "desafiador", title: "Desafiador", weights: { fam: 0.2, safe: 0.15, renew: 0.5, challenge: 1.1, pop: -0.1, affinity: 0.2 } },
+    { key: "renovacao", title: "Renovação", weights: { fam: 0.15, safe: 0.25, renew: 1.25, challenge: 0.25, pop: -0.4, affinity: -0.15 } },
   ];
 
   const usedKeys = new Set();
@@ -1004,7 +1017,7 @@ function buildSuggestion(culto, strategy, usedKeys = new Set()) {
   const candidates = musicas
     .filter((song) => isSuggestionEligible(song, date))
     .map((song) => ({ song, score: suggestionSongScore(song, culto, strategy) }))
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => (normalizeIntensity(b.song.intensidade) === "alta") - (normalizeIntensity(a.song.intensidade) === "alta") || b.score - a.score);
 
   const groups = new Map();
   candidates.forEach((item) => {
@@ -1035,7 +1048,7 @@ function buildSuggestion(culto, strategy, usedKeys = new Set()) {
     const key = repertoireKey(chosenIds);
     if (triedKeys.has(key) || usedKeys.has(key)) continue;
     triedKeys.add(key);
-    if (chosen.length < 3 || hasDisjointCategoryTriple(chosenIds)) continue;
+    if (chosen.length < 3 || chosen.filter(song => normalizeIntensity(song.intensidade) === "alta").length > 1 || hasDisjointCategoryTriple(chosenIds)) continue;
 
     const analysis = analyzeSet({ ...culto, musicas: chosenIds }, chosenIds);
     return {
@@ -1078,6 +1091,7 @@ function suggestionSongScore(song, culto, strategy) {
   const tempAnalysis = analyzeSet({ ...culto, musicas: [song.id] }, [song.id]);
   const pop = getPopularity(song.id).nivel;
   const popScore = pop === "classic" ? 1 : pop === "common" ? 0.55 : 0.15;
+  const affinityScore = suggestionAffinityScore(song.id, culto);
   const challengeScore = tempAnalysis.challenge;
   const w = strategy.weights;
   return (
@@ -1086,7 +1100,16 @@ function suggestionSongScore(song, culto, strategy) {
     w.renew * tempAnalysis.renewal +
     w.challenge * challengeScore +
     w.pop * popScore
+    + (w.affinity || 0) * affinityScore
   );
+}
+
+function suggestionAffinityScore(songId, culto) {
+  const stats = computeSongMemberInsights(songId);
+  const ids = new Set(culto.integrantes || []);
+  const rows = stats.members.filter(row => ids.has(row.member.id));
+  if (!rows.length) return 0;
+  return avg(rows.map(row => Math.min(1, Math.max(0, row.score / 12))));
 }
 
 function isSuggestionEligible(song, date) {
@@ -1122,8 +1145,10 @@ function getFilteredSongs() {
     const position = status === "available" ? getTotalExecucoes(song.id)
       : status === "recent" ? getLastPlayedBefore(song.id, now).getTime()
       : status === "future" ? getNextScheduledOnOrAfter(song.id, now).getTime() : 0;
-    return { song, group: order[status], position };
-  }).sort((a, b) => a.group - b.group || a.position - b.position || a.song.titulo.localeCompare(b.song.titulo, "pt-BR") || a.song.id - b.song.id)
+    const stats = computeSongMemberInsights(song.id);
+    const affinity = stats.members.length ? avg(stats.members.map(row => row.score)) : 0;
+    return { song, group: order[status], position, affinity };
+  }).sort((a, b) => a.group - b.group || a.position - b.position || a.affinity - b.affinity || a.song.titulo.localeCompare(b.song.titulo, "pt-BR") || a.song.id - b.song.id)
     .map(item => item.song);
 }
 
@@ -1328,7 +1353,7 @@ function getSong(id) {
 }
 
 function getMember(id) {
-  return integrantes.find((member) => member.id === id) || null;
+  return integrantes.find((member) => member.id === id && member.ativo !== false) || null;
 }
 
 function getSongStatus(id, contextCulto = null) {
@@ -1526,39 +1551,49 @@ function computeTitleGallery(events) {
   const stats = buildMemberTitleStats(events);
   const titles = [
     {
-      name: "DJ do Culto",
-      desc: "Quem mais apareceu como header escolhendo repertorio.",
+      name: "Header do Periodo",
+      desc: "Quem mais escolheu repertorios como header.",
       metric: (s) => s.headerCount,
     },
     {
-      name: "Voz da Vez",
-      desc: "Quem mais apareceu como ministrante.",
+      name: "Ministrante do Periodo",
+      desc: "Quem mais ministrou cultos no periodo.",
       metric: (s) => s.ministerCount,
     },
     {
-      name: "Figurinha Carimbada",
-      desc: "Presenca constante quando a agenda chamou.",
+      name: "Presenca no Periodo",
+      desc: "Quem mais participou dos cultos.",
       metric: (s) => s.cultCount,
     },
     {
-      name: "Maratonista do Repertorio",
-      desc: "Mais musicas tocadas no periodo.",
+      name: "Mais Musicas Tocadas",
+      desc: "Quem mais tocou musicas no periodo.",
       metric: (s) => s.songHits,
+    },
+    {
+      name: "Guardiao dos Classicos",
+      desc: "Maior percentual de participacoes em musicas classicas.",
+      metric: (s) => s.songHits ? s.classicHits / s.songHits : 0, percent: true,
+    },
+    {
+      name: "Radar de Raridades",
+      desc: "Mais participou de musicas raras e pouco usadas.",
+      metric: (s) => s.songHits ? s.rareHits / s.songHits : 0, percent: true,
+    },
+    {
+      name: "Leveza no Repertorio",
+      desc: "Mais participou de musicas de intensidade baixa.",
+      metric: (s) => s.songHits ? s.lowIntensityHits / s.songHits : 0, percent: true,
+    },
+    {
+      name: "Alta Voltagem",
+      desc: "Mais participou de musicas de intensidade alta.",
+      metric: (s) => s.songHits ? s.highIntensityHits / s.songHits : 0, percent: true,
     },
     {
       name: "Camaleao da Banda",
       desc: "Tocou com mais combinacoes diferentes de pessoas.",
       metric: (s) => s.partners.size,
-    },
-    {
-      name: "Guardiao dos Classicos",
-      desc: "Carregou mais musicas que o grupo ja conhece bem.",
-      metric: (s) => s.classicHits,
-    },
-    {
-      name: "Arqueologo do Repertorio",
-      desc: "Apareceu mais em musicas raras e pouco usadas.",
-      metric: (s) => s.rareHits,
     },
     {
       name: "Modo Hard",
@@ -1599,16 +1634,6 @@ function computeTitleGallery(events) {
       name: "Curador de Setlist",
       desc: "Escolheu mais musicas diferentes como header.",
       metric: (s) => s.chosenSongs.size,
-    },
-    {
-      name: "Categoria Favorita",
-      desc: "Mais concentrou execucoes em uma categoria.",
-      metric: (s) => maxMapValue(s.categoryCounts),
-    },
-    {
-      name: "Versatil de Categorias",
-      desc: "Mais circulou por categorias diferentes.",
-      metric: (s) => s.categoryCounts.size,
     },
     {
       name: "Header Mao Pesada",
@@ -1674,7 +1699,7 @@ function computeTitleGallery(events) {
 
 function buildMemberTitleStats(events) {
   const stats = new Map();
-  integrantes.forEach((member) => {
+  integrantes.filter(member => member.ativo !== false).forEach((member) => {
     stats.set(member.id, {
       member,
       cultCount: 0,
@@ -1695,6 +1720,8 @@ function buildMemberTitleStats(events) {
       rareHits: 0,
       hardHits: 0,
       easyHits: 0,
+      lowIntensityHits: 0,
+      highIntensityHits: 0,
       repeatHits: 0,
     });
   });
@@ -1728,6 +1755,8 @@ function buildMemberTitleStats(events) {
         if (diff >= 2.5) st.hardHits++;
         if (diff > 1.35 && diff < 2.5) st.mediumHits++;
         if (diff > 0 && diff <= 1.35) st.easyHits++;
+        if (normalizeIntensity(song.intensidade) === "baixa") st.lowIntensityHits++;
+        if (normalizeIntensity(song.intensidade) === "alta") st.highIntensityHits++;
       });
     });
 
@@ -1762,8 +1791,9 @@ function renderTitleCard(title) {
   const card = document.createElement("article");
   card.className = "title-page-card";
   card.innerHTML = `
-    <div class="title-winner">
+    <div class="title-cover">
       <img src="${memberImg(leader.member)}" alt="" onerror="this.src='integrantes/default.jpeg'" />
+      <span class="title-cover-caption">${escapeHTML(leader.name)}</span>
     </div>
     <div class="title-page-body">
       <p class="section-kicker">Titulo interno</p>
@@ -1775,7 +1805,7 @@ function renderTitleCard(title) {
             (line) => `
               <div class="${line.rank <= 3 ? `rank-${line.rank}` : ""}">
                 <strong>#${line.rank} - ${escapeHTML(line.name)}</strong>
-                <span>${line.value}x</span>
+                <span>${title.percent ? `${Math.round(line.value * 100)}%` : `${line.value}x`}</span>
               </div>
             `,
           )
@@ -1811,6 +1841,10 @@ function rankCard(title, rows, type) {
   list.className = "band-ranking";
   rows.slice(0, 10).forEach((row, idx) => {
     const item = document.createElement("li");
+    const visual = type === "musica" ? getSong(Number(row.key)) : null;
+    const artwork = visual ? songArtworkSources(visual)[0] : type === "artist" ? `artistas/${slugify(row.name || row.key || "")}.jpg` : null;
+    if (artwork) item.style.setProperty("--rank-art", `url('${artwork}')`);
+    item.className = idx < 4 ? `rank-highlight rank-${idx + 1}` : "";
     item.innerHTML = `<span class="ranking-position">${idx + 1}</span>
       <span class="ranking-copy"><strong>${escapeHTML(row.name)}</strong><span>${escapeHTML(typeLabel(type, row))}</span></span>
       <span class="ranking-count">${row.value}x</span>`;
@@ -2043,14 +2077,33 @@ function intensityLabel(value) {
   return { baixa: "Baixa", media: "Média", alta: "Alta" }[normalizeIntensity(value)] || "Não informada";
 }
 
-function computeSongMemberInsights(songId) {
-  const rows = new Map(integrantes.map(member => [member.id, { member, played: 0, chosen: 0 }]));
-  const events = historico.filter(ev => ev.dataObj && ev.dataObj < today() && ev.musicas.includes(songId));
+function computeSongMemberInsights(songId, contextCulto = null) {
+  const rows = new Map(integrantes.filter(member => member.ativo !== false).map(member => [member.id, { member, played: 0, chosen: 0, recent: 0, choiceWeight: 0, recentChoices: 0, latestChoiceAge: Infinity, score: -4, affinity: "low" }]));
+  const events = contextCulto
+    ? [contextCulto].filter(ev => ev.musicas && ev.musicas.includes(songId))
+    : historico.filter(ev => ev.dataObj && ev.dataObj < today() && ev.musicas.includes(songId));
   events.forEach(ev => {
-    new Set(ev.integrantes).forEach(id => { if (rows.has(id)) rows.get(id).played++; });
-    new Set(ev.header).forEach(id => { if (rows.has(id)) rows.get(id).chosen++; });
+    new Set(ev.integrantes).forEach(id => { if (rows.has(id)) { const row = rows.get(id); row.played++; if (daysBetween(ev.dataObj, today()) <= COOLDOWN_DAYS) row.recent++; } });
+    new Set(ev.header).forEach(id => {
+      if (!rows.has(id)) return;
+      const row = rows.get(id); row.chosen++;
+      const age = Math.max(0, daysBetween(ev.dataObj, today()));
+      row.latestChoiceAge = Math.min(row.latestChoiceAge, age);
+      // Decaimento contínuo até chegar a zero no marco de 18 meses.
+      const weight = Math.max(0, 8 * (1 - age / 547));
+      row.choiceWeight += weight;
+      if (age <= 180) row.recentChoices++;
+    });
   });
-  return { eventCount: events.length, members: Array.from(rows.values()) };
+  rows.forEach(row => {
+    row.score = row.choiceWeight + row.recent * 2 + Math.max(0, row.played - row.recent);
+    row.score += row.played ? 1 : -4;
+    // Duas ou mais escolhas recorrentes, ainda dentro do ciclo de 18 meses,
+    // indicam que a pessoa tende a esperar a liberação para escolher novamente.
+    row.affinity = row.chosen >= 2 && row.latestChoiceAge < 547 ? "very-high" : row.score >= 7 ? "high" : row.score >= 2 ? "medium" : "low";
+  });
+  const allowed = contextCulto ? new Set([...(contextCulto.integrantes || []), ...(contextCulto.header || []), ...(contextCulto.ministrantes || []), ...(contextCulto.minister || [])]) : null;
+  return { eventCount: events.length, members: Array.from(rows.values()).filter(row => !allowed || allowed.has(row.member.id)) };
 }
 
 function rankSongMembers(stats, metric) {
